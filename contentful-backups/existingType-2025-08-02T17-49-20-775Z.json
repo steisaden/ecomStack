@@ -1,0 +1,17 @@
+{
+  "contentType": {
+    "sys": {
+      "id": "existingType"
+    },
+    "fields": [
+      {
+        "id": "title",
+        "name": "Title",
+        "type": "Symbol"
+      }
+    ],
+    "displayField": "title"
+  },
+  "backupTimestamp": "2025-08-02T17:49:20.775Z",
+  "backupVersion": "1.0.0"
+}

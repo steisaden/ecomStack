@@ -1,0 +1,22 @@
+{
+  "mcpServers": {
+    "chrome-devtools": {
+      "command": "npx",
+      "args": [
+        "chrome-devtools-mcp@latest"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR"
+      },
+      "disabled": false,
+      "autoApprove": [
+        "mcp_chrome_devtools_navigate_page",
+        "mcp_chrome_devtools_take_screenshot",
+        "mcp_chrome_devtools_wait_for",
+        "mcp_chrome_devtools_new_page",
+        "mcp_chrome_devtools_close_page",
+        "new_page"
+      ]
+    }
+  }
+}

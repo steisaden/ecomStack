@@ -1,0 +1,41 @@
+:root {
+  --background: oklch(0.96 0.02 260);
+  --foreground: oklch(0.2 0 0);
+  --glass-bg: rgba(255, 255, 255, 0.2);
+  --glass-border: rgba(255, 255, 255, 0.3);
+  --neumorph-shadow: 8px 8px 15px #e0e0e0, -8px -8px 15px #ffffff;
+  --card-hover: 0 8px 20px rgba(0, 0, 0, 0.08);
+  --primary: oklch(0.65 0.2 260);
+  --primary-hover: oklch(0.6 0.25 255);
+  --secondary: oklch(0.8 0.1 30);
+  --font-sans: 'Inter', sans-serif;
+  --radius: 1.5rem;
+  --glass-radius: 1rem;
+}
+
+.glass-card {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--glass-radius);
+  box-shadow: var(--neumorph-shadow);
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+.glass-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.1), var(--neumorph-shadow);
+}
+
+.neumorph-btn {
+  background: var(--glass-bg);
+  border: none;
+  box-shadow: var(--neumorph-shadow);
+  border-radius: var(--radius);
+  transition: all 0.2s ease;
+}
+
+.neumorph-btn:hover {
+  transform: scale(1.05) rotate(1deg);
+  box-shadow: 4px 4px 8px #e0e0e0, -4px -4px 8px #ffffff;
+}

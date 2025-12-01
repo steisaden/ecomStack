@@ -1,0 +1,62 @@
+:root {
+  --background: #f6e7cbff;
+  --foreground: #2d3748;
+  --glass-bg: rgba(246, 231, 203, 0.3);
+  --glass-border: rgba(246, 231, 203, 0.4);
+  --neumorph-shadow: 8px 8px 15px #e0e0e0, -8px -8px 15px #ffffff;
+  --card-hover: 0 8px 20px rgba(0, 0, 0, 0.08);
+  --primary: #74d3aeff;
+  --primary-hover: #64c29eff;
+  --secondary: #678d58ff;
+  --accent: #a6c48aff;
+  --destructive: #dd9787ff;
+  --font-sans: 'Inter', sans-serif;
+  --radius: 1.5rem;
+  --glass-radius: 1rem;
+}
+
+.glass-card {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--glass-radius);
+  box-shadow: var(--neumorph-shadow);
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+.glass-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.1), var(--neumorph-shadow);
+}
+
+.neumorph-btn {
+  background: var(--glass-bg);
+  border: none;
+  box-shadow: var(--neumorph-shadow);
+  border-radius: var(--radius);
+  transition: all 0.2s ease;
+}
+
+.neumorph-btn:hover {
+  transform: scale(1.05) rotate(1deg);
+  box-shadow: 4px 4px 8px #e0e0e0, -4px -4px 8px #ffffff;
+}
+
+/* Color-specific classes */
+.btn-primary {
+  background-color: var(--primary);
+  color: #fff;
+}
+
+.btn-primary:hover {
+  background-color: var(--primary-hover);
+}
+
+.badge-sale {
+  background-color: var(--destructive);
+  color: #fff;
+}
+
+.featured-border {
+  border-color: var(--accent);
+}

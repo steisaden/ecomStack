@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en" class="antialiased">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Earthy Bento E-commerce Store</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/framer-motion@latest/dist/framer-motion.umd.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --background: #f6e7cbff;
+      --foreground: #2d3748;
+      --glass-bg: rgba(246, 231, 203, 0.3);
+      --glass-border: rgba(246, 231, 203, 0.4);
+      --neumorph-shadow: 8px 8px 15px #e0e0e0, -8px -8px 15px #ffffff;
+      --card-hover: 0 8px 20px rgba(0, 0, 0, 0.08);
+      --primary: #74d3aeff;
+      --primary-hover: #64c29eff;
+      --secondary: #678d58ff;
+      --accent: #a6c48aff;
+      --destructive: #dd9787ff;
+      --font-sans: 'Inter', sans-serif;
+      --radius: 1.5rem;
+      --glass-radius: 1rem;
+    }
+
+    .glass-card {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--glass-radius);
+      box-shadow: var(--neumorph-shadow);
+      backdrop-filter: blur(10px);
+      transition: all 0.3s ease;
+    }
+
+    .glass-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.1), var(--neumorph-shadow);
+    }
+
+    .neumorph-btn {
+      background: var(--glass-bg);
+      border: none;
+      box-shadow: var(--neumorph-shadow);
+      border-radius: var(--radius);
+      transition: all 0.2s ease;
+    }
+
+    .neumorph-btn:hover {
+      transform: scale(1.05) rotate(1deg);
+      box-shadow: 4px 4px 8px #e0e0e0, -4px -4px 8px #ffffff;
+    }
+
+    /* Color-specific classes */
+    .btn-primary {
+      background-color: var(--primary);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background-color: var(--primary-hover);
+    }
+
+    .badge-sale {
+      background-color: var(--destructive);
+      color: #fff;
+    }
+
+    .featured-border {
+      border-color: var(--accent);
+    }
+  </style>
+</head>
+<body class="bg-[var(--background)] font-sans text-[var(--foreground)]">
+  <div class="container mx-auto px-4 py-8">
+    <!-- Header -->
+    <header class="mb-8">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center space-x-4">
+          <div class="h-10 w-10 rounded-full glass-card flex items-center justify-center">
+            <span class="font-bold">LOGO</span>
+          </div>
+          <nav class="hidden md:flex space-x-6">
+            <a href="#" class="font-medium hover:text-[var(--primary)] transition-colors">Home</a>
+            <a href="#" class="font-medium hover:text-[var(--primary)] transition-colors">Shop</a>
+            <a href="#" class="font-medium hover:text-[var(--primary)] transition-colors">About</a>
+            <a href="#" class="font-medium hover:text-[var(--primary)] transition-colors">Contact</a>
+          </nav>
+        </div>
+        <div class="flex items-center space-x-4">
+          <button class="p-2 rounded-full glass-card hover:scale-105 transition-transform">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+          </button>
+          <button class="p-2 rounded-full glass-card hover:scale-105 transition-transform">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+          </button>
+          <button class="p-2 rounded-full glass-card hover:scale-105 transition-transform relative">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="9" cy="21" r="1"></circle>
+              <circle cx="20" cy="21" r="1"></circle>
+              <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+            </svg>
+            <span class="absolute -top-1 -right-1 bg-[var(--destructive)] text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">3</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Breadcrumbs -->
+    <nav class="mb-8 text-sm text-[var(--secondary)]">
+      <ol class="list-none p-0 inline-flex">
+        <li class="flex items-center">
+          <a href="#">Home</a>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mx-2">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </li>
+        <li class="flex items-center">
+          <a href="#">Shop</a>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mx-2">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </li>
+        <li class="text-[var(--foreground)]">All Products</li>
+      </ol>
+    </nav>
+
+    <!-- Bento Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+      <!-- Grid Cell 1 - Featured Product -->
+      <div class="md:col-span-1 glass-card p-6 flex flex-col justify-between">
+        <div>
+          <span class="inline-block px-3 py-1 bg-[var(--accent)] text-white text-xs font-medium rounded-full mb-3">New Arrival</span>
+          <h2 class="text-2xl font-bold mb-2">Handcrafted Ceramic Vase</h2>
+          <p class="text-sm text-[var(--secondary)] mb-4">Add a touch of nature to your space with our artisanal ceramic collection.</p>
+          <div class="flex items-center mb-4">
+            <div class="flex">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[var(--primary)]">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+              </svg>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[var(--primary)]">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+              </svg>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[var(--primary)]">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+              </svg>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[var(--primary)]">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+              </svg>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[var(--secondary)]">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+              </svg>
+            </div>
+            <span class="ml-2 text-sm text-[var(--secondary)]">4.0 (123 reviews)</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-xl font-bold">$89.99</span>
+            <button class="px-4 py-2 btn-primary rounded-full flex items-center space-x-2">
+              <span>Add to Cart</span>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div class="mt-6">
+          <img src="https://picsum.photos/400/300" alt="Ceramic Vase" class="w-full rounded-lg shadow-md">
+        </div>
+      </div>
+
+      <!-- Grid Cell 2 - Category Filter -->
+      <div class="md:col-span-1 glass-card p-6">
+        <h3 class="text-xl font-bold mb-4">Categories</h3>
+        <div class="space-y-3">
+          <button class="w-full text-left px-4 py-2 rounded-full glass-card hover:bg-[var(--primary)] hover:text-white transition-colors">All Products</button>
+          <button class="w-full text-left px-4 py-2 rounded-full glass-card hover:bg-[var(--primary)] hover:text-white transition-colors">Home Decor</button>
+          <button class="w-full text-left px-4 py-2 rounded-full glass-card hover:bg-[var(--primary)] hover:text-white transition-colors">Kitchenware</button>
+          <button class="w-full text-left px-4 py-2 rounded-full glass-card hover:bg-[var(--primary)] hover:text-white transition-colors">Jewelry</button>
+          <button class="w-full text-left px-4 py-2 rounded-full glass-card hover:bg-[var(--primary)] hover:text-white transition-colors">Apparel</button>
+        </div>
+      </div>
+
+      <!-- Grid Cell 3 - Featured Collection -->
+      <div class="md:col-span-1 glass-card p-6">
+        <h3 class="text-xl font-bold mb-4">Featured Collection</h3>
+        <div class="space-y-4">
+          <div class="flex items-center space-x-4">
+            <img src="https://picsum.photos/200/300" alt="Product 1" class="w-16 h-16 rounded-lg object-cover">
+            <div>
+              <h4 class="font-medium">Handmade Candle</h4>
+              <span class="text-sm text-[var(--secondary)]">$24.99</span>
+            </div>
+          </div>
+          <div class="flex items-center space-x-4">
+            <img src="https://picsum.photos/201/300" alt="Product 2" class="w-16 h-16 rounded-lg object-cover">
+            <div>
+              <h4 class="font-medium">Woven Basket</h4>
+              <span class="text-sm text-[var(--secondary)]">$39.99</span>
+            </div>
+          </div>
+          <div class="flex items-center space-x-4">
+            <img src="https://picsum.photos/202/300" alt="Product 3" class="w-16 h-16 rounded-lg object-cover">
+            <div>
+              <h4 class="font-medium">Wooden Serving Tray</h4>
+              <span class="text-sm text-[var(--secondary)]">$59.99</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Grid Cell 4 - Product Grid -->
+      <div class="md:col-span-2 glass-card p-6">
+        <div class="flex justify-between items-center mb-6">
+          <h3 class="text-xl font-bold">All Products</h3>
+          <div class="flex space-x-2">
+            <button class="px-3 py-1 rounded-full glass-card text-sm">Newest</button>
+            <button class="px-3 py-1 rounded-full glass-card text-sm">Price: Low to High</button>
+            <button class="px-3 py-1 rounded-full glass-card text-sm">Price: High to Low</button>
+          </div>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <!-- Product Card 1 -->
+          <div class="glass-card rounded-lg overflow-hidden group">
+            <div class="relative">
+              <img src="https://picsum.photos/400/400" alt="Product 1" class="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105">
+              <span class="absolute top-2 right-2 bg-[var(--destructive)] text-white text-xs font-medium px-2 py-1 rounded-full">Sale</span>
+            </div>
+            <div class="p-4">
+              <h4 class="font-medium mb-1">Ceramic Mug</h4>
+              <div class="flex items-center justify-between">
+                <span class="text-sm text-[var(--secondary)]">$14.99</span>
+                <button class="p-1 rounded-full glass-card hover:bg-[var(--primary)] hover:text-white transition-colors">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Product Card 2 -->
+          <div class="glass-card rounded-lg overflow-hidden group">
+            <div class="relative">
+              <img src="https://picsum.photos/401/400" alt="Product 2" class="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105">
+            </div>
+            <div class="p-4">
+              <h4 class="font-medium mb-1">Woven Wall Art</h4>
+              <div class="flex items-center justify-between">
+                <span class="text-sm text-[var(--secondary)]">$89.99</span>
+                <button class="p-1 rounded-full glass-card hover:bg-[var(--primary)] hover:text-white transition-colors">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Product Card 3 -->
+          <div class="glass-card rounded-lg overflow-hidden group">
+            <div class="relative">
+              <img src="https://picsum.photos/402/400" alt="Product 3" class="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105">
+              <span class="absolute top-2 right-2 bg-[var(--accent)] text-white text-xs font-medium px-2 py-1 rounded-full">New</span>
+            </div>
+            <div class="p-4">
+              <h4 class="font-medium mb-1">Handmade Soap</h4>
+              <div class="flex items-center justify-between">
+                <span class="text-sm text-[var(--secondary)]">$9.99</span>
+                <button class="p-1 rounded-full glass-card hover:bg-[var(--primary)] hover:text-white transition-colors">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Grid Cell 5 - Newsletter -->
+      <div class="glass-card p-6 flex flex-col justify-center">
+        <h3 class="text-xl font-bold mb-3">Subscribe to Our Newsletter</h3>
+        <p class="text-sm text-[var(--secondary)] mb-4">Get the latest updates on new products and upcoming sales</p>
+        <div class="flex">
+          <input type="email" placeholder="Your email address" class="flex-grow px-4 py-2 rounded-l-full glass-card border-0 focus:ring-2 focus:ring-[var(--primary)] focus:outline-none">
+          <button class="px-4 py-2 btn-primary rounded-r-full">Subscribe</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="glass-card p-8 mt-12">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div>
+          <h4 class="font-bold mb-4">Shop</h4>
+          <ul class="space-y-2">
+            <li><a href="#" class="text-sm text-[var(--secondary)] hover:text-[var(--primary)]">Products</a></li>
+            <li><a href="#" class="text-sm text-[var(--secondary)] hover:text-[var(--primary)]">Categories</a></li>
+            <li><a href="#" class="text-sm text-[var(--secondary)] hover:text-[var(--primary)]">Sales</a></li>
+            <li><a href="#" class="text-sm text-[var(--secondary)] hover:text-[var(--primary)]">Gift Cards</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="font-bold mb-4">Company</h4>
+          <ul class="space-y-2">
+            <li><a href="#" class="text-sm text-[var(--secondary)] hover:text-[var(--primary)]">About Us</a></li>
+            <li><a href="#" class="text-sm text-[var(--secondary)] hover:text-[var(--primary)]">Our Story</a></li>
+            <li><a href="#" class="text-sm text-[var(--secondary)] hover:text-[var(--primary)]">Sustainability</a></li>
+            <li><a href="#" class="text-sm text-[var(--secondary)] hover:text-[var(--primary)]">Careers</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="font-bold mb-4">Support</h4>
+          <ul class="space-y-2">
+            <li><a href="#" class="text-sm text-[var(--secondary)] hover:text-[var(--primary)]">Contact Us</a></li>
+            <li><a href="#" class="text-sm text-[var(--secondary)] hover:text-[var(--primary)]">FAQs</a></li>
+            <li><a href="#" class="text-sm text-[var(--secondary)] hover:text-[var(--primary)]">Shipping</a></li>
+            <li><a href="#" class="text-sm text-[var(--secondary)] hover:text-[var(--primary)]">Returns</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="font-bold mb-4">Connect</h4>
+          <div class="flex space-x-4 mb-4">
+            <a href="#" class="p-2 glass-card rounded-full hover:bg-[var(--primary)] hover:text-white transition-colors">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>
+              </svg>
+            </a>
+            <a href="#" class="p-2 glass-card rounded-full hover:bg-[var(--primary)] hover:text-white transition-colors">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+              </svg>
+            </a>
+            <a href="#" class="p-2 glass-card rounded-full hover:bg-[var(--primary)] hover:text-white transition-colors">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"></path>
+              </svg>
+            </a>
+          </div>
+          <p class="text-sm text-[var(--secondary)]">Join our community and stay updated on new arrivals and exclusive offers.</p>
+        </div>
+      </div>
+      <div class="border-t border-[var(--glass-border)] mt-8 pt-6 text-center text-sm text-[var(--secondary)]">
+        <p>&copy; 2023 Earthy E-commerce. All rights reserved.</p>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    // Framer Motion animations
+    const { motion, AnimatePresence } = window.framerMotion;
+
+    // You would typically use React components with Framer Motion, but for this demo we'll use a simple script
+    // This would be more complex in a real React application with shadcn/ui components
+    document.addEventListener('DOMContentLoaded', () => {
+      // Add hover animations to product cards
+      document.querySelectorAll('.glass-card').forEach(card => {
+        card.addEventListener('mouseenter', () => {
+          card.style.transform = 'translateY(-5px)';
+          card.style.boxShadow = '0 10px 20px rgba(0,0,0,0.1), var(--neumorph-shadow)';
+        });
+        card.addEventListener('mouseleave', () => {
+          card.style.transform = 'translateY(0)';
+          card.style.boxShadow = 'var(--neumorph-shadow)';
+        });
+      });
+    });
+  </script>
+</body>
+</html>

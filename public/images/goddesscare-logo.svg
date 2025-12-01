@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="362" viewBox="0 0 1024 362" role="img" aria-labelledby="title desc">
+  <title id="title">Goddess Care Co Logo</title>
+  <desc id="desc">A modern logo with a circular emblem showing a woman silhouette with leaves and the text GoddessCareCo where GoddessCare is green and Co is black.</desc>
+  <defs>
+    <linearGradient id="leafGrad" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#57B450"/>
+      <stop offset="100%" stop-color="#3A8134"/>
+    </linearGradient>
+  </defs>
+  <!-- Emblem -->
+  <g transform="translate(40,40)">
+    <!-- Outer G/Circle -->
+    <circle cx="80" cy="80" r="78" fill="none" stroke="#000000" stroke-width="12"/>
+    <!-- G notch -->
+    <rect x="110" y="70" width="36" height="20" fill="#000000" rx="4"/>
+    <!-- Woman profile (simplified) -->
+    <path d="M70,45 C88,48 98,60 98,76 C98,89 93,101 83,110 C80,113 80,121 83,126 C86,132 86,140 80,148 C71,161 52,166 43,153 C40,148 42,142 47,139 C52,136 57,138 61,141 C64,137 64,131 61,125 C57,118 57,108 62,102 C68,95 74,85 74,76 C74,63 61,53 61,53 C64,48 66,46 70,45 Z" fill="#000000"/>
+    <!-- Leaves -->
+    <path d="M93,38 C110,38 124,50 124,66 C107,66 93,54 93,38 Z" fill="url(#leafGrad)"/>
+    <path d="M120,108 C137,108 151,120 151,136 C134,136 120,124 120,108 Z" fill="url(#leafGrad)"/>
+  </g>
+  <!-- Brand text -->
+  <g transform="translate(240, 120)">
+    <text x="0" y="0" font-family="'Inter', system-ui, -apple-system, sans-serif" font-size="84" font-weight="600" fill="#3A8134" letter-spacing="0.5">
+      GoddessCare
+    </text>
+    <text x="660" y="0" font-family="'Inter', system-ui, -apple-system, sans-serif" font-size="84" font-weight="600" fill="#000000" letter-spacing="0.5">
+      Co
+    </text>
+  </g>
+</svg>

@@ -1,0 +1,412 @@
+module.exports = {
+  content: [
+    "./pages/**/*.{js,ts,jsx,tsx}",
+    "./components/**/*.{js,ts,jsx,tsx}",
+    "./app/**/*.{js,ts,jsx,tsx}",
+    "./src/**/*.{js,ts,jsx,tsx}",
+  ],
+  theme: {
+    screens: {
+      'xs': '475px',
+      'sm': '640px',
+      'md': '768px',
+      'lg': '1024px',
+      'xl': '1280px',
+      '2xl': '1536px',
+    },
+    extend: {
+      colors: {
+        // Shadcn/UI base colors
+        background: "hsl(var(--background))",
+        foreground: "hsl(var(--foreground))",
+        card: {
+          DEFAULT: "hsl(var(--card))",
+          foreground: "hsl(var(--card-foreground))",
+        },
+        popover: {
+          DEFAULT: "hsl(var(--popover))",
+          foreground: "hsl(var(--popover-foreground))",
+        },
+        secondary: {
+          DEFAULT: "hsl(var(--secondary))",
+          foreground: "hsl(var(--secondary-foreground))",
+        },
+        muted: {
+          DEFAULT: "hsl(var(--muted))",
+          foreground: "hsl(var(--muted-foreground))",
+        },
+        destructive: {
+          DEFAULT: "hsl(var(--destructive))",
+          foreground: "hsl(var(--destructive-foreground))",
+        },
+        border: "hsl(var(--border))",
+        input: "hsl(var(--input))",
+        ring: "hsl(var(--ring))",
+        chart: {
+          "1": "hsl(var(--chart-1))",
+          "2": "hsl(var(--chart-2))",
+          "3": "hsl(var(--chart-3))",
+          "4": "hsl(var(--chart-4))",
+          "5": "hsl(var(--chart-5))",
+        },
+        
+        // CÉCRED Design System Colors
+        primary: {
+          DEFAULT: "#3A8134",
+          light: "#57B450",
+          foreground: "hsl(var(--primary-foreground))",
+          50: "#F0F7EF",
+          100: "#DDEEDD",
+          200: "#BAD9B7",
+          300: "#A1C5A6",
+          400: "#7FB085",
+          500: "#57B450",
+          600: "#3A8134",
+          700: "#326E2C",
+          800: "#2A5B24",
+          900: "#22481C",
+        },
+        accent: {
+          DEFAULT: "#AAC5A6",
+          foreground: "hsl(var(--accent-foreground))",
+          50: "#F5F8F5",
+          100: "#EAF0EA",
+          200: "#D5E1D5",
+          300: "#C1D2C1",
+          400: "#AAC5A6",
+          500: "#8EB58E",
+          600: "#72A576",
+          700: "#56955E",
+          800: "#3A8546",
+          900: "#1E752E",
+        },
+        
+        // Additional Green Accent Variations
+        sage: {
+          DEFAULT: "#87A96B",
+          light: "#A4C085",
+          dark: "#6B8E4F",
+          50: "#F4F7F0",
+          100: "#E8F0E1",
+          200: "#D1E1C3",
+          300: "#B9D2A4",
+          400: "#A2C386",
+          500: "#87A96B",
+          600: "#6B8E4F",
+          700: "#547239",
+          800: "#3D5627",
+          900: "#263A15",
+        },
+        emerald: {
+          DEFAULT: "#10B981",
+          light: "#34D399",
+          dark: "#059669",
+          50: "#ECFDF5",
+          100: "#D1FAE5",
+          200: "#A7F3D0",
+          300: "#6EE7B7",
+          400: "#34D399",
+          500: "#10B981",
+          600: "#059669",
+          700: "#047857",
+          800: "#065F46",
+          900: "#064E3B",
+        },
+        forest: {
+          DEFAULT: "#228B22",
+          light: "#32CD32",
+          dark: "#006400",
+          50: "#F0FFF0",
+          100: "#E6FFE6",
+          200: "#CCFFCC",
+          300: "#99FF99",
+          400: "#66FF66",
+          500: "#32CD32",
+          600: "#228B22",
+          700: "#1F7A1F",
+          800: "#1B691B",
+          900: "#155815",
+        },
+        mint: {
+          DEFAULT: "#98FB98",
+          light: "#F0FFF0",
+          dark: "#00FF7F",
+          25: "#F8FFFA",
+          50: "#F0FFF4",
+          100: "#DCFCE7",
+          200: "#BBF7D0",
+          300: "#86EFAC",
+          400: "#4ADE80",
+          500: "#22C55E",
+          600: "#16A34A",
+          700: "#15803D",
+          800: "#166534",
+          900: "#14532D",
+        },
+        coral: {
+          DEFAULT: "#FF7F7F",
+          light: "#FFB3B3",
+          dark: "#FF4D4D",
+          50: "#FFF5F5",
+          100: "#FFE6E6",
+          200: "#FFCCCC",
+          300: "#FFB3B3",
+          400: "#FF9999",
+          500: "#FF7F7F",
+          600: "#FF6666",
+          700: "#FF4D4D",
+          800: "#FF3333",
+          900: "#FF1A1A",
+        },
+        
+        // CÉCRED Neutral Colors
+        black: "#000000",
+        'dark-gray': "#4B4B4B",
+        gray: "#7C7C7C",
+        'light-gray': "#F5F5F5",
+        white: "#FFFFFF",
+        'white-gold': '#F5F5DC',
+        
+        // Additional neutral scale for better design flexibility
+        neutral: {
+          50: "#FAFAFA",
+          100: "#F5F5F5",
+          200: "#E5E5E5",
+          300: "#D4D4D4",
+          400: "#A3A3A3",
+          500: "#7C7C7C",
+          600: "#525252",
+          700: "#4B4B4B",
+          800: "#262626",
+          900: "#171717",
+        },
+
+        // Neutral admin theme tokens
+        surface: {
+          DEFAULT: "#f7f7fb",
+          muted: "#eef1f6",
+          subtle: "#e7ebf3",
+        },
+        'surface-strong': "#dfe4ec",
+        'border-muted': "#e4e7ee",
+        'border-strong': "#cfd6e0",
+        'text-strong': "#111827",
+        'text-muted': "#5f6b76",
+        'text-subtle': "#8a94a3",
+        'accent-soft': "#f3f5f9",
+        'accent-strong': "#dbe2ed",
+      },
+      borderRadius: {
+        lg: "var(--radius)",
+        md: "calc(var(--radius) - 2px)",
+        sm: "calc(var(--radius) - 4px)",
+        xl: "calc(var(--radius) + 6px)",
+        shell: "22px",
+      },
+      boxShadow: {
+        soft: "0 20px 50px -30px rgba(15, 23, 42, 0.28)",
+        card: "0 18px 40px -28px rgba(15, 23, 42, 0.26), 0 1px 0 rgba(15, 23, 42, 0.04)",
+        ring: "0 0 0 1px rgba(15, 23, 42, 0.06), 0 20px 60px -36px rgba(15, 23, 42, 0.38)",
+      },
+      fontFamily: {
+        heading: ['var(--font-playfair-display)', 'serif'],
+        body: ['var(--font-inter)', 'sans-serif'],
+        mono: ['JetBrains Mono', 'monospace'],
+      },
+      fontSize: {
+        'hero': ['3.5rem', { lineHeight: '1.1', letterSpacing: '-0.02em' }],
+        'section': ['2.5rem', { lineHeight: '1.2', letterSpacing: '-0.01em' }],
+        'subsection': ['1.875rem', { lineHeight: '1.3' }],
+        'body-lg': ['1.125rem', { lineHeight: '1.6' }],
+        'body': ['1rem', { lineHeight: '1.6' }],
+        'body-sm': ['0.875rem', { lineHeight: '1.5' }],
+        'caption': ['0.75rem', { lineHeight: '1.4' }],
+      },
+      // Add consistent rich text spacing via Tailwind Typography
+      typography: {
+        DEFAULT: {
+          css: {
+            maxWidth: 'none',
+            p: {
+              marginTop: '0',
+              marginBottom: '1em',
+            },
+            'h1, h2, h3, h4': {
+              marginTop: '1.6em',
+              marginBottom: '0.6em',
+            },
+            h1: { lineHeight: '1.2' },
+            h2: { lineHeight: '1.25' },
+            h3: { lineHeight: '1.3' },
+            ul: {
+              marginTop: '0.75em',
+              marginBottom: '1em',
+              paddingLeft: '1.25em',
+            },
+            ol: {
+              marginTop: '0.75em',
+              marginBottom: '1em',
+              paddingLeft: '1.25em',
+            },
+            li: {
+              marginTop: '0.25em',
+              marginBottom: '0.25em',
+            },
+            blockquote: {
+              marginTop: '1.25em',
+              marginBottom: '1.25em',
+              fontStyle: 'italic',
+            },
+            img: {
+              marginTop: '1.25em',
+              marginBottom: '1.25em',
+            },
+            hr: {
+              marginTop: '2em',
+              marginBottom: '2em',
+            },
+            a: {
+              textDecoration: 'none',
+            },
+          },
+        },
+        lg: {
+          css: {
+            p: { marginBottom: '1.1em' },
+          },
+        },
+      },
+      spacing: {
+        '18': '4.5rem',
+        '88': '22rem',
+        '128': '32rem',
+        'safe-top': 'env(safe-area-inset-top)',
+        'safe-bottom': 'env(safe-area-inset-bottom)',
+        'safe-left': 'env(safe-area-inset-left)',
+        'safe-right': 'env(safe-area-inset-right)',
+      },
+      minHeight: {
+        'screen-safe': 'calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom))',
+      },
+      maxWidth: {
+        'xs': '20rem',
+        'sm': '24rem',
+        'md': '28rem',
+        'lg': '32rem',
+        'xl': '36rem',
+        '2xl': '42rem',
+        '3xl': '48rem',
+        '4xl': '56rem',
+        '5xl': '64rem',
+        '6xl': '72rem',
+        '7xl': '80rem',
+      },
+      animation: {
+        'fade-in': 'fadeIn 0.6s ease-out forwards',
+        'slide-in-left': 'slideInLeft 0.6s ease-out forwards',
+        'slide-in-right': 'slideInRight 0.6s ease-out forwards',
+        'float': 'float 3s ease-in-out infinite',
+        // Enhanced motion tokens
+        'fade-up': 'fadeUp 0.5s cubic-bezier(0.25, 1, 0.5, 1) forwards',
+        'fade-down': 'fadeDown 0.5s cubic-bezier(0.25, 1, 0.5, 1) forwards',
+        'slide-up': 'slideUp 0.4s cubic-bezier(0.25, 1, 0.5, 1) forwards',
+        'slide-down': 'slideDown 0.4s cubic-bezier(0.25, 1, 0.5, 1) forwards',
+        'scale-in': 'scaleIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',
+        'scale-out': 'scaleOut 0.2s ease-in forwards',
+        'shake': 'shake 0.5s ease-in-out',
+        'pulse-glow': 'pulseGlow 2s ease-in-out infinite',
+        'spin-slow': 'spin 3s linear infinite',
+        'bounce-subtle': 'bounceSubtle 0.6s ease-in-out',
+        'shimmer': 'shimmer 2s ease-in-out infinite',
+      },
+      keyframes: {
+        fadeIn: {
+          '0%': { opacity: '0', transform: 'translateY(10px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        slideInLeft: {
+          '0%': { opacity: '0', transform: 'translateX(-20px)' },
+          '100%': { opacity: '1', transform: 'translateX(0)' },
+        },
+        slideInRight: {
+          '0%': { opacity: '0', transform: 'translateX(20px)' },
+          '100%': { opacity: '1', transform: 'translateX(0)' },
+        },
+        float: {
+          '0%, 100%': { transform: 'translateY(0px)' },
+          '50%': { transform: 'translateY(-10px)' },
+        },
+        // Enhanced keyframes
+        fadeUp: {
+          '0%': { opacity: '0', transform: 'translateY(20px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        fadeDown: {
+          '0%': { opacity: '0', transform: 'translateY(-20px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        slideUp: {
+          '0%': { transform: 'translateY(100%)' },
+          '100%': { transform: 'translateY(0)' },
+        },
+        slideDown: {
+          '0%': { transform: 'translateY(-100%)' },
+          '100%': { transform: 'translateY(0)' },
+        },
+        scaleIn: {
+          '0%': { opacity: '0', transform: 'scale(0.8)' },
+          '100%': { opacity: '1', transform: 'scale(1)' },
+        },
+        scaleOut: {
+          '0%': { opacity: '1', transform: 'scale(1)' },
+          '100%': { opacity: '0', transform: 'scale(0.8)' },
+        },
+        shake: {
+          '0%, 100%': { transform: 'translateX(0)' },
+          '10%, 30%, 50%, 70%, 90%': { transform: 'translateX(-2px)' },
+          '20%, 40%, 60%, 80%': { transform: 'translateX(2px)' },
+        },
+        pulseGlow: {
+          '0%, 100%': { 
+            opacity: '0.7',
+            boxShadow: '0 0 5px rgba(58, 129, 52, 0.3)'
+          },
+          '50%': { 
+            opacity: '1',
+            boxShadow: '0 0 20px rgba(58, 129, 52, 0.6)'
+          },
+        },
+        bounceSubtle: {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '25%': { transform: 'translateY(-5px)' },
+          '50%': { transform: 'translateY(0)' },
+          '75%': { transform: 'translateY(-2px)' },
+        },
+        shimmer: {
+          '0%': { transform: 'translateX(-100%)' },
+          '50%': { transform: 'translateX(100%)' },
+          '100%': { transform: 'translateX(100%)' },
+        },
+      },
+      // Duration scale for consistent timing
+      transitionDuration: {
+        '250': '250ms',
+        '350': '350ms', 
+        '400': '400ms',
+        '450': '450ms',
+        '600': '600ms',
+        '800': '800ms',
+        '900': '900ms',
+        '1200': '1200ms',
+      },
+      // Easing scale
+      transitionTimingFunction: {
+        'out-quart': 'cubic-bezier(0.25, 1, 0.5, 1)',
+        'out-expo': 'cubic-bezier(0.16, 1, 0.3, 1)',
+        'out-back': 'cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+        'in-back': 'cubic-bezier(0.68, -0.55, 0.265, 1.55)',
+      },
+    },
+  },
+  plugins: [require('@tailwindcss/typography')],
+};

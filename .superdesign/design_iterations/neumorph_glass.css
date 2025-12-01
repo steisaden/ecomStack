@@ -1,0 +1,167 @@
+:root {
+  --background: #f2e2baff;
+  --foreground: #2d3748;
+  --card: rgba(186, 242, 184, 0.3);
+  --card-foreground: #2d3748;
+  --popover: rgba(255, 255, 255, 0.8);
+  --popover-foreground: #2d3748;
+  --primary: #baf2bbff;
+  --primary-foreground: #ffffff;
+  --secondary: #baf2d8ff;
+  --secondary-foreground: #2d3748;
+  --muted: rgba(186, 215, 242, 0.5);
+  --muted-foreground: #4a5568;
+  --accent: #f2bac9ff;
+  --accent-foreground: #2d3748;
+  --destructive: #e53e3e;
+  --destructive-foreground: #ffffff;
+  --border: rgba(186, 242, 184, 0.3);
+  --input: rgba(255, 255, 255, 0.5);
+  --ring: #baf2bbff;
+  --chart-1: #baf2bbff;
+  --chart-2: #baf2d8ff;
+  --chart-3: #bad7f2ff;
+  --chart-4: #f2bac9ff;
+  --chart-5: #f2e2baff;
+  --sidebar: #ffffff;
+  --sidebar-foreground: #2d3748;
+  --sidebar-primary: #baf2bbff;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #f2e2baff;
+  --sidebar-accent-foreground: #2d3748;
+  --sidebar-border: rgba(186, 242, 184, 0.3);
+  --sidebar-ring: #baf2bbff;
+  --font-sans: 'Inter', sans-serif;
+  --font-serif: 'Inter', serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --radius: 1rem;
+  --shadow-sm: 4px 4px 8px rgba(186, 215, 242, 0.1), -4px -4px 8px rgba(255, 255, 255, 0.5);
+  --shadow-md: 8px 8px 16px rgba(186, 215, 242, 0.1), -8px -8px 16px rgba(255, 255, 255, 0.5);
+  --shadow-lg: 12px 12px 24px rgba(186, 215, 242, 0.1), -12px -12px 24px rgba(255, 255, 255, 0.5);
+  --glass: rgba(255, 255, 255, 0.2);
+  --glass-blur: blur(10px);
+  --spacing: 1rem;
+}
+
+/* Glassmorphism class */
+.glass {
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 8px 32px 0 rgba(186, 215, 242, 0.1);
+}
+
+/* Neumorphism class */
+.neumorph {
+  background: #f2e2baff;
+  box-shadow: 
+    4px 4px 8px rgba(186, 215, 242, 0.1),
+    -4px -4px 8px rgba(255, 255, 255, 0.5);
+  border-radius: 1rem;
+  transition: all 0.3s ease;
+}
+
+.neumorph:hover {
+  box-shadow: 
+    6px 6px 12px rgba(186, 215, 242, 0.15),
+    -6px -6px 12px rgba(255, 255, 255, 0.6);
+}
+
+/* Animation classes */
+.fade-in {
+  animation: fadeIn 0.6s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.slide-up {
+  animation: slideUp 0.8s ease-out;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.pulse {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+/* Micro-interactions */
+.btn-hover {
+  transition: all 0.3s ease;
+  transform: scale(1);
+}
+
+.btn-hover:hover {
+  transform: scale(1.03);
+  box-shadow: 0 8px 16px rgba(186, 242, 184, 0.3);
+}
+
+.btn-press {
+  transition: all 0.1s ease;
+}
+
+.btn-press:active {
+  transform: scale(0.98);
+  box-shadow: inset 2px 2px 4px rgba(186, 215, 242, 0.1),
+              inset -2px -2px 4px rgba(255, 255, 255, 0.5);
+}
+
+.card-hover {
+  transition: all 0.3s ease;
+}
+
+.card-hover:hover {
+  transform: translateY(-5px);
+  box-shadow: 
+    6px 6px 12px rgba(186, 215, 242, 0.15),
+    -6px -6px 12px rgba(255, 255, 255, 0.6);
+}
+
+.input-focus {
+  transition: all 0.3s ease;
+}
+
+.input-focus:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(186, 242, 184, 0.3);
+}
+
+.loader {
+  animation: spin 1.5s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* State transitions */
+.state-change {
+  transition: all 0.5s ease;
+}
+
+.state-change:hover {
+  background-color: rgba(186, 242, 184, 0.1);
+}
+
+/* Floating effect for cards */
+.card-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+  100% { transform: translateY(0px); }
+}

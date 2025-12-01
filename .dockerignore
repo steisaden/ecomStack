@@ -1,0 +1,47 @@
+# Dependencies
+node_modules
+npm-debug.log*
+
+# Next.js build output
+.next/
+out/
+
+# Environment files (will be handled via docker-compose)
+.env*.local
+
+# Testing
+coverage/
+test-results/
+playwright-report/
+
+# Misc
+.DS_Store
+*.tgz
+*.tar.gz
+
+# Debug
+*.log
+
+# Local development
+.vscode/
+.idea/
+
+# Git
+.git/
+.gitignore
+
+# Docker
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# Documentation
+*.md
+docs/
+
+# Backup files
+*.backup
+
+# Build artifacts
+.swc/
+tsconfig.tsbuildinfo
