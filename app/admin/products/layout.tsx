@@ -28,20 +28,6 @@ export default async function AdminProductsLayout({
 
   return (
     <div className="admin-products-layout">
-      {/* Security notice for admin users */}
-      <div className="bg-yellow-50 border-b border-yellow-200 px-4 py-2">
-        <div className="container mx-auto">
-          <div className="flex items-center justify-between text-sm text-yellow-800">
-            <span>⚠️ Admin Area - All actions are logged for security</span>
-            <Link href="/admin">
-              <Button variant="outline" size="sm">
-                Back to Admin Dashboard
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </div>
-      
       <div className="container mx-auto py-6">
         <div className="mb-6">
           <div>

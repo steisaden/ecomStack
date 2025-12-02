@@ -11,6 +11,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
+import { Textarea } from '@/components/ui/textarea';
 import { getYogaServices } from '@/lib/yoga';
 import { YogaService, Availability } from '@/lib/types';
 import { format, addDays } from 'date-fns';
@@ -32,6 +33,8 @@ export function YogaAvailabilityManager({ initialYogaServices }: { initialYogaSe
   const [activeTab, setActiveTab] = useState<string>('single-day');
   const [bulkStartDate, setBulkStartDate] = useState<Date | undefined>(new Date());
   const [bulkEndDate, setBulkEndDate] = useState<Date | undefined>(addDays(new Date(), 7));
+  const [bulkSelectedDates, setBulkSelectedDates] = useState<Date[]>([]);
+  const [bulkExcludedInput, setBulkExcludedInput] = useState<string>('');
   const [isSaving, setIsSaving] = useState(false);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [selectedBulkTimeSlots, setSelectedBulkTimeSlots] = useState<string[]>([]);
@@ -114,51 +117,79 @@ export function YogaAvailabilityManager({ initialYogaServices }: { initialYogaSe
   const updateAvailabilityAction = async (
     timeSlots: string[],
     action: 'add' | 'remove',
-    dateRange?: { from: Date; to: Date }
+    options?: { dateRange?: { from: Date; to: Date }; dates?: Date[] }
   ) => {
     if (selectedServiceIds.length === 0) return;
 
-    const body: {
-      serviceIds: string[];
-      timeSlots: string[];
-      action: 'add' | 'remove';
-      date?: string;
-      dateRange?: { from: string; to: string };
-    } = {
-      serviceIds: selectedServiceIds,
-      timeSlots,
-      action,
-    };
-
-    if (dateRange && dateRange.from && dateRange.to) {
-      body.dateRange = {
-        from: dateRange.from.toISOString(),
-        to: dateRange.to.toISOString(),
-      };
-    } else if (selectedDate) {
-      body.date = selectedDate.toISOString();
-    } else {
-      return;
-    }
-
     setIsSaving(true);
     try {
-      const response = await fetch('/api/yoga-availability', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      });
+      const datesToApply: Date[] = options?.dates && options.dates.length > 0
+        ? options.dates
+        : [];
 
-      const result = await response.json();
-
-      if (result.success) {
-        await loadAvailability();
-        setShowSuccessMessage(true);
-        setTimeout(() => setShowSuccessMessage(false), 3000);
+      // If specific dates were provided, apply one-by-one
+      if (datesToApply.length > 0) {
+        for (const date of datesToApply) {
+          const body = {
+            serviceIds: selectedServiceIds,
+            timeSlots,
+            action,
+            date: date.toISOString(),
+          };
+          // eslint-disable-next-line no-await-in-loop
+          const response = await fetch('/api/yoga-availability', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+          });
+          // eslint-disable-next-line no-await-in-loop
+          const result = await response.json();
+          if (!result.success) {
+            console.error('Failed to update availability for date:', date, result);
+          }
+        }
       } else {
-        console.error('Failed to update availability:', result);
-        alert(`Failed to update availability.`);
+        const body: {
+          serviceIds: string[];
+          timeSlots: string[];
+          action: 'add' | 'remove';
+          date?: string;
+          dateRange?: { from: string; to: string };
+        } = {
+          serviceIds: selectedServiceIds,
+          timeSlots,
+          action,
+        };
+
+        if (options?.dateRange && options.dateRange.from && options.dateRange.to) {
+          body.dateRange = {
+            from: options.dateRange.from.toISOString(),
+            to: options.dateRange.to.toISOString(),
+          };
+        } else if (selectedDate) {
+          body.date = selectedDate.toISOString();
+        } else {
+          return;
+        }
+
+        const response = await fetch('/api/yoga-availability', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+
+        const result = await response.json();
+
+        if (!result.success) {
+          console.error('Failed to update availability:', result);
+          alert(`Failed to update availability.`);
+          return;
+        }
       }
+
+      await loadAvailability();
+      setShowSuccessMessage(true);
+      setTimeout(() => setShowSuccessMessage(false), 3000);
     } catch (error) {
       console.error('Error updating availability:', error);
       alert('Error updating availability. Please try again.');
@@ -204,21 +235,59 @@ export function YogaAvailabilityManager({ initialYogaServices }: { initialYogaSe
   };
 
   const handleBulkUpdate = async () => {
-    if (!bulkStartDate || !bulkEndDate || selectedBulkTimeSlots.length === 0) {
-      alert('Please select a date range and at least one time slot.');
+    const dates = getBulkDates();
+    if (dates.length === 0 || selectedBulkTimeSlots.length === 0) {
+      alert('Please select dates and at least one time slot.');
       return;
     }
     
-    await updateAvailabilityAction(selectedBulkTimeSlots, 'add', { from: bulkStartDate, to: bulkEndDate });
+    await updateAvailabilityAction(selectedBulkTimeSlots, 'add', { dates });
   };
 
   const handleBulkRemove = async () => {
-    if (!bulkStartDate || !bulkEndDate || selectedBulkTimeSlots.length === 0) {
-      alert('Please select a date range and at least one time slot.');
+    const dates = getBulkDates();
+    if (dates.length === 0 || selectedBulkTimeSlots.length === 0) {
+      alert('Please select dates and at least one time slot.');
       return;
     }
     
-    await updateAvailabilityAction(selectedBulkTimeSlots, 'remove', { from: bulkStartDate, to: bulkEndDate });
+    await updateAvailabilityAction(selectedBulkTimeSlots, 'remove', { dates });
+  };
+
+  const getBulkDates = () => {
+    let dates: Date[] = [];
+    if (bulkSelectedDates.length > 0) {
+      dates = bulkSelectedDates;
+    } else if (bulkStartDate && bulkEndDate) {
+      const cursor = new Date(bulkStartDate);
+      const end = new Date(bulkEndDate);
+      while (cursor <= end) {
+        dates.push(new Date(cursor));
+        cursor.setDate(cursor.getDate() + 1);
+      }
+    }
+
+    const excluded = (bulkExcludedInput || '')
+      .split(/[\n,]+/)
+      .map((d) => d.trim())
+      .filter(Boolean)
+      .map((d) => new Date(d));
+
+    if (excluded.length) {
+      const excludedKeys = new Set(excluded.map((d) => format(d, 'yyyy-MM-dd')));
+      dates = dates.filter((d) => !excludedKeys.has(format(d, 'yyyy-MM-dd')));
+    }
+
+    // Deduplicate by date string
+    const seen = new Set<string>();
+    dates = dates.filter((d) => {
+      const key = format(d, 'yyyy-MM-dd');
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+
+    return dates;
   };
 
   const handleServiceTabChange = (value: string) => {
@@ -389,12 +458,37 @@ export function YogaAvailabilityManager({ initialYogaServices }: { initialYogaSe
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="grid md:grid-cols-2 gap-6">
-                <div>
-                  <Label>Date Range</Label>
-                  <div className="flex items-center space-x-2">
-                    <Input type="date" value={bulkStartDate ? format(bulkStartDate, 'yyyy-MM-dd') : ''} onChange={(e) => setBulkStartDate(e.target.value ? new Date(e.target.value) : undefined)} />
-                    <span>to</span>
-                    <Input type="date" value={bulkEndDate ? format(bulkEndDate, 'yyyy-MM-dd') : ''} onChange={(e) => setBulkEndDate(e.target.value ? new Date(e.target.value) : undefined)} />
+                <div className="space-y-2">
+                  <Label>Select Specific Dates (optional)</Label>
+                  <Calendar
+                    mode="multiple"
+                    selected={bulkSelectedDates}
+                    onSelect={(dates) => setBulkSelectedDates(dates || [])}
+                    className="rounded-md border"
+                  />
+                  <p className="text-xs text-text-muted">
+                    Pick multiple dates here, or use the date range to apply continuously.
+                  </p>
+                </div>
+                <div className="space-y-3">
+                  <div>
+                    <Label>Date Range (optional)</Label>
+                    <div className="flex items-center space-x-2">
+                      <Input type="date" value={bulkStartDate ? format(bulkStartDate, 'yyyy-MM-dd') : ''} onChange={(e) => setBulkStartDate(e.target.value ? new Date(e.target.value) : undefined)} />
+                      <span>to</span>
+                      <Input type="date" value={bulkEndDate ? format(bulkEndDate, 'yyyy-MM-dd') : ''} onChange={(e) => setBulkEndDate(e.target.value ? new Date(e.target.value) : undefined)} />
+                    </div>
+                    <p className="text-xs text-text-muted mt-1">If specific dates are selected, the range will be ignored.</p>
+                  </div>
+                  <div>
+                    <Label>Exclude Dates (optional)</Label>
+                    <Textarea
+                      placeholder="2025-02-10, 2025-02-12 or one per line"
+                      value={bulkExcludedInput}
+                      onChange={(e) => setBulkExcludedInput(e.target.value)}
+                      className="min-h-[90px]"
+                    />
+                    <p className="text-xs text-text-muted mt-1">Excluded dates are removed from the selection.</p>
                   </div>
                 </div>
               </div>

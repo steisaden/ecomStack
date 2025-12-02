@@ -187,18 +187,7 @@ export default function ContentfulProducts() {
 
   return (
     <Card className="h-full flex flex-col">
-      <CardHeader>
-        <div className="flex justify-between items-center">
-          <div>
-            <CardTitle>Product Management</CardTitle>
-            <CardDescription>Search, filter, and manage your Contentful products.</CardDescription>
-          </div>
-          <Link href="/admin/products/create">
-            <Button>Create Product</Button>
-          </Link>
-        </div>
-      </CardHeader>
-      <CardContent className="flex-grow flex flex-col gap-6">
+      <CardContent className="flex-grow flex flex-col gap-6 pt-6">
         <div className="flex flex-col md:flex-row gap-4">
           <Input
             type="text"
@@ -276,9 +265,9 @@ export default function ContentfulProducts() {
                     </div>
                     <p className="text-lg font-semibold mb-2">${product.price?.toFixed(2)}</p>
                   </CardContent>
-                  <CardFooter className="flex justify-between items-center">
-                    <div className="flex space-x-2">
-                      <Button asChild size="sm" variant="outline" className="border-blue-500 text-blue-500 hover:bg-blue-50 hover:text-blue-600">
+                  <CardFooter className="flex flex-col gap-2 p-4">
+                    <div className="flex gap-1.5 w-full">
+                      <Button asChild size="sm" variant="outline" className="flex-1 border-blue-500 text-blue-500 hover:bg-blue-50 hover:text-blue-600 text-xs px-2">
                         <Link href={`/admin/products/edit/${product.slug}`}>
                           {"Edit"}
                         </Link>
@@ -286,7 +275,7 @@ export default function ContentfulProducts() {
                       <Button 
                         size="sm" 
                         variant="outline" 
-                        className="border-orange-500 text-orange-500 hover:bg-orange-50 hover:text-orange-600"
+                        className="flex-1 border-orange-500 text-orange-500 hover:bg-orange-50 hover:text-orange-600 text-xs px-2"
                         onClick={() => {
                           setProductToArchive(product);
                           setArchiveDialogOpen(true);
@@ -296,7 +285,8 @@ export default function ContentfulProducts() {
                       </Button>
                       <Button 
                         size="sm" 
-                        variant="destructive" 
+                        variant="destructive"
+                        className="flex-1 text-xs px-2"
                         onClick={() => {
                           setProductToDelete(product);
                           setDeleteDialogOpen(true);

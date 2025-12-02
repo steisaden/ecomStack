@@ -26,16 +26,6 @@ export default async function AdminLayout({
 
   return (
     <div className="admin-layout">
-      {/* Security notice for admin users */}
-      <div className="bg-yellow-50 border-b border-yellow-200 px-4 py-2">
-        <div className="container mx-auto">
-          <div className="flex items-center justify-between text-sm text-yellow-800">
-            <span>⚠️ Admin Area - All actions are logged for security</span>
-            <span>Auto-logout on inactivity</span>
-          </div>
-        </div>
-      </div>
-      
       {children}
     </div>
   );

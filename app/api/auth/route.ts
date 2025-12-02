@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { getAuthState, updateAuthState, resetAuthState, incrementFailedAttempts, blockAuth } from '@/lib/auth-state';
+import { verifyAdminCredentials } from '@/lib/admin-user-store';
 
 // Force dynamic rendering for authentication API
 export const dynamic = 'force-dynamic';
@@ -48,37 +48,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check credentials against environment variables
-    const adminUsername = process.env.ADMIN_USERNAME;
-    const adminPasswordHash = process.env.ADMIN_PASSWORD_HASH;
-
-    console.log('Environment check:', {
-      hasAdminUsername: !!adminUsername,
-      hasAdminPasswordHash: !!adminPasswordHash,
-      adminUsername: adminUsername || 'NOT SET',
-      passwordHashLength: adminPasswordHash ? adminPasswordHash.length : 0
-    });
-
-    if (!adminUsername || !adminPasswordHash) {
-      console.error('Admin credentials not configured in environment variables');
-      console.error('ADMIN_USERNAME:', adminUsername || 'NOT SET');
-      console.error('ADMIN_PASSWORD_HASH:', adminPasswordHash ? 'SET' : 'NOT SET');
-      return NextResponse.json(
-        { success: false, error: 'Server configuration error' },
-        { status: 500 }
-      );
-    }
-
-    // Verify username
-    if (username !== adminUsername) {
-      console.warn(`Failed login attempt with username: ${username}`);
+    const verification = await verifyAdminCredentials(username, password);
+    if (!verification.valid) {
+      console.warn(`Failed login attempt for user: ${username} via ${verification.source}`);
       
-      // Increment failed attempts
       incrementFailedAttempts();
-      const authState = getAuthState();
+      const currentAuthState = getAuthState();
       
-      // Check if we should block
-      if (authState.failedAttempts >= MAX_FAILED_ATTEMPTS) {
+      if (currentAuthState.failedAttempts >= MAX_FAILED_ATTEMPTS) {
         blockAuth(BLOCK_DURATION);
         
         return NextResponse.json(
@@ -92,75 +69,10 @@ export async function POST(request: NextRequest) {
         );
       }
       
+      const status = verification.error === 'Admin credentials are not configured' ? 500 : 401;
       return NextResponse.json(
-        { success: false, error: 'Invalid credentials' },
-        { status: 401 }
-      );
-    }
-
-    // Verify password with timeout to prevent hanging
-    let passwordMatch = false;
-    try {
-      const comparePromise = bcrypt.compare(password, adminPasswordHash);
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Password verification timeout')), 10000)
-      );
-      
-      passwordMatch = await Promise.race([comparePromise, timeoutPromise]) as boolean;
-    } catch (error) {
-      console.error('Password verification error:', error);
-      console.warn(`Failed login attempt for user: ${username} - verification error`);
-      
-      // Increment failed attempts
-      incrementFailedAttempts();
-      const authState = getAuthState();
-      
-      // Check if we should block
-      if (authState.failedAttempts >= MAX_FAILED_ATTEMPTS) {
-        blockAuth(BLOCK_DURATION);
-        const authState = getAuthState();
-        return NextResponse.json(
-          { 
-            success: false, 
-            message: 'Too many failed attempts. Account temporarily blocked.',
-            retryAfter: BLOCK_DURATION,
-            blocked: true
-          },
-          { status: 429 }
-        );
-      }
-      
-      return NextResponse.json(
-        { success: false, error: 'Authentication failed' },
-        { status: 401 }
-      );
-    }
-    
-    if (!passwordMatch) {
-      console.warn(`Failed login attempt for user: ${username} - password mismatch`);
-      
-      // Increment failed attempts
-      incrementFailedAttempts();
-      const authState = getAuthState();
-      
-      // Check if we should block
-      if (authState.failedAttempts >= MAX_FAILED_ATTEMPTS) {
-        blockAuth(BLOCK_DURATION);
-        
-        return NextResponse.json(
-          { 
-            success: false, 
-            message: 'Too many failed attempts. Account temporarily blocked.',
-            retryAfter: BLOCK_DURATION,
-            blocked: true
-          },
-          { status: 429 }
-        );
-      }
-      
-      return NextResponse.json(
-        { success: false, error: 'Invalid credentials' },
-        { status: 401 }
+        { success: false, error: verification.error || 'Invalid credentials' },
+        { status }
       );
     }
     
@@ -177,10 +89,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const authenticatedUsername = verification.user?.username || username.trim();
     const token = jwt.sign(
       { 
-        userId: 'admin-user', // Required field for TokenPayload interface
-        username: adminUsername,
+        userId: `admin-${authenticatedUsername}`,
+        username: authenticatedUsername,
         role: 'admin',
         iat: Math.floor(Date.now() / 1000)
       },
@@ -196,7 +109,7 @@ export async function POST(request: NextRequest) {
     const response = NextResponse.json({
       success: true,
       user: {
-        username: adminUsername,
+        username: authenticatedUsername,
         role: 'admin'
       }
     });

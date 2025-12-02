@@ -16,7 +16,13 @@ const RATE_LIMIT_CONFIG = {
 const PROTECTED_ROUTES = ['/admin'];
 
 // Auth routes that need rate limiting
-const AUTH_ROUTES = ['/api/auth', '/login'];
+const AUTH_ROUTES = [
+  '/api/auth',
+  '/api/auth/forgot-password',
+  '/api/auth/reset-password',
+  '/api/admin-users/setup',
+  '/login',
+];
 
 /**
  * Rate limiting middleware to prevent brute force attacks

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getProducts, getBlogPosts } from '@/lib/contentful'
 import Stripe from 'stripe'
+import { unstable_cache } from 'next/cache'
 
 // Force dynamic rendering for API route
 export const dynamic = 'force-dynamic';
@@ -9,6 +10,16 @@ export const dynamic = 'force-dynamic';
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2023-10-16',
 })
+
+// Cache Stripe charges for 5 minutes to avoid repeated heavy calls
+const getCachedCharges = unstable_cache(
+  async () => {
+    const charges = await stripe.charges.list({ limit: 1000 }); // Increased limit to get more data
+    return charges.data || [];
+  },
+  ['stripe-charges'],
+  { revalidate: 300 }
+);
 
 // Helper function to format dates as month-year string
 const formatDate = (date: Date): string => {
@@ -126,15 +137,15 @@ export async function GET(request: NextRequest) {
       blogPostsByCategory: [] // Calculate from blogPosts
     }
     
-    // ✅ GET Stripe data
-    const charges = await stripe.charges.list({ limit: 1000 }) // Increased limit to get more data
+    // ✅ GET Stripe data (cached)
+    const charges = await getCachedCharges()
     
     // Calculate revenue for current month and year
     const now = new Date();
     const currentMonth = now.getMonth();
     const currentYear = now.getFullYear();
     
-    const revenueThisMonth = charges.data
+    const revenueThisMonth = charges
       .filter(charge => {
         const chargeDate = new Date(charge.created * 1000);
         return charge.status === 'succeeded' && 
@@ -143,7 +154,7 @@ export async function GET(request: NextRequest) {
       })
       .reduce((sum, charge) => sum + charge.amount, 0) / 100;
       
-    const revenueThisYear = charges.data
+    const revenueThisYear = charges
       .filter(charge => {
         const chargeDate = new Date(charge.created * 1000);
         return charge.status === 'succeeded' && 
@@ -152,14 +163,14 @@ export async function GET(request: NextRequest) {
       .reduce((sum, charge) => sum + charge.amount, 0) / 100;
     
     // Group charges by month for the last 12 months
-    const monthlyRevenue = groupChargesByMonth(charges.data);
+    const monthlyRevenue = groupChargesByMonth(charges);
     
     // Group charges by week for the last 12 weeks
-    const weeklyRevenue = groupChargesByWeek(charges.data);
+    const weeklyRevenue = groupChargesByWeek(charges);
     
     // Calculate payment methods breakdown
     const paymentMethodMap = new Map<string, { count: number; totalAmount: number }>();
-    charges.data.forEach(charge => {
+    charges.forEach(charge => {
       const method = charge.payment_method_details?.type || 'other';
       if (!paymentMethodMap.has(method)) {
         paymentMethodMap.set(method, { count: 0, totalAmount: 0 });
@@ -178,17 +189,17 @@ export async function GET(request: NextRequest) {
       .sort((a, b) => b.totalAmount - a.totalAmount);
     
     const salesMetrics = {
-      totalRevenue: charges.data.reduce((sum, charge) => sum + charge.amount, 0) / 100,
-      totalOrders: charges.data.length,
-      averageOrderValue: charges.data.length > 0 ? 
-        (charges.data.reduce((sum, charge) => sum + charge.amount, 0) / 100) / charges.data.length : 0,
-      successfulPayments: charges.data.filter(c => c.status === 'succeeded').length,
-      failedPayments: charges.data.filter(c => c.status === 'failed').length,
-      pendingPayments: charges.data.filter(c => c.status === 'pending').length,
+      totalRevenue: charges.reduce((sum, charge) => sum + charge.amount, 0) / 100,
+      totalOrders: charges.length,
+      averageOrderValue: charges.length > 0 ? 
+        (charges.reduce((sum, charge) => sum + charge.amount, 0) / 100) / charges.length : 0,
+      successfulPayments: charges.filter(c => c.status === 'succeeded').length,
+      failedPayments: charges.filter(c => c.status === 'failed').length,
+      pendingPayments: charges.filter(c => c.status === 'pending').length,
       revenueThisMonth,
       revenueThisYear,
       topPaymentMethods,
-      recentOrders: charges.data.slice(0, 10).map(charge => ({
+      recentOrders: charges.slice(0, 10).map(charge => ({
         id: charge.id,
         amount: charge.amount / 100,
         currency: charge.currency,

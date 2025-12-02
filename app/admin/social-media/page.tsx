@@ -43,12 +43,17 @@ const PLATFORMS = [
 ]
 
 export default function SocialMediaSettingsPage() {
+  const [hydrated, setHydrated] = useState(false)
   const [settings, setSettings] = useState<SocialMediaSettings>({})
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [user, setUser] = useState<any>(null)
   const router = useRouter()
+
+  useEffect(() => {
+    setHydrated(true)
+  }, [])
 
   useEffect(() => {
     // Client-side authentication check
@@ -79,6 +84,10 @@ export default function SocialMediaSettingsPage() {
 
     checkAuth()
   }, [router])
+
+  if (!hydrated) {
+    return null
+  }
 
   const fetchSettings = async () => {
     try {

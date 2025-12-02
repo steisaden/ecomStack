@@ -1,6 +1,7 @@
 import * as bcrypt from 'bcryptjs';
 import * as jwt from 'jsonwebtoken';
 import { cookies } from 'next/headers';
+import { verifyAdminCredentials } from './admin-user-store';
 
 // Types for authentication
 export interface LoginCredentials {
@@ -165,47 +166,27 @@ export class AuthenticationService {
         };
       }
 
-      // For now, we'll use environment variables for admin credentials
-      // In a real application, this would query a database
-      const adminUsername = process.env.ADMIN_USERNAME;
-      const adminPasswordHash = process.env.ADMIN_PASSWORD_HASH;
+      const verification = await verifyAdminCredentials(username, password);
 
-      if (!adminUsername || !adminPasswordHash) {
-        console.error('Admin credentials not configured in environment variables');
+      if (!verification.valid) {
         return {
           success: false,
-          error: 'Authentication service not properly configured',
-        };
-      }
-
-      // Check username
-      if (username !== adminUsername) {
-        return {
-          success: false,
-          error: 'Invalid credentials',
-        };
-      }
-
-      // Verify password against hash
-      const isPasswordValid = await this.verifyPassword(password, adminPasswordHash);
-      if (!isPasswordValid) {
-        return {
-          success: false,
-          error: 'Invalid credentials',
+          error: verification.error || 'Invalid credentials',
         };
       }
 
       // Generate tokens
-      const userId = 'admin-user'; // In a real app, this would be from the database
+      const resolvedUsername = verification.user?.username || username;
+      const userId = `admin-${resolvedUsername}`;
       const tokenPayload: Omit<TokenPayload, 'iat' | 'exp'> = {
         userId,
-        username,
+        username: resolvedUsername,
         role: 'admin',
       };
 
       const refreshTokenPayload: Omit<RefreshTokenPayload, 'iat' | 'exp'> = {
         userId,
-        username,
+        username: resolvedUsername,
         tokenVersion: 1, // In a real app, this would be stored in the database
       };
 

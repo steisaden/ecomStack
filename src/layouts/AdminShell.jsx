@@ -1,122 +1,135 @@
-import React from 'react';
-import {
-  ShieldCheck,
-  Bell,
-  CheckCircle2,
-  Circle,
-  ArrowUpRight,
-} from 'lucide-react';
+'use client';
 
-const defaultNav = [
-  { label: 'Overview', href: '/admin/dashboard' },
-  { label: 'Products', href: '/admin/products' },
-  { label: 'AI System Rules', href: '/admin/ai-rules' },
-  { label: 'Content', href: '/admin/content' },
-  { label: 'Settings', href: '/admin/settings' },
-];
+// src/layouts/AdminShell.jsx
+import { useState } from "react";
+import { Menu, X } from "lucide-react";
+import LogoutButton from "@/components/LogoutButton";
 
-const defaultNotices = [
-  { label: 'Session monitored', status: 'active' },
-  { label: 'Backups synced', status: 'idle' },
-  { label: '2FA enforced', status: 'active' },
-];
-
-const statusDot = (status) => {
-  if (status === 'active') {
-    return <CheckCircle2 className="h-4 w-4 text-primary" />;
-  }
-  return <Circle className="h-4 w-4 text-text-subtle" />;
-};
-
-export default function AdminShell({
+export function AdminShell({
   title,
   description,
-  actions,
   children,
-  navItems = defaultNav,
-  notices = defaultNotices,
+  backHref = "/admin",
+  showBack = true,
+  userName = "admin",
 }) {
-  return (
-    <div className="min-h-screen bg-surface text-text-muted">
-      <div className="border-b border-border-muted bg-accent-soft/80 backdrop-blur-sm">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 text-sm">
-          <div className="flex items-center gap-2 font-medium text-text-strong">
-            <ShieldCheck className="h-4 w-4 text-primary" />
-            <span>Admin area — actions are audited</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="hidden rounded-full bg-card px-3 py-1 text-xs font-medium text-text-muted shadow-card sm:flex">
-              SOC2 controls aligned
-            </div>
-            <div className="flex h-8 w-8 items-center justify-center rounded-full border border-border-muted bg-card shadow-soft">
-              <Bell className="h-4 w-4 text-text-subtle" />
-            </div>
-          </div>
-        </div>
-      </div>
+  const [isNavOpen, setIsNavOpen] = useState(false);
+  const navItems = [
+    { label: "Dashboard", href: "/admin" },
+    { label: "Products", href: "/admin/products" },
+    { label: "Blog Posts", href: "/admin/blog-posts" },
+    { label: "Affiliate Products", href: "/admin/affiliate-products" },
+    { label: "Bulk Scrape", href: "/admin/affiliate-products/bulk-scrape" },
+    { label: "AI Rules", href: "/admin/ai-rules" },
+    { label: "Yoga Services", href: "/admin/yoga-services" },
+    { label: "Availability", href: "/admin/yoga-availability" },
+    { label: "Social Media", href: "/admin/social-media" },
+    { label: "About Page", href: "/admin/about-page" },
+    { label: "Validation", href: "/admin/validation" },
+    { label: "Settings", href: "/admin/reset-auth" },
+  ];
 
-      <div className="mx-auto grid min-h-[calc(100vh-56px)] max-w-7xl grid-cols-1 md:grid-cols-[250px_1fr]">
-        <aside className="hidden border-r border-border-muted bg-card shadow-soft md:block">
-          <div className="flex items-center justify-between px-5 pb-4 pt-5">
-            <div>
-              <p className="text-[11px] uppercase tracking-[0.12em] text-text-subtle">
-                Navigation
-              </p>
-              <p className="text-sm font-medium text-text-strong">Control Center</p>
-            </div>
-            <ArrowUpRight className="h-4 w-4 text-text-subtle" />
-          </div>
-          <nav className="space-y-1 px-3">
-            {navItems.map((item) => (
-              <a
-                key={item.href}
-                href={item.href}
-                className="group flex items-center justify-between rounded-lg px-3 py-2 text-sm font-medium text-text-muted hover:bg-accent-soft hover:text-text-strong"
-              >
-                <span>{item.label}</span>
-                <ArrowUpRight className="h-4 w-4 text-text-subtle opacity-0 transition-opacity group-hover:opacity-100" />
-              </a>
-            ))}
-          </nav>
-          <div className="mt-6 border-t border-border-muted px-5 pt-4">
-            <p className="text-[11px] uppercase tracking-[0.12em] text-text-subtle">
-              Security
+  return (
+    <div className="min-h-screen bg-surface text-slate-900">
+      <div className="flex">
+        {/* Sidebar (hook up your actual sidebar component here) */}
+        <aside className="hidden md:block w-64 border-r border-border-muted bg-panel">
+          <div className="p-4">
+            <p className="text-[11px] uppercase tracking-[0.14em] text-text-muted mb-3">
+              Admin
             </p>
-            <div className="mt-3 space-y-2">
-              {notices.map((notice) => (
-                <div
-                  key={notice.label}
-                  className="flex items-center justify-between rounded-lg border border-border-muted bg-accent-soft px-3 py-2 text-xs font-medium text-text-muted"
+            <nav className="space-y-1">
+              {navItems.map((item) => (
+                <a
+                  key={item.href}
+                  href={item.href}
+                  className="block rounded-md px-3 py-2 text-sm font-medium text-text-muted hover:bg-surface-alt hover:text-text-strong"
                 >
-                  <span>{notice.label}</span>
-                  {statusDot(notice.status)}
-                </div>
+                  {item.label}
+                </a>
               ))}
-            </div>
+            </nav>
           </div>
         </aside>
 
-        <div className="flex flex-col">
-          <header className="border-b border-border-muted bg-card px-5 py-6 shadow-card">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-              <div className="space-y-2">
-                <p className="text-[11px] uppercase tracking-[0.14em] text-text-subtle">
-                  Admin workspace
-                </p>
-                <h1 className="text-2xl font-semibold text-text-strong">{title}</h1>
+        {/* Main content */}
+        <main className="flex-1 min-h-[calc(100vh-40px)] flex flex-col">
+          {/* Page header */}
+          <header className="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-border-muted bg-surface">
+            <div className="flex items-center gap-3">
+              <button
+                className="md:hidden inline-flex items-center justify-center rounded-md border border-border-muted bg-surface px-2.5 py-2 text-text-strong hover:bg-surface-alt"
+                onClick={() => setIsNavOpen(true)}
+                aria-label="Open admin navigation"
+              >
+                <Menu className="h-5 w-5" />
+              </button>
+              <div>
+                <h1 className="text-xl md:text-2xl font-semibold text-text-strong">
+                  {title}
+                </h1>
                 {description && (
-                  <p className="max-w-3xl text-sm text-text-muted">{description}</p>
+                  <p className="text-sm text-text-muted mt-1">{description}</p>
                 )}
               </div>
-              {actions && <div className="flex items-center gap-3">{actions}</div>}
+            </div>
+            <div className="flex items-center gap-2 sm:gap-3">
+              {showBack && (
+                <a
+                  href={backHref}
+                  className="inline-flex items-center gap-2 rounded-md border border-border-muted bg-surface px-3 py-1.5 text-xs font-medium text-text-strong hover:bg-surface-alt"
+                >
+                  ← Back to Admin Dashboard
+                </a>
+              )}
+              <span className="hidden sm:inline text-xs text-text-muted">
+                Welcome, {userName}
+              </span>
+              <LogoutButton />
             </div>
           </header>
 
-          <main className="flex-1 bg-surface px-4 py-6 sm:px-6 lg:px-8">
-            <div className="mx-auto max-w-6xl space-y-6">{children}</div>
-          </main>
-        </div>
+          {/* Page body */}
+          <section className="flex-1 px-4 sm:px-6 py-6 bg-surface-alt">
+            {children}
+          </section>
+        </main>
       </div>
+
+      {/* Mobile nav drawer */}
+      {isNavOpen && (
+        <div className="fixed inset-0 z-40 flex">
+          <div
+            className="flex-1 bg-black/30"
+            onClick={() => setIsNavOpen(false)}
+            aria-label="Close navigation"
+          />
+          <div className="w-72 max-w-[80vw] bg-panel border-l border-border-muted shadow-card">
+            <div className="flex items-center justify-between px-4 py-4 border-b border-border-muted">
+              <p className="text-sm font-semibold text-text-strong">Admin</p>
+              <button
+                className="rounded-md border border-border-muted bg-surface px-2 py-1 text-text-strong hover:bg-surface-alt"
+                onClick={() => setIsNavOpen(false)}
+                aria-label="Close navigation"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            <nav className="p-4 space-y-1">
+              {navItems.map((item) => (
+                <a
+                  key={item.href}
+                  href={item.href}
+                  className="block rounded-md px-3 py-2 text-sm font-medium text-text-muted hover:bg-surface-alt hover:text-text-strong"
+                  onClick={() => setIsNavOpen(false)}
+                >
+                  {item.label}
+                </a>
+              ))}
+            </nav>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

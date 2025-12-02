@@ -5,6 +5,7 @@ module.exports = {
     "./app/**/*.{js,ts,jsx,tsx}",
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
+  safelist: ["bg-primary-light", "hover:bg-primary-light"],
   theme: {
     screens: {
       'xs': '475px',
@@ -182,17 +183,19 @@ module.exports = {
         },
 
         // Neutral admin theme tokens
-        surface: {
-          DEFAULT: "#f7f7fb",
-          muted: "#eef1f6",
-          subtle: "#e7ebf3",
-        },
-        'surface-strong': "#dfe4ec",
+        // Neutral admin tokens
+        surface: "#f7f7fb",
+        'surface-alt': "#f1f3f8",
+        panel: "#eef1f6",
         'border-muted': "#e4e7ee",
-        'border-strong': "#cfd6e0",
-        'text-strong': "#111827",
+        'border-subtle': "#eef1f6",
+        'text-strong': "#0f172a",
+        'text-body': "#1f2937",
         'text-muted': "#5f6b76",
-        'text-subtle': "#8a94a3",
+        'primary-strong': "#326e2c",
+        'primary-soft': "#e8f3e6",
+        'primary-muted': "#b6c8ff",
+        'primary-light': "#57B450",
         'accent-soft': "#f3f5f9",
         'accent-strong': "#dbe2ed",
       },
