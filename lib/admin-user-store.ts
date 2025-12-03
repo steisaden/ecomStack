@@ -94,7 +94,7 @@ export async function createAdminUser(username: string, password: string) {
 export async function verifyAdminCredentials(username: string, password: string) {
   const stored = await readAdminUser();
 
-  // Prefer file-based credentials when present so the customer can manage them.
+  // File-based credentials: owner must set them via admin setup.
   if (stored) {
     if (stored.username !== username.trim()) {
       return { valid: false, source: 'file' as const, error: 'Invalid credentials' };
@@ -104,25 +104,8 @@ export async function verifyAdminCredentials(username: string, password: string)
     return { valid: match, source: 'file' as const, user: match ? stored : undefined, error: match ? undefined : 'Invalid credentials' };
   }
 
-  // Fallback to environment variables when no file-based user exists yet
-  const adminUsername = process.env.ADMIN_USERNAME;
-  const adminPasswordHash = process.env.ADMIN_PASSWORD_HASH;
-
-  if (!adminUsername || !adminPasswordHash) {
-    return { valid: false, source: 'env' as const, error: 'Admin credentials are not configured' };
-  }
-
-  if (username !== adminUsername) {
-    return { valid: false, source: 'env' as const, error: 'Invalid credentials' };
-  }
-
-  try {
-    const passwordMatch = await bcrypt.compare(password, adminPasswordHash);
-    return { valid: passwordMatch, source: 'env' as const, user: passwordMatch ? { username: adminUsername, passwordHash: adminPasswordHash, recoveryCodeHash: '', createdAt: '', updatedAt: '' } : undefined, error: passwordMatch ? undefined : 'Invalid credentials' };
-  } catch (error) {
-    console.error('Error verifying env-based admin credentials:', error);
-    return { valid: false, source: 'env' as const, error: 'Authentication failed' };
-  }
+  // No file-based admin set up yet
+  return { valid: false, source: 'file' as const, error: 'Admin credentials are not configured' };
 }
 
 export async function requestPasswordReset(username: string) {
@@ -209,7 +192,7 @@ export async function getAdminUsername() {
   if (stored) {
     return stored.username;
   }
-  return process.env.ADMIN_USERNAME || null;
+  return null;
 }
 
 export function hashString(value: string) {

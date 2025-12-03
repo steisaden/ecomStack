@@ -70,7 +70,7 @@ class EmailService {
         }
       }
 
-      this.transporter = nodemailer.createTransporter(config)
+      this.transporter = nodemailer.createTransport(config)
     } catch (error) {
       console.error('Failed to initialize email transporter:', error)
     }

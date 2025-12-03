@@ -19,9 +19,14 @@ async function sendOrderConfirmationEmail(session: Stripe.Checkout.Session) {
   const customer = session.customer as Stripe.Customer;
   const lineItems = await stripe.checkout.sessions.listLineItems(session.id);
 
+  const businessEmail =
+    process.env.BUSINESS_EMAIL ||
+    process.env.EMAIL_SERVER_USER ||
+    'goddesshairandbodycare@gmail.com';
+
   const mailOptions = {
     from: process.env.EMAIL_SERVER_USER,
-    to: 'goddesshairandbodycare@gmail.com',
+    to: businessEmail,
     subject: `New Order Confirmation: ${session.id}`,
     html: `
       <h1>New Order</h1>
