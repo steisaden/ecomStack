@@ -31,7 +31,7 @@ export async function PUT(
     );
 
     // Get the entry
-    const entry = await environment.getEntry(params.id);
+    const entry = await environment.getEntry(id);
 
     // Update fields
     entry.fields.title = { 'en-US': title };
@@ -92,7 +92,7 @@ export async function PATCH(
     );
 
     // Get the entry
-    const entry = await environment.getEntry(params.id);
+    const entry = await environment.getEntry(id);
 
     // Update status
     entry.fields.status = { 'en-US': status };
@@ -145,7 +145,7 @@ export async function DELETE(
     );
 
     // Get the entry
-    const entry = await environment.getEntry(params.id);
+    const entry = await environment.getEntry(id);
 
     // Unpublish first
     if (entry.isPublished()) {

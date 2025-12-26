@@ -9,10 +9,10 @@ const managementClient = createClient({
 // DELETE - Delete a blog post
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     const space = await managementClient.getSpace(process.env.CONTENTFUL_SPACE_ID!);
     const environment = await space.getEnvironment(process.env.CONTENTFUL_ENVIRONMENT || 'master');
@@ -31,7 +31,7 @@ export async function DELETE(
     // Revalidate cache
     await revalidateTag('blog-posts');
     await revalidateTag('contentful');
-    
+
     const { revalidatePath } = await import('next/cache');
     await revalidatePath('/blog');
 
