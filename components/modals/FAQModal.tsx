@@ -85,13 +85,13 @@ export function FAQModal({ open, onOpenChange }: FAQModalProps) {
   const [selectedCategory, setSelectedCategory] = useState("All")
   const [expandedItems, setExpandedItems] = useState<string[]>([])
 
-  const filteredFAQs = selectedCategory === "All" 
-    ? faqData 
+  const filteredFAQs = selectedCategory === "All"
+    ? faqData
     : faqData.filter(faq => faq.category === selectedCategory)
 
   const toggleExpanded = (id: string) => {
-    setExpandedItems(prev => 
-      prev.includes(id) 
+    setExpandedItems(prev =>
+      prev.includes(id)
         ? prev.filter(item => item !== id)
         : [...prev, id]
     )
@@ -109,7 +109,7 @@ export function FAQModal({ open, onOpenChange }: FAQModalProps) {
             Find answers to common questions about our products, shipping, and policies.
           </ModalDescription>
         </ModalHeader>
-        
+
         <div className="space-y-6 mt-4">
           {/* Category Filter */}
           <div>
@@ -119,11 +119,10 @@ export function FAQModal({ open, onOpenChange }: FAQModalProps) {
                 <button
                   key={category}
                   onClick={() => setSelectedCategory(category)}
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                    selectedCategory === category
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${selectedCategory === category
                       ? "bg-beauty-primary text-white"
                       : "bg-beauty-light text-beauty-dark hover:bg-beauty-primary/10"
-                  }`}
+                    }`}
                 >
                   {category}
                 </button>
@@ -153,7 +152,7 @@ export function FAQModal({ open, onOpenChange }: FAQModalProps) {
                     <ChevronRight className="w-5 h-5 text-beauty-muted flex-shrink-0" />
                   )}
                 </button>
-                
+
                 {expandedItems.includes(faq.id) && (
                   <div className="px-4 pb-4">
                     <div className="pt-2 border-t border-beauty-light/50">
@@ -171,7 +170,7 @@ export function FAQModal({ open, onOpenChange }: FAQModalProps) {
           <div className="bg-beauty-light/20 rounded-lg p-4 mt-6">
             <h4 className="font-medium text-beauty-dark mb-2">Still have questions?</h4>
             <p className="text-beauty-muted text-sm mb-3">
-              Can't find what you're looking for? Our customer service team is here to help!
+              Can&apos;t find what you&apos;re looking for? Our customer service team is here to help!
             </p>
             <div className="space-y-1 text-sm">
               <p><strong>Email:</strong> support@goddesscare.com</p>

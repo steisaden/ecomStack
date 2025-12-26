@@ -50,14 +50,14 @@ export function SimplifiedAmazonAdder() {
     setLoading(true)
     setError(null)
 
+    const sanitizedAsin = asin.trim().toUpperCase()
+
     try {
       // First validate the ASIN format
       const asinRegex = /^[A-Z0-9]{10}$/
-      if (!asinRegex.test(asin.trim().toUpperCase())) {
+      if (!asinRegex.test(sanitizedAsin)) {
         throw new Error('Invalid ASIN format. ASINs are 10-character identifiers.')
       }
-
-      const sanitizedAsin = asin.trim().toUpperCase()
 
       // Use our proper Amazon PA-API integration
       const response = await fetch(`/api/amazon/product/${sanitizedAsin}`, {
@@ -98,11 +98,11 @@ export function SimplifiedAmazonAdder() {
       toast.success('Product details fetched successfully!')
     } catch (error: any) {
       console.error('Error fetching product details from API:', error);
-      
+
       // If the main API fails, try to extract image information directly from Amazon page
       try {
         toast.info('API failed, trying to fetch image directly from Amazon...');
-        
+
         // Try to extract image via our server-side scraping API
         const scrapeResponse = await fetch(`/api/amazon/scrape-image?asin=${sanitizedAsin}`, {
           method: 'GET',
@@ -111,9 +111,9 @@ export function SimplifiedAmazonAdder() {
             'Content-Type': 'application/json',
           }
         });
-        
+
         const scrapeResult = await scrapeResponse.json();
-        
+
         if (scrapeResponse.ok && scrapeResult.success && scrapeResult.imageUrl) {
           // Use the scraped data to create a fallback product
           const fallbackProduct: AmazonProduct = {
@@ -135,7 +135,7 @@ export function SimplifiedAmazonAdder() {
         } else {
           // If scraping also failed, fall back to a generated URL
           const fallbackImageUrl = `https://m.media-amazon.com/images/P/${asin}.01._SY400_QL70_.jpg`;
-          
+
           const fallbackProduct: AmazonProduct = {
             asin: asin,
             title: `Product ${asin}`,
@@ -230,7 +230,7 @@ export function SimplifiedAmazonAdder() {
           <div>
             <h3 className="font-semibold text-beauty-dark mb-1">Add Amazon Affiliate Product</h3>
             <p className="text-sm text-beauty-muted">
-              Enter an Amazon product's ASIN (10-character identifier) to add it to your store with real product image and affiliate link
+              Enter an Amazon product&apos;s ASIN (10-character identifier) to add it to your store with real product image and affiliate link
             </p>
           </div>
         </div>
@@ -244,7 +244,7 @@ export function SimplifiedAmazonAdder() {
             Enter Product ASIN
           </CardTitle>
           <CardDescription>
-            Find the ASIN on Amazon product pages or in the URL. It's a 10-character code (e.g., B08N5WRWNW).
+            Find the ASIN on Amazon product pages or in the URL. It&apos;s a 10-character code (e.g., B08N5WRWNW).
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -432,9 +432,9 @@ export function SimplifiedAmazonAdder() {
         </CardHeader>
         <CardContent>
           <div className="space-y-3 text-sm text-beauty-muted">
-            <p><strong>On Amazon Website:</strong> The ASIN is in the product URL or in the "Product Information" section</p>
+            <p><strong>On Amazon Website:</strong> The ASIN is in the product URL or in the &quot;Product Information&quot; section</p>
             <p><strong>Example URL:</strong> https://www.amazon.com/dp/<strong className="font-mono bg-blue-100 px-1 rounded">B08N5WRWNW</strong>/...</p>
-            <p><strong>On Product Page:</strong> Look for "ASIN" in the Product Information details section</p>
+            <p><strong>On Product Page:</strong> Look for &quot;ASIN&quot; in the Product Information details section</p>
           </div>
         </CardContent>
       </Card>

@@ -25,7 +25,7 @@ export default function ManualAmazonProductPage() {
             <p><strong>ASIN:</strong> Found in the product details section or in the URL (amazon.com/dp/<strong>ASIN</strong>)</p>
             <p><strong>Title:</strong> Copy from the product page heading</p>
             <p><strong>Price:</strong> Current price shown on the product page</p>
-            <p><strong>Features:</strong> Copy bullet points from "About this item" section</p>
+            <p><strong>Features:</strong> Copy bullet points from &quot;About this item&quot; section</p>
             <p><strong>Image:</strong> Right-click product image → Copy image address (or leave blank to auto-generate)</p>
           </CardContent>
         </Card>

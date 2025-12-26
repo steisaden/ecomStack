@@ -182,7 +182,7 @@ export interface AffiliateProduct {
   title: string;
   description: string;
   asin: string; // Amazon Standard Identification Number
-  price: {
+  price: number | {
     amount: number;
     currency: string;
     displayAmount: string;
@@ -624,18 +624,18 @@ export interface TrackingEvent {
   id: string;
   userId?: string;
   sessionId: string;
-  eventType: 
-    | 'page_view' 
-    | 'product_view' 
-    | 'add_to_cart' 
-    | 'checkout_start' 
-    | 'payment_initiated' 
-    | 'purchase_completed'
-    | 'product_search'
-    | 'category_view'
-    | 'wishlist_add'
-    | 'share_action'
-    | string;
+  eventType:
+  | 'page_view'
+  | 'product_view'
+  | 'add_to_cart'
+  | 'checkout_start'
+  | 'payment_initiated'
+  | 'purchase_completed'
+  | 'product_search'
+  | 'category_view'
+  | 'wishlist_add'
+  | 'share_action'
+  | string;
   productId?: string;
   category?: string;
   timestamp: string;

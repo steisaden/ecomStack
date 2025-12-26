@@ -27,22 +27,22 @@ export default function FinalCalendarTest() {
     console.log('Yoga calendar date/time selected:', date, time);
     setYogaDate(date);
     setYogaTime(time);
-    setTestResults(prev => ({ 
-      ...prev, 
+    setTestResults(prev => ({
+      ...prev,
       yogaCalendar: !!date,
-      timeSelection: !!time 
+      timeSelection: !!time
     }));
   };
 
   const getStatusIcon = (status: boolean) => {
-    return status ? 
-      <CheckCircle className="h-5 w-5 text-green-500" /> : 
+    return status ?
+      <CheckCircle className="h-5 w-5 text-green-500" /> :
       <XCircle className="h-5 w-5 text-red-500" />;
   };
 
   const getStatusBadge = (status: boolean) => {
-    return status ? 
-      <Badge className="bg-green-500">PASS</Badge> : 
+    return status ?
+      <Badge className="bg-green-500">PASS</Badge> :
       <Badge variant="destructive">FAIL</Badge>;
   };
 
@@ -70,7 +70,7 @@ export default function FinalCalendarTest() {
               </div>
               {getStatusBadge(testResults.basicCalendar)}
             </div>
-            
+
             <div className="flex items-center justify-between p-3 border rounded-lg">
               <div className="flex items-center gap-2">
                 {getStatusIcon(testResults.yogaCalendar)}
@@ -78,7 +78,7 @@ export default function FinalCalendarTest() {
               </div>
               {getStatusBadge(testResults.yogaCalendar)}
             </div>
-            
+
             <div className="flex items-center justify-between p-3 border rounded-lg">
               <div className="flex items-center gap-2">
                 {getStatusIcon(testResults.timeSelection)}
@@ -103,14 +103,14 @@ export default function FinalCalendarTest() {
                 onSelect={handleBasicDateSelect}
                 disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
               />
-              
+
               <div className="p-3 bg-gray-50 rounded">
                 <h4 className="font-semibold mb-2">Selected Date:</h4>
                 <p className="text-sm">
                   {basicDate ? basicDate.toDateString() : 'No date selected'}
                 </p>
               </div>
-              
+
               <div className="text-sm text-gray-600">
                 <p>{"<strong>Test:</strong> Click any future date"}</p>
                 <p>{'<strong>Expected:</strong> Date should highlight and appear above'}</p>
@@ -130,7 +130,7 @@ export default function FinalCalendarTest() {
                 serviceId="test-service"
                 onDateTimeSelect={handleYogaDateTimeSelect}
               />
-              
+
               <div className="space-y-3">
                 <div className="p-3 bg-gray-50 rounded">
                   <h4 className="font-semibold mb-2">Selected Date:</h4>
@@ -138,7 +138,7 @@ export default function FinalCalendarTest() {
                     {yogaDate ? yogaDate.toDateString() : 'No date selected'}
                   </p>
                 </div>
-                
+
                 <div className="p-3 bg-gray-50 rounded">
                   <h4 className="font-semibold mb-2">Selected Time:</h4>
                   <p className="text-sm">
@@ -146,7 +146,7 @@ export default function FinalCalendarTest() {
                   </p>
                 </div>
               </div>
-              
+
               <div className="text-sm text-gray-600">
                 <p><strong>Test:</strong> Click a date, then click a time slot</p>
                 <p><strong>Expected:</strong> Both date and time should appear above</p>
@@ -173,7 +173,7 @@ export default function FinalCalendarTest() {
                 <li>Verify past dates are disabled (grayed out)</li>
               </ol>
             </div>
-            
+
             <div>
               <h4 className="font-semibold mb-3">Yoga Calendar Test:</h4>
               <ol className="list-decimal list-inside space-y-1 text-sm">
@@ -185,15 +185,15 @@ export default function FinalCalendarTest() {
               </ol>
             </div>
           </div>
-          
+
           <div className="mt-6 p-4 bg-blue-50 rounded">
             <h4 className="font-semibold mb-2">Troubleshooting:</h4>
             <ul className="list-disc list-inside space-y-1 text-sm">
-              <li>If calendars don't work, check browser console for errors</li>
+              <li>If calendars don&apos;t work, check browser console for errors</li>
               <li>Try refreshing the page</li>
               <li>Test in different browsers (Chrome, Firefox, Safari)</li>
               <li>Test on mobile device or mobile emulation</li>
-              <li>If time slots don't appear, check network tab for API calls</li>
+              <li>If time slots don&apos;t appear, check network tab for API calls</li>
             </ul>
           </div>
         </CardContent>

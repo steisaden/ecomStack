@@ -8,13 +8,13 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { 
-  Search, 
-  Plus, 
-  Edit, 
-  Trash2, 
-  TrendingUp, 
-  TrendingDown, 
+import {
+  Search,
+  Plus,
+  Edit,
+  Trash2,
+  TrendingUp,
+  TrendingDown,
   DollarSign,
   ExternalLink,
   Sparkles,
@@ -38,35 +38,35 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Skeleton } from '@/components/ui/skeleton'
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
 } from '@/components/ui/select'
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuTrigger 
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
 } from '@/components/ui/table'
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogDescription, 
-  DialogFooter, 
-  DialogHeader, 
-  DialogTitle, 
-  DialogTrigger 
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger
 } from '@/components/ui/dialog'
 
 interface AIRecommendation {
@@ -131,7 +131,11 @@ export default function AffiliateProducts() {
     category: '',
     tags: [],
     commissionRate: 0,
-    platform: 'amazon'
+    platform: 'amazon',
+    asin: '',
+    imageRefreshStatus: 'current',
+    linkValidationStatus: 'valid',
+    needsReview: false
   })
   const [newTag, setNewTag] = useState('')
 
@@ -142,13 +146,13 @@ export default function AffiliateProducts() {
   const fetchData = async () => {
     try {
       setLoading(true)
-      
+
       // Fetch affiliate products
       const productsResponse = await fetch(`${getBaseUrl()}/api/admin/affiliate-products`)
       if (!productsResponse.ok) throw new Error('Failed to fetch affiliate products')
       const productsData = await productsResponse.json()
       setProducts(productsData.products || [])
-      
+
       // Fetch performance metrics
       const metricsResponse = await fetch(`${getBaseUrl()}/api/admin/affiliate-products/metrics`)
       if (!metricsResponse.ok) throw new Error('Failed to fetch performance metrics')
@@ -165,7 +169,7 @@ export default function AffiliateProducts() {
   const handleAddProduct = async () => {
     try {
       setSaving(true)
-      
+
       const response = await fetch('/api/admin/affiliate-products', {
         method: 'POST',
         headers: {
@@ -186,9 +190,9 @@ export default function AffiliateProducts() {
           }
         }),
       })
-      
+
       if (!response.ok) throw new Error('Failed to add product')
-      
+
       const data = await response.json()
       setProducts(prev => [...prev, data.product])
       setShowAddDialog(false)
@@ -205,28 +209,28 @@ export default function AffiliateProducts() {
   const handleBulkUpload = async (csvData: string) => {
     try {
       setSaving(true)
-      
+
       // Parse CSV data
       const lines = csvData.trim().split('\n')
       const headers = lines[0].split(',').map(h => h.trim().toLowerCase())
-      
+
       // Validate headers
       const requiredHeaders = ['title', 'price', 'affiliateurl']
       const missingHeaders = requiredHeaders.filter(h => !headers.includes(h))
       if (missingHeaders.length > 0) {
         throw new Error(`Missing required headers: ${missingHeaders.join(', ')}`)
       }
-      
+
       // Parse products
-      const products = []
+      const products: any[] = []
       for (let i = 1; i < lines.length; i++) {
         const values = lines[i].split(',').map(v => v.trim())
         if (values.length !== headers.length) continue
-        
+
         const product: any = {}
         headers.forEach((header, index) => {
           const value = values[index]
-          
+
           switch (header) {
             case 'title':
             case 'description':
@@ -247,14 +251,14 @@ export default function AffiliateProducts() {
               product[header] = value
           }
         })
-        
+
         products.push(product)
       }
-      
+
       if (products.length === 0) {
         throw new Error('No valid products found in CSV')
       }
-      
+
       // Send to bulk upload API
       const response = await fetch('/api/admin/affiliate-products/bulk-upload', {
         method: 'POST',
@@ -263,11 +267,11 @@ export default function AffiliateProducts() {
         },
         body: JSON.stringify({ products }),
       })
-      
+
       if (!response.ok) throw new Error('Failed to upload products')
-      
+
       const result = await response.json()
-      
+
       if (result.success) {
         toast.success(`Successfully uploaded ${result.created} products`)
         if (result.errors.length > 0) {
@@ -278,7 +282,7 @@ export default function AffiliateProducts() {
       } else {
         throw new Error(result.message || 'Upload failed')
       }
-      
+
       setShowBulkUploadDialog(false)
     } catch (error: any) {
       console.error('Error bulk uploading products:', error)
@@ -290,10 +294,10 @@ export default function AffiliateProducts() {
 
   const handleUpdateProduct = async () => {
     if (!editingProduct) return
-    
+
     try {
       setSaving(true)
-      
+
       const response = await fetch(`/api/admin/affiliate-products/${editingProduct.id}`, {
         method: 'PUT',
         headers: {
@@ -303,9 +307,9 @@ export default function AffiliateProducts() {
           product: editingProduct
         }),
       })
-      
+
       if (!response.ok) throw new Error('Failed to update product')
-      
+
       const data = await response.json()
       setProducts(prev => prev.map(p => p.id === editingProduct.id ? data.product : p))
       setEditingProduct(null)
@@ -323,13 +327,13 @@ export default function AffiliateProducts() {
       const response = await fetch(`/api/admin/affiliate-products/${productId}`, {
         method: 'DELETE',
       })
-      
+
       const data = await response.json()
-      
+
       if (!response.ok) {
         throw new Error(data.error || 'Failed to delete product')
       }
-      
+
       setProducts(prev => prev.filter(p => p.id !== productId))
       toast.success('Product deleted successfully')
     } catch (error: any) {
@@ -344,9 +348,9 @@ export default function AffiliateProducts() {
       const response = await fetch('/api/admin/affiliate-products/recommendations', {
         method: 'POST',
       })
-      
+
       if (!response.ok) throw new Error('Failed to generate recommendations')
-      
+
       const data = await response.json()
       setMetrics(prev => prev ? {
         ...prev,
@@ -370,13 +374,17 @@ export default function AffiliateProducts() {
       category: '',
       tags: [],
       commissionRate: 0,
-      platform: 'amazon'
+      platform: 'amazon',
+      asin: '',
+      imageRefreshStatus: 'current',
+      linkValidationStatus: 'valid',
+      needsReview: false
     })
   }
 
   const addTag = (product: AffiliateProduct | null, tag: string) => {
     if (!tag.trim()) return
-    
+
     if (product) {
       // Editing existing product
       setEditingProduct(prev => prev ? {
@@ -411,12 +419,12 @@ export default function AffiliateProducts() {
 
   const filteredProducts = products.filter(product => {
     const matchesSearch = product.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         product.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         product.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
-    
+      product.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      product.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
+
     const matchesCategory = selectedCategory === 'all' || product.category === selectedCategory
     const matchesPlatform = selectedPlatform === 'all' || product.platform === selectedPlatform
-    
+
     return matchesSearch && matchesCategory && matchesPlatform
   })
 
@@ -449,7 +457,7 @@ export default function AffiliateProducts() {
             <Skeleton className="h-10 w-10 rounded-full" />
           </div>
         </div>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           {[...Array(4)].map((_, i) => (
             <Card key={i}>
@@ -464,7 +472,7 @@ export default function AffiliateProducts() {
             </Card>
           ))}
         </div>
-        
+
         <Card>
           <CardHeader>
             <Skeleton className="h-6 w-48" />
@@ -504,7 +512,7 @@ export default function AffiliateProducts() {
             <Plus className="h-4 w-4 mr-2" />
             Add Product
           </Button>
-          <Button 
+          <Button
             onClick={() => setShowBulkUploadDialog(true)}
             variant="outline"
           >
@@ -571,9 +579,9 @@ export default function AffiliateProducts() {
                   <div className="p-4">
                     {product.imageUrl ? (
                       <div className="relative h-40 rounded-md overflow-hidden mb-4">
-                        <img 
-                          src={product.imageUrl} 
-                          alt={product.title} 
+                        <img
+                          src={product.imageUrl}
+                          alt={product.title}
                           className="w-full h-full object-cover"
                         />
                       </div>
@@ -582,25 +590,25 @@ export default function AffiliateProducts() {
                         <ExternalLink className="h-8 w-8 text-gray-400" />
                       </div>
                     )}
-                    
+
                     <h3 className="font-semibold text-lg mb-2">{product.title}</h3>
-                    
+
                     <div className="flex justify-between items-center mb-4">
-                      <span className="font-bold text-lg">${(product.price || 0).toFixed(2)}</span>
+                      <span className="font-bold text-lg">${(typeof product.price === 'number' ? product.price : product.price?.amount || 0).toFixed(2)}</span>
                       <Badge variant="secondary">{product.platform}</Badge>
                     </div>
-                    
+
                     <div className="flex justify-between items-center">
-                      <Button 
-                        variant="outline" 
+                      <Button
+                        variant="outline"
                         size="sm"
                         onClick={() => setEditingProduct(product)}
                       >
                         <Edit className="h-4 w-4 mr-2" />
                         Edit
                       </Button>
-                      <Button 
-                        variant="destructive" 
+                      <Button
+                        variant="destructive"
                         size="sm"
                         onClick={() => handleDeleteProduct(product.id)}
                       >
@@ -628,9 +636,9 @@ export default function AffiliateProducts() {
                     <TableCell>
                       <div className="flex items-center gap-3">
                         {product.imageUrl ? (
-                          <img 
-                            src={product.imageUrl} 
-                            alt={product.title} 
+                          <img
+                            src={product.imageUrl}
+                            alt={product.title}
                             className="h-10 w-10 rounded object-cover"
                           />
                         ) : (
@@ -644,7 +652,7 @@ export default function AffiliateProducts() {
                       </div>
                     </TableCell>
                     <TableCell className="font-medium">
-                      ${(product.price || 0).toFixed(2)}
+                      ${(typeof product.price === 'number' ? product.price : product.price?.amount || 0).toFixed(2)}
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1">
@@ -653,15 +661,15 @@ export default function AffiliateProducts() {
                     </TableCell>
                     <TableCell>
                       <div className="flex gap-2">
-                        <Button 
-                          variant="outline" 
+                        <Button
+                          variant="outline"
                           size="sm"
                           onClick={() => setEditingProduct(product)}
                         >
                           <Edit className="h-4 w-4" />
                         </Button>
-                        <Button 
-                          variant="destructive" 
+                        <Button
+                          variant="destructive"
                           size="sm"
                           onClick={() => handleDeleteProduct(product.id)}
                         >
@@ -674,7 +682,7 @@ export default function AffiliateProducts() {
               </TableBody>
             </Table>
           )}
-          
+
           {sortedProducts.length === 0 && (
             <div className="text-center py-12">
               <Grid className="h-12 w-12 text-gray-300 mx-auto mb-4" />
@@ -726,7 +734,7 @@ export default function AffiliateProducts() {
             </div>
             <div>
               <label className="text-sm font-medium mb-2 block">Sort by</label>
-              <Select value={sortBy} onValueChange={setSortBy}>
+              <Select value={sortBy} onValueChange={(value) => setSortBy(value as 'performance' | 'date' | 'revenue')}>
                 <SelectTrigger>
                   <SelectValue placeholder="Sort by" />
                 </SelectTrigger>
@@ -753,7 +761,7 @@ export default function AffiliateProducts() {
               Add a product you want to recommend to your audience.
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-4">
               <div>
@@ -764,7 +772,7 @@ export default function AffiliateProducts() {
                   placeholder="e.g., 'The Best Hair Serum'"
                 />
               </div>
-              
+
               <div>
                 <label className="text-sm font-medium mb-2 block">Product Link</label>
                 <Input
@@ -773,18 +781,18 @@ export default function AffiliateProducts() {
                   placeholder="This is the special link you get from the seller"
                 />
               </div>
-              
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm font-medium mb-2 block">Price ($)</label>
                   <Input
                     type="number"
-                    value={newProduct.price}
+                    value={typeof newProduct.price === 'number' ? newProduct.price : newProduct.price.amount}
                     onChange={(e) => setNewProduct(prev => ({ ...prev, price: parseFloat(e.target.value) || 0 }))}
                     placeholder="e.g., 29.99"
                   />
                 </div>
-                
+
                 <div>
                   <label className="text-sm font-medium mb-2 block">Your Cut (%)</label>
                   <Input
@@ -796,7 +804,7 @@ export default function AffiliateProducts() {
                 </div>
               </div>
             </div>
-            
+
             <div className="space-y-4">
               <div>
                 <label className="text-sm font-medium mb-2 block">Category</label>
@@ -811,7 +819,7 @@ export default function AffiliateProducts() {
                   </SelectContent>
                 </Select>
               </div>
-              
+
               <div>
                 <label className="text-sm font-medium mb-2 block">Where is this link from?</label>
                 <Select value={newProduct.platform} onValueChange={(value) => setNewProduct(prev => ({ ...prev, platform: value }))}>
@@ -827,10 +835,10 @@ export default function AffiliateProducts() {
               </div>
             </div>
           </div>
-          
+
           <DialogFooter>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={() => {
                 setShowAddDialog(false)
                 resetNewProduct()
@@ -839,7 +847,7 @@ export default function AffiliateProducts() {
             >
               Cancel
             </Button>
-            <Button 
+            <Button
               onClick={handleAddProduct}
               disabled={saving || !newProduct.title || !newProduct.affiliateUrl}
             >
@@ -863,7 +871,7 @@ export default function AffiliateProducts() {
               Update the details for this product link.
             </DialogDescription>
           </DialogHeader>
-          
+
           {editingProduct && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-4">
@@ -874,7 +882,7 @@ export default function AffiliateProducts() {
                     onChange={(e) => setEditingProduct(prev => prev ? { ...prev, title: e.target.value } : null)}
                   />
                 </div>
-                
+
                 <div>
                   <label className="text-sm font-medium mb-2 block">Product Link</label>
                   <Input
@@ -882,17 +890,17 @@ export default function AffiliateProducts() {
                     onChange={(e) => setEditingProduct(prev => prev ? { ...prev, affiliateUrl: e.target.value } : null)}
                   />
                 </div>
-                
+
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="text-sm font-medium mb-2 block">Price ($)</label>
                     <Input
                       type="number"
-                      value={editingProduct.price}
+                      value={typeof editingProduct.price === 'number' ? editingProduct.price : editingProduct.price.amount}
                       onChange={(e) => setEditingProduct(prev => prev ? { ...prev, price: parseFloat(e.target.value) || 0 } : null)}
                     />
                   </div>
-                  
+
                   <div>
                     <label className="text-sm font-medium mb-2 block">Your Cut (%)</label>
                     <Input
@@ -903,12 +911,12 @@ export default function AffiliateProducts() {
                   </div>
                 </div>
               </div>
-              
+
               <div className="space-y-4">
                 <div>
                   <label className="text-sm font-medium mb-2 block">Category</label>
-                  <Select 
-                    value={editingProduct.category || ''} 
+                  <Select
+                    value={editingProduct.category || ''}
                     onValueChange={(value) => setEditingProduct(prev => prev ? { ...prev, category: value } : null)}
                   >
                     <SelectTrigger>
@@ -921,11 +929,11 @@ export default function AffiliateProducts() {
                     </SelectContent>
                   </Select>
                 </div>
-                
+
                 <div>
                   <label className="text-sm font-medium mb-2 block">Where is this link from?</label>
-                  <Select 
-                    value={editingProduct.platform} 
+                  <Select
+                    value={editingProduct.platform}
                     onValueChange={(value) => setEditingProduct(prev => prev ? { ...prev, platform: value } : null)}
                   >
                     <SelectTrigger>
@@ -941,16 +949,16 @@ export default function AffiliateProducts() {
               </div>
             </div>
           )}
-          
+
           <DialogFooter>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={() => setEditingProduct(null)}
               disabled={saving}
             >
               Cancel
             </Button>
-            <Button 
+            <Button
               onClick={handleUpdateProduct}
               disabled={saving}
             >
@@ -974,21 +982,21 @@ export default function AffiliateProducts() {
               Use a CSV file to add many products quickly.
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="space-y-6">
             <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
               <h4 className="font-medium text-blue-900 mb-2">Step 1: Get the Template</h4>
               <p className="text-sm text-blue-700 mb-3">
                 Download our CSV template to make sure your file is in the right format.
               </p>
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 size="sm"
                 onClick={() => {
                   const csvTemplate = `title,description,price,affiliateUrl,category,platform,commissionRate,tags,imageUrl
 "Premium Face Serum","Anti-aging serum with vitamin C",29.99,"https://example.com/serum","Skincare","amazon",8.5,"anti-aging|vitamin-c|serum","https://example.com/serum.jpg"
 "Organic Hair Oil","Nourishing hair oil for all hair types",19.99,"https://example.com/hair-oil","Hair Care","custom",10,"organic|hair-care|oil","https://example.com/oil.jpg"`
-                  
+
                   const blob = new Blob([csvTemplate], { type: 'text/csv' })
                   const url = window.URL.createObjectURL(blob)
                   const a = document.createElement('a')
@@ -1010,7 +1018,7 @@ export default function AffiliateProducts() {
                 <li><strong>title:</strong> The name of the product.</li>
                 <li><strong>price:</strong> The price of the product (just the number).</li>
                 <li><strong>affiliateUrl:</strong> The special product link you get from the seller.</li>
-                <li><strong>category:</strong> The product's category (e.g., Skincare, Hair Care).</li>
+                <li><strong>category:</strong> The product&apos;s category (e.g., Skincare, Hair Care).</li>
                 <li><strong>platform:</strong> Where the link is from (e.g., amazon, custom).</li>
                 <li><strong>commissionRate:</strong> Your cut from the sale (just the number).</li>
               </ul>
@@ -1045,10 +1053,10 @@ export default function AffiliateProducts() {
               </div>
             </div>
           </div>
-          
+
           <DialogFooter>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={() => setShowBulkUploadDialog(false)}
               disabled={saving}
             >

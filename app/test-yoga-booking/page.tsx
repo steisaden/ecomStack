@@ -17,7 +17,7 @@ export default function TestYogaBooking() {
   return (
     <div className="container mx-auto py-8 px-4">
       <h1 className="text-2xl font-bold mb-8">Yoga Booking Test</h1>
-      
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Availability Calendar */}
         <Card>
@@ -43,7 +43,7 @@ export default function TestYogaBooking() {
                 <h3 className="font-semibold mb-2">Selected Date:</h3>
                 <p>{selectedDate ? selectedDate.toDateString() : 'No date selected'}</p>
               </div>
-              
+
               <div className="p-3 bg-gray-50 rounded">
                 <h3 className="font-semibold mb-2">Selected Time:</h3>
                 <p>{selectedTime || 'No time selected'}</p>
@@ -73,8 +73,8 @@ export default function TestYogaBooking() {
               <li>{`Verify both date and time appear in the "Selection Status" card`}</li>
               <li>{"Check browser console for API calls and responses"}</li>
             </ol>
-            
-            <h4 className="font-semibold mt-4">If calendar doesn't work:</h4>
+
+            <h4 className="font-semibold mt-4">If calendar doesn&apos;t work:</h4>
             <ul className="list-disc list-inside space-y-1 ml-4">
               <li>{"Check browser console for JavaScript errors"}</li>
               <li>{"Try clicking different parts of the date cells"}</li>

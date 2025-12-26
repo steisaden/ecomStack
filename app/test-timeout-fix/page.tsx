@@ -22,8 +22,8 @@ export default function TestTimeoutFix() {
     console.log('Date/Time selected:', date, time);
     setSelectedDate(date);
     setSelectedTime(time);
-    setTestResults(prev => ({ 
-      ...prev, 
+    setTestResults(prev => ({
+      ...prev,
       calendarLoad: true,
       apiResponse: !!time,
       noTimeout: true // If we got here, no timeout occurred
@@ -39,9 +39,9 @@ export default function TestTimeoutFix() {
 
     setLoading(true);
     setLastError(null);
-    
+
     const startTime = Date.now();
-    
+
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => {
@@ -53,27 +53,27 @@ export default function TestTimeoutFix() {
         `/api/yoga-availability?serviceId=test-service&date=${selectedDate.toISOString()}`,
         { signal: controller.signal }
       );
-      
+
       clearTimeout(timeoutId);
       const endTime = Date.now();
       const duration = endTime - startTime;
-      
+
       const data = await response.json();
       console.log(`API Response in ${duration}ms:`, data);
-      
+
       setTestResults(prev => ({
         ...prev,
         apiResponse: data.success,
         noTimeout: duration < 8000
       }));
-      
+
       if (!data.success) {
         setLastError(`API Error: ${data.error}`);
       }
     } catch (error) {
       const endTime = Date.now();
       const duration = endTime - startTime;
-      
+
       if (error.name === 'AbortError') {
         setLastError(`Request timed out after ${duration}ms`);
         setTestResults(prev => ({ ...prev, noTimeout: false }));
@@ -87,14 +87,14 @@ export default function TestTimeoutFix() {
   };
 
   const getStatusIcon = (status: boolean) => {
-    return status ? 
-      <CheckCircle className="h-5 w-5 text-green-500" /> : 
+    return status ?
+      <CheckCircle className="h-5 w-5 text-green-500" /> :
       <XCircle className="h-5 w-5 text-red-500" />;
   };
 
   const getStatusBadge = (status: boolean) => {
-    return status ? 
-      <Badge className="bg-green-500">PASS</Badge> : 
+    return status ?
+      <Badge className="bg-green-500">PASS</Badge> :
       <Badge variant="destructive">FAIL</Badge>;
   };
 
@@ -102,7 +102,7 @@ export default function TestTimeoutFix() {
     <div className="container mx-auto py-8 px-4 max-w-6xl">
       <div className="text-center mb-8">
         <h1 className="text-3xl font-bold mb-4">Timeout Fix Test</h1>
-        <p className="text-gray-600">Test that API calls complete within 8 seconds and don't timeout</p>
+        <p className="text-gray-600">Test that API calls complete within 8 seconds and don&apos;t timeout</p>
       </div>
 
       {/* Test Results Dashboard */}
@@ -122,7 +122,7 @@ export default function TestTimeoutFix() {
               </div>
               {getStatusBadge(testResults.calendarLoad)}
             </div>
-            
+
             <div className="flex items-center justify-between p-3 border rounded-lg">
               <div className="flex items-center gap-2">
                 {getStatusIcon(testResults.apiResponse)}
@@ -130,7 +130,7 @@ export default function TestTimeoutFix() {
               </div>
               {getStatusBadge(testResults.apiResponse)}
             </div>
-            
+
             <div className="flex items-center justify-between p-3 border rounded-lg">
               <div className="flex items-center gap-2">
                 {getStatusIcon(testResults.noTimeout)}
@@ -139,7 +139,7 @@ export default function TestTimeoutFix() {
               {getStatusBadge(testResults.noTimeout)}
             </div>
           </div>
-          
+
           {lastError && (
             <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
               <div className="flex items-center gap-2 text-red-800">
@@ -179,7 +179,7 @@ export default function TestTimeoutFix() {
                   {selectedDate ? selectedDate.toDateString() : 'No date selected'}
                 </p>
               </div>
-              
+
               <div className="p-3 bg-gray-50 rounded">
                 <h4 className="font-semibold mb-2">Selected Time:</h4>
                 <p className="text-sm">
@@ -188,8 +188,8 @@ export default function TestTimeoutFix() {
               </div>
             </div>
 
-            <Button 
-              onClick={testApiWithTimeout} 
+            <Button
+              onClick={testApiWithTimeout}
               disabled={!selectedDate || loading}
               className="w-full"
             >
@@ -215,7 +215,7 @@ export default function TestTimeoutFix() {
                 <li>{"All three test results should show \"PASS\""}</li>
               </ol>
             </div>
-            
+
             <div>
               <h4 className="font-semibold mb-3">Manual Test:</h4>
               <ol className="list-decimal list-inside space-y-1 text-sm">
@@ -226,7 +226,7 @@ export default function TestTimeoutFix() {
               </ol>
             </div>
           </div>
-          
+
           <div className="mt-6 p-4 bg-blue-50 rounded">
             <h4 className="font-semibold mb-2">Expected Behavior:</h4>
             <ul className="list-disc list-inside space-y-1 text-sm">

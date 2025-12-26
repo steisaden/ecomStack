@@ -13,7 +13,7 @@ export default function TestCalendarSimple() {
   return (
     <div className="container mx-auto py-8 px-4">
       <h1 className="text-2xl font-bold mb-8">Calendar Test - Simple</h1>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         {/* Raw DayPicker */}
         <div className="space-y-4">
@@ -76,7 +76,7 @@ export default function TestCalendarSimple() {
           <li>Click on any date in both calendars</li>
           <li>Check that the selected date appears below each calendar</li>
           <li>Check the browser console for debug messages</li>
-          <li>If the raw DayPicker works but our Calendar doesn't, there's an issue with our wrapper</li>
+          <li>If the raw DayPicker works but our Calendar doesn&apos;t, there&apos;s an issue with our wrapper</li>
         </ol>
       </div>
     </div>
