@@ -3,8 +3,27 @@ import { resetPassword } from '@/lib/admin-user-store';
 
 export const dynamic = 'force-dynamic';
 
+import { rateLimiter } from '@/lib/rate-limiter';
+
 export async function POST(request: NextRequest) {
   try {
+    const ip = request.headers.get('x-forwarded-for') || 'unknown';
+    const rateLimitKey = `reset_pw_${ip}`;
+
+    // Check rate limit (5 attempts per 60 minutes)
+    const rateLimit = await rateLimiter.checkLimit(rateLimitKey, 5, 3600);
+
+    if (!rateLimit.success) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Too many failed attempts. Please try again later.',
+          retryAfter: rateLimit.resetIn
+        },
+        { status: 429 }
+      );
+    }
+
     const body = await request.json();
     const token = body?.token || '';
     const recoveryCode = body?.recoveryCode || '';

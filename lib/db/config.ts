@@ -8,15 +8,15 @@ const getPoolConfig = (): PoolConfig => {
   }
 
   const dbUrl = new URL(process.env.DATABASE_URL);
-  
+
   return {
     user: process.env.DATABASE_USER,
     password: process.env.DATABASE_PASSWORD,
     host: dbUrl.hostname,
     port: parseInt(dbUrl.port || '5432'),
     database: dbUrl.pathname.slice(1),
-    ssl: process.env.NODE_ENV === 'production' 
-      ? { rejectUnauthorized: false } 
+    ssl: process.env.NODE_ENV === 'production'
+      ? { rejectUnauthorized: false }
       : false,
     max: 20,
     idleTimeoutMillis: 30000,
@@ -24,28 +24,41 @@ const getPoolConfig = (): PoolConfig => {
   };
 };
 
-const pool = new Pool(getPoolConfig());
+// Initialize pool only if DATABASE_URL is present
+let pool: Pool | null = null;
+if (process.env.DATABASE_URL) {
+  pool = new Pool(getPoolConfig());
+} else {
+  console.warn('DATABASE_URL not set, PostgreSQL pool will not be initialized');
+}
 
 // Redis configuration
-const getRedisConfig = (): RedisOptions => {
+// Redis configuration
+const getRedisOptions = (): { url: string, options: RedisOptions } | null => {
   if (!process.env.REDIS_URL) {
-    throw new Error('REDIS_URL environment variable is not set');
+    console.warn('REDIS_URL not set, Redis features will be disabled');
+    return null;
   }
 
   return {
     url: process.env.REDIS_URL,
-    password: process.env.REDIS_PASSWORD,
-    tls: process.env.NODE_ENV === 'production' ? {} : undefined,
-    maxRetriesPerRequest: 3,
-    retryStrategy(times: number) {
-      const delay = Math.min(times * 50, 2000);
-      return delay;
-    },
-    enableOfflineQueue: true,
+    options: {
+      password: process.env.REDIS_PASSWORD,
+      tls: process.env.NODE_ENV === 'production'
+        ? { rejectUnauthorized: false }
+        : (process.env.REDIS_URL?.startsWith('rediss://') ? { rejectUnauthorized: false } : undefined),
+      maxRetriesPerRequest: 3,
+      retryStrategy(times: number) {
+        const delay = Math.min(times * 50, 2000);
+        return delay;
+      },
+      enableOfflineQueue: true,
+    }
   };
 };
 
-const redis = new Redis(getRedisConfig());
+const redisConfig = getRedisOptions();
+const redis = redisConfig ? new Redis(redisConfig.url, redisConfig.options) : null;
 
 // Cache configuration
 const CACHE_TTL = {
@@ -55,13 +68,17 @@ const CACHE_TTL = {
 } as const;
 
 // Error handling
-pool.on('error', (err) => {
-  console.error('Unexpected error on idle PostgreSQL client', err);
-  process.exit(-1);
-});
+if (pool) {
+  pool.on('error', (err) => {
+    console.error('Unexpected error on idle PostgreSQL client', err);
+    process.exit(-1);
+  });
+}
 
-redis.on('error', (err) => {
-  console.error('Redis connection error', err);
-});
+if (redis) {
+  redis.on('error', (err) => {
+    console.error('Redis connection error', err);
+  });
+}
 
 export { pool, redis, CACHE_TTL };

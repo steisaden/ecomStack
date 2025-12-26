@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { CheckCircle, XCircle, AlertTriangle, Loader2, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
-import { BackToAdminButton } from '@/components/admin/BackToAdminButton';
+
 
 const SHOW_AMAZON_PAAPI_SCREEN = false;
 
@@ -97,7 +97,7 @@ export default function AmazonPAAPIConfigPage() {
           <h1 className="text-3xl font-bold">Amazon PA-API Configuration</h1>
           <p className="text-muted-foreground">Manage your Amazon Product Advertising API credentials.</p>
         </div>
-        <BackToAdminButton />
+
       </div>
 
       <Card className="mb-6">

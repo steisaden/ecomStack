@@ -1,6 +1,7 @@
 import { createClient } from 'contentful'
+import { createClient as createManagementClient } from 'contentful-management'
 import { unstable_cache, revalidateTag } from 'next/cache'
-import { 
+import {
   deduplicateRequest,
   createCachedFunction,
   CACHE_DURATIONS,
@@ -13,10 +14,19 @@ const client = createClient({
   accessToken: process.env.CONTENTFUL_ACCESS_TOKEN!,
   // Added configurable environment with sensible defaults
   environment: process.env.CONTENTFUL_ENVIRONMENT || process.env.CONTENTFUL_ENVIRONMENT_ID || 'master',
+  // Bypass SSL verification in development/non-production environments to avoid "unable to get local issuer certificate" errors
+  ...(process.env.NODE_ENV !== 'production' ? {
+    httpAgent: new (require('http').Agent)({ rejectUnauthorized: false }),
+    httpsAgent: new (require('https').Agent)({ rejectUnauthorized: false }),
+  } : {}),
 })
 
+const managementClient = createManagementClient({
+  accessToken: process.env.CONTENTFUL_MANAGEMENT_TOKEN || '',
+});
+
 // Import types from the shared types file
-import { 
+import {
   Product,
   BlogPost,
   AboutContent,
@@ -62,23 +72,23 @@ const BLOG_CT_ID = process.env.CONTENTFUL_BLOG_CT_ID || 'testBlog'
 
 function extractTextFromRichText(richTextContent: any): string {
   if (!richTextContent) return ''
-  
+
   // If it's already a string, return it
   if (typeof richTextContent === 'string') return richTextContent
-  
+
   // Create cache key for memoization
   const cacheKey = JSON.stringify(richTextContent)
   if (textExtractionCache.has(cacheKey)) {
     return textExtractionCache.get(cacheKey)!
   }
-  
+
   let result = ''
-  
+
   // If it's a rich text object, extract the text content efficiently
   if (richTextContent.content && Array.isArray(richTextContent.content)) {
     result = richTextContent.content
       .filter((node: any) => node.nodeType === 'paragraph' && node.content)
-      .map((node: any) => 
+      .map((node: any) =>
         node.content
           .filter((textNode: any) => textNode.value)
           .map((textNode: any) => textNode.value)
@@ -87,7 +97,7 @@ function extractTextFromRichText(richTextContent: any): string {
       .join(' ')
       .trim()
   }
-  
+
   // Cache the result for future use
   if (textExtractionCache.size > 100) {
     // Clear oldest entries to prevent memory leaks
@@ -97,7 +107,7 @@ function extractTextFromRichText(richTextContent: any): string {
     }
   }
   textExtractionCache.set(cacheKey, result)
-  
+
   return result
 }
 
@@ -117,7 +127,7 @@ function transformContentfulAsset(asset: ContentfulAsset): Asset {
 // Navigation item transformation with early returns for performance
 function transformNavigationItem(item: Entry<any>, index: number): NavigationItem {
   const fields = item.fields
-  
+
   return {
     id: item.sys.id || `nav-${index}`,
     label: fields.label ? String(fields.label) : '',
@@ -126,10 +136,10 @@ function transformNavigationItem(item: Entry<any>, index: number): NavigationIte
     external: Boolean(fields.external),
     disabled: Boolean(fields.disabled),
     order: fields.order ? Number(fields.order) : index,
-    children: Array.isArray(fields.children) 
+    children: Array.isArray(fields.children)
       ? fields.children
-          .filter((child): child is Entry<any> => Boolean(child && typeof child === 'object' && 'sys' in child))
-          .map((child, childIndex) => transformNavigationItem(child, childIndex))
+        .filter((child): child is Entry<any> => Boolean(child && typeof child === 'object' && 'sys' in child))
+        .map((child, childIndex) => transformNavigationItem(child, childIndex))
       : undefined
   }
 }
@@ -187,17 +197,17 @@ function transformAuthor(author: ContentfulAuthor): Author {
 // Optimized product transformation with early validation
 function transformProduct(item: Entry<any>): Product {
   const fields = item.fields
-  
+
   return {
     sys: { id: item.sys.id },
     title: fields.title ? String(fields.title) : '',
     description: extractTextFromRichText(fields.description),
     price: fields.price ? Number(fields.price) : 0,
-    images: Array.isArray(fields.images) 
+    images: Array.isArray(fields.images)
       ? fields.images.filter(Boolean).map((img: any) => transformContentfulAsset(img))
       : [],
-    category: fields.category && typeof fields.category === 'object' 
-      ? transformCategory(fields.category as any) 
+    category: fields.category && typeof fields.category === 'object'
+      ? transformCategory(fields.category as any)
       : undefined,
     inStock: fields.inStock !== false,
     isAffiliate: Boolean(fields.isAffiliate),
@@ -209,7 +219,7 @@ function transformProduct(item: Entry<any>): Product {
 // Optimized blog post transformation
 function transformBlogPost(item: any): BlogPost {
   const fields = item.fields
-  
+
   return {
     sys: {
       id: item.sys.id,
@@ -235,33 +245,33 @@ function transformGlobalSettings(contentfulSettings: Entry<any>): GlobalSettings
   return {
     siteTitle: String(contentfulSettings.fields.siteTitle || DEFAULT_GLOBAL_SETTINGS.siteTitle),
     siteDescription: String(contentfulSettings.fields.siteDescription || DEFAULT_GLOBAL_SETTINGS.siteDescription),
-    seoKeywords: Array.isArray(contentfulSettings.fields.seoKeywords) 
-      ? contentfulSettings.fields.seoKeywords.map(String) 
+    seoKeywords: Array.isArray(contentfulSettings.fields.seoKeywords)
+      ? contentfulSettings.fields.seoKeywords.map(String)
       : DEFAULT_GLOBAL_SETTINGS.seoKeywords,
-    favicon: contentfulSettings.fields.favicon && typeof contentfulSettings.fields.favicon === 'object' 
+    favicon: contentfulSettings.fields.favicon && typeof contentfulSettings.fields.favicon === 'object'
       ? transformContentfulAsset(contentfulSettings.fields.favicon as any) : undefined,
-    logo: contentfulSettings.fields.logo && typeof contentfulSettings.fields.logo === 'object' 
+    logo: contentfulSettings.fields.logo && typeof contentfulSettings.fields.logo === 'object'
       ? transformContentfulAsset(contentfulSettings.fields.logo as any) : undefined,
-    navigation: Array.isArray(contentfulSettings.fields.primaryNavigation) 
+    navigation: Array.isArray(contentfulSettings.fields.primaryNavigation)
       ? contentfulSettings.fields.primaryNavigation.map((item: any, index: number) => transformNavigationItem(item, index))
       : DEFAULT_GLOBAL_SETTINGS.navigation,
-    footerNavigation: Array.isArray(contentfulSettings.fields.footerNavigation) 
-      ? contentfulSettings.fields.footerNavigation.map((item: any) => transformFooterSection(item)) 
+    footerNavigation: Array.isArray(contentfulSettings.fields.footerNavigation)
+      ? contentfulSettings.fields.footerNavigation.map((item: any) => transformFooterSection(item))
       : [],
     contactInfo: {
       email: String((contentfulSettings.fields.contactInfo as any)?.fields?.email || ''),
       phone: String((contentfulSettings.fields.contactInfo as any)?.fields?.phone || ''),
       address: String((contentfulSettings.fields.contactInfo as any)?.fields?.address || '')
     },
-    socialLinks: Array.isArray(contentfulSettings.fields.socialLinks) 
-      ? contentfulSettings.fields.socialLinks.map((item: any) => transformSocialLink(item)) 
+    socialLinks: Array.isArray(contentfulSettings.fields.socialLinks)
+      ? contentfulSettings.fields.socialLinks.map((item: any) => transformSocialLink(item))
       : [],
-    heroContent: contentfulSettings.fields.heroContent && typeof contentfulSettings.fields.heroContent === 'object' 
+    heroContent: contentfulSettings.fields.heroContent && typeof contentfulSettings.fields.heroContent === 'object'
       ? transformHeroContent(contentfulSettings.fields.heroContent as any) : undefined,
     featuredProducts: [], // Will be populated separately by fetching referenced products
     copyrightText: String(contentfulSettings.fields.copyrightText || DEFAULT_GLOBAL_SETTINGS.copyrightText),
-    footerSections: Array.isArray(contentfulSettings.fields.footerSections) 
-      ? contentfulSettings.fields.footerSections.map((item: any) => transformFooterSection(item)) 
+    footerSections: Array.isArray(contentfulSettings.fields.footerSections)
+      ? contentfulSettings.fields.footerSections.map((item: any) => transformFooterSection(item))
       : [],
     lastUpdated: new Date(contentfulSettings.sys.updatedAt)
   }
@@ -271,7 +281,7 @@ function transformGlobalSettings(contentfulSettings: Entry<any>): GlobalSettings
 export const getProducts = createCachedFunction(
   async (): Promise<Product[]> => {
     const stopTimer = performanceMonitor.startTimer('contentful-products')
-    
+
     try {
       const entries = await deduplicateRequest(
         'products-list',
@@ -280,15 +290,15 @@ export const getProducts = createCachedFunction(
           order: ['fields.title'] as any,
         })
       )
-      
+
       // Log the first product to debug image inclusion
       if (entries.items.length > 0) {
         console.log('First product data:', JSON.stringify(entries.items[0], null, 2))
       }
-      
+
       const products = entries.items.map((item: any) => transformProduct(item))
       stopTimer()
-      
+
       return products
     } catch (error) {
       stopTimer()
@@ -348,7 +358,7 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
   return createCachedFunction(
     async (): Promise<Product | null> => {
       const stopTimer = performanceMonitor.startTimer('contentful-product-by-slug')
-      
+
       try {
         const entries = await deduplicateRequest(
           `product-${slug}`,
@@ -358,9 +368,9 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
             limit: 1
           })
         )
-        
+
         stopTimer()
-        
+
         if (entries.items.length === 0) return null
         return transformProduct(entries.items[0])
       } catch (error) {
@@ -462,9 +472,9 @@ export async function getSocialMediaSettings(): Promise<SocialMediaSettings | nu
       content_type: 'socialMediaSettings',
       limit: 1
     })
-    
+
     if (entries.items.length === 0) return null
-    
+
     const item = entries.items[0] as any
     const fields = item.fields as any
     return {
@@ -623,7 +633,7 @@ export async function getCategories(): Promise<Category[]> {
       content_type: 'category',
       order: ['fields.name'] as any
     })
-    
+
     return entries.items.map((item: any) => ({
       name: item.fields.name,
       slug: item.fields.slug
@@ -639,7 +649,7 @@ export async function createCategory(name: string, slug: string): Promise<Catego
   try {
     const space = await managementClient.getSpace(process.env.CONTENTFUL_SPACE_ID!)
     const environment = await space.getEnvironment(process.env.CONTENTFUL_ENVIRONMENT || 'master')
-    
+
     const category = await environment.createEntry('category', {
       fields: {
         name: {
@@ -650,7 +660,7 @@ export async function createCategory(name: string, slug: string): Promise<Catego
         }
       }
     })
-    
+
     return {
       name: category.fields.name['en-US'],
       slug: category.fields.slug['en-US']

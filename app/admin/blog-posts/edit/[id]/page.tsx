@@ -12,7 +12,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { X, Sparkles } from 'lucide-react';
-import { BackToAdminButton } from '@/components/admin/BackToAdminButton';
+
 
 export default function EditBlogPostPage({ params }: { params: { id: string } }) {
   const router = useRouter();
@@ -92,7 +92,7 @@ export default function EditBlogPostPage({ params }: { params: { id: string } })
       }
 
       const result = await response.json();
-      
+
       // Update the appropriate field based on the field type
       if (field === 'title') {
         setFormData(prev => ({ ...prev, title: result.content }));
@@ -152,12 +152,12 @@ export default function EditBlogPostPage({ params }: { params: { id: string } })
       }
 
       const result = await response.json();
-      
+
       // Check if result has a valid imageUrl before attempting to fetch
       if (!result.imageUrl) {
         throw new Error(result.error || 'No image URL returned from API');
       }
-      
+
       // Validate that the result contains a proper data URL (base64 encoded image)
       if (!result.imageUrl.startsWith('data:image/')) {
         // If it's not a data URL, validate as HTTP/HTTPS URL
@@ -168,7 +168,7 @@ export default function EditBlogPostPage({ params }: { params: { id: string } })
           throw new Error('Invalid image URL format returned from API');
         }
       }
-      
+
       // Create a blob from the image URL and convert to File
       let imageResponse;
       try {
@@ -177,17 +177,17 @@ export default function EditBlogPostPage({ params }: { params: { id: string } })
         console.error('Failed to fetch image from URL:', result.imageUrl, fetchError);
         throw new Error('Failed to download generated image. The service may be temporarily unavailable.');
       }
-      
+
       if (!imageResponse.ok) {
         console.error('Image fetch response not ok:', imageResponse.status, imageResponse.statusText);
         throw new Error(`Failed to download image: ${imageResponse.status} ${imageResponse.statusText}`);
       }
       const imageBlob = await imageResponse.blob();
       const imageFile = new File([imageBlob], `featured-image-${Date.now()}.png`, { type: 'image/png' });
-      
+
       // Add to files array for upload to Contentful
       setFiles(prev => [...prev, imageFile]);
-      
+
       // Update blog post state to include the generated image with dimensions from API
       setFormData(prev => ({
         ...prev,
@@ -233,14 +233,14 @@ export default function EditBlogPostPage({ params }: { params: { id: string } })
       }
 
       const result = await response.json();
-      
+
       // Add the generated tag to the form data with comma splitting
       if (result.content) {
         // Split tags by comma and process each individually
         const newTags = result.content.split(',')
           .map(tag => tag.trim())
           .filter(tag => tag && !formData.tags?.includes(tag));
-        
+
         if (newTags.length > 0) {
           setFormData(prev => ({
             ...prev,
@@ -267,7 +267,7 @@ export default function EditBlogPostPage({ params }: { params: { id: string } })
           throw new Error('Failed to fetch blog post');
         }
         const data = await response.json();
-        
+
         if (data) {
           setBlogPost(data);
           setFormData({
@@ -282,7 +282,7 @@ export default function EditBlogPostPage({ params }: { params: { id: string } })
             likes: data.likes || 0,
             views: data.views || 0,
           });
-          
+
           // Set content if available
           if (data.content) {
             setContent(data.content);
@@ -422,7 +422,7 @@ export default function EditBlogPostPage({ params }: { params: { id: string } })
       const newTags = tagsInput.split(',')
         .map(tag => tag.trim())
         .filter(tag => tag && !formData.tags?.includes(tag));
-      
+
       if (newTags.length > 0) {
         setFormData(prev => ({
           ...prev,
@@ -472,7 +472,7 @@ export default function EditBlogPostPage({ params }: { params: { id: string } })
           </CardHeader>
           <CardContent>
             <p className="text-red-500">{error}</p>
-            <BackToAdminButton className="mt-4" />
+
           </CardContent>
         </Card>
       </div>
@@ -636,8 +636,8 @@ export default function EditBlogPostPage({ params }: { params: { id: string } })
                   onChange={(e) => setCategoriesInput(e.target.value)}
                   placeholder="Add a category"
                 />
-                <Button 
-                  type="button" 
+                <Button
+                  type="button"
                   variant="outline"
                   onClick={addCategory}
                 >
@@ -648,8 +648,8 @@ export default function EditBlogPostPage({ params }: { params: { id: string } })
                 {formData.categories?.map((category, index) => (
                   <Badge key={index} variant="secondary" className="flex items-center gap-1">
                     {typeof category === 'string' ? category : category.name}
-                    <button 
-                      type="button" 
+                    <button
+                      type="button"
                       onClick={() => removeCategory(typeof category === 'string' ? category : category.name)}
                       className="ml-1 text-destructive hover:text-destructive/80"
                     >
@@ -688,8 +688,8 @@ export default function EditBlogPostPage({ params }: { params: { id: string } })
                   onChange={(e) => setTagsInput(e.target.value)}
                   placeholder="Add a tag"
                 />
-                <Button 
-                  type="button" 
+                <Button
+                  type="button"
                   variant="outline"
                   onClick={addTag}
                 >
@@ -700,8 +700,8 @@ export default function EditBlogPostPage({ params }: { params: { id: string } })
                 {formData.tags?.map((tag, index) => (
                   <Badge key={index} variant="secondary" className="flex items-center gap-1">
                     {tag}
-                    <button 
-                      type="button" 
+                    <button
+                      type="button"
                       onClick={() => removeTag(tag)}
                       className="ml-1 text-destructive hover:text-destructive/80"
                     >
@@ -783,7 +783,7 @@ export default function EditBlogPostPage({ params }: { params: { id: string } })
 
             {/* Submit Button */}
             <div className="flex justify-between items-center">
-              <BackToAdminButton />
+
               <div className="flex space-x-3">
                 <Button
                   type="button"

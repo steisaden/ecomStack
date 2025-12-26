@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
   try {
     // Check authentication using the same method as other admin APIs
     const authToken = request.cookies.get('auth-token')?.value
-    
+
     if (!authToken) {
       return NextResponse.json(
         { success: false, message: 'Unauthorized - No auth token' },
@@ -121,15 +121,15 @@ export async function POST(request: NextRequest) {
           }
         }
 
-        // Add optional fields
+        // Add optional fields if schema supports them; ignore if not present
         if (product.affiliateUrl) {
-          entryData.fields.affiliateUrl = {
+          (entryData.fields as any).affiliateUrl = {
             'en-US': product.affiliateUrl
           }
         }
 
         if (product.tags && product.tags.length > 0) {
-          entryData.fields.tags = {
+          (entryData.fields as any).tags = {
             'en-US': product.tags
           }
         }
@@ -172,7 +172,7 @@ export async function POST(request: NextRequest) {
               categoryId = categoryEntry.sys.id
             }
 
-            entryData.fields.category = {
+            (entryData.fields as any).category = {
               'en-US': {
                 sys: {
                   type: 'Link',
@@ -193,7 +193,7 @@ export async function POST(request: NextRequest) {
           try {
             // For simplicity, we'll store the image URL as a text field
             // In a production system, you might want to upload the image to Contentful
-            entryData.fields.imageUrl = {
+            (entryData.fields as any).imageUrl = {
               'en-US': product.imageUrl
             }
           } catch (imageError) {
@@ -204,12 +204,12 @@ export async function POST(request: NextRequest) {
 
         // Create the product entry
         const entry = await environment.createEntry('goddessCareProduct', entryData)
-        
+
         // Publish the entry
         await entry.publish()
-        
+
         result.created++
-        
+
         console.log(`Successfully created product: ${product.title}`)
 
       } catch (error) {
@@ -226,8 +226,8 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Bulk upload error:', error)
     return NextResponse.json(
-      { 
-        success: false, 
+      {
+        success: false,
         message: error instanceof Error ? error.message : 'Internal server error',
         processed: 0,
         errors: ['Server error occurred'],

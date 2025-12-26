@@ -5,7 +5,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'; // Still used for Date Management
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -17,6 +17,7 @@ import { YogaService, Availability } from '@/lib/types';
 import { format, addDays } from 'date-fns';
 import { sortTimeStrings, to12HourFormat, compareTimeStrings } from '@/lib/timeUtils';
 import { TimeSlotSelector } from './TimeSlotSelector';
+import { WeeklyScheduleTab } from './WeeklyScheduleTab';
 import { intersection } from 'lodash';
 
 export function YogaAvailabilityManager({ initialYogaServices }: { initialYogaServices: YogaService[] }) {
@@ -39,9 +40,9 @@ export function YogaAvailabilityManager({ initialYogaServices }: { initialYogaSe
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [selectedBulkTimeSlots, setSelectedBulkTimeSlots] = useState<string[]>([]);
   const [selectedSingleTimeSlots, setSelectedSingleTimeSlots] = useState<string[]>([]);
-  const [commonTimeSlots, setCommonTimeSlots] = useState<string[]>(() => 
+  const [commonTimeSlots, setCommonTimeSlots] = useState<string[]>(() =>
     sortTimeStrings([
-      '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', 
+      '09:00', '10:00', '11:00', '12:00', '13:00', '14:00',
       '15:00', '16:00', '17:00', '18:00', '19:00', '20:00'
     ])
   );
@@ -74,7 +75,7 @@ export function YogaAvailabilityManager({ initialYogaServices }: { initialYogaSe
         fetch(`/api/yoga-availability?serviceId=${id}`).then(res => res.json())
       );
       const results = await Promise.all(availabilityPromises);
-      
+
       const combinedAvailability: Availability = {};
       results.forEach((result, index) => {
         if (result.success) {
@@ -94,7 +95,7 @@ export function YogaAvailabilityManager({ initialYogaServices }: { initialYogaSe
     if (!selectedDate || selectedServiceIds.length === 0) return [];
 
     const formattedDate = format(selectedDate, 'yyyy-MM-dd');
-    
+
     if (selectedServiceIds.length === 1) {
       const serviceId = selectedServiceIds[0];
       const serviceAvailability = availability[serviceId];
@@ -205,7 +206,7 @@ export function YogaAvailabilityManager({ initialYogaServices }: { initialYogaSe
 
     const hour = parseInt(hourStr, 10);
     const minute = parseInt(minuteStr, 10);
-    
+
     if (isNaN(hour) || isNaN(minute) || hour < 1 || hour > 12 || minute < 0 || minute > 59) {
       alert('Please enter a valid time in 12-hour format (HH:MM AM/PM)');
       return;
@@ -213,12 +214,12 @@ export function YogaAvailabilityManager({ initialYogaServices }: { initialYogaSe
 
     const hour24 = period === 'AM' ? (hour === 12 ? 0 : hour) : (hour === 12 ? 12 : hour + 12);
     const timeString24 = `${hour24.toString().padStart(2, '0')}:${minuteStr.padStart(2, '0')}`;
-    
+
     if (commonTimeSlots.includes(timeString24)) {
       alert('This time slot already exists.');
       return;
     }
-    
+
     const newCommonTimeSlots = sortTimeStrings([...commonTimeSlots, timeString24]);
     setCommonTimeSlots(newCommonTimeSlots);
 
@@ -240,7 +241,7 @@ export function YogaAvailabilityManager({ initialYogaServices }: { initialYogaSe
       alert('Please select dates and at least one time slot.');
       return;
     }
-    
+
     await updateAvailabilityAction(selectedBulkTimeSlots, 'add', { dates });
   };
 
@@ -250,7 +251,7 @@ export function YogaAvailabilityManager({ initialYogaServices }: { initialYogaSe
       alert('Please select dates and at least one time slot.');
       return;
     }
-    
+
     await updateAvailabilityAction(selectedBulkTimeSlots, 'remove', { dates });
   };
 
@@ -318,45 +319,44 @@ export function YogaAvailabilityManager({ initialYogaServices }: { initialYogaSe
           <CardDescription>Choose a service or multiple services to manage availability.</CardDescription>
         </CardHeader>
         <CardContent>
-          <Tabs value={serviceSelectionTab} onValueChange={handleServiceTabChange}>
-            <TabsList className="w-full flex-wrap h-auto gap-2 p-2">
-              {services.map(service => (
-                <TabsTrigger 
-                  key={service.sys.id} 
-                  value={service.sys.id}
-                  className="flex-1 min-w-[120px] text-xs sm:text-sm"
-                >
-                  {service.name}
-                </TabsTrigger>
-              ))}
-              <TabsTrigger 
-                value="multi-select"
-                className="flex-1 min-w-[120px] text-xs sm:text-sm"
-              >
-                Multi-Select
-              </TabsTrigger>
-            </TabsList>
-            <TabsContent value="multi-select" className="pt-4">
-              <div className="flex flex-col gap-3 sm:grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 sm:gap-4">
+          <div className="space-y-4">
+            <Select value={serviceSelectionTab} onValueChange={handleServiceTabChange}>
+              <SelectTrigger className="w-full md:w-[300px]">
+                <SelectValue placeholder="Select Service" />
+              </SelectTrigger>
+              <SelectContent>
                 {services.map(service => (
-                  <div key={service.sys.id} className="flex items-center space-x-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors">
-                    <Checkbox
-                      id={`service-${service.sys.id}`}
-                      checked={selectedServiceIds.includes(service.sys.id)}
-                      onCheckedChange={() => handleMultiSelectChange(service.sys.id)}
-                      className="h-5 w-5"
-                    />
-                    <Label 
-                      htmlFor={`service-${service.sys.id}`}
-                      className="flex-1 cursor-pointer text-sm font-medium"
-                    >
-                      {service.name}
-                    </Label>
-                  </div>
+                  <SelectItem key={service.sys.id} value={service.sys.id}>
+                    {service.name}
+                  </SelectItem>
                 ))}
+                <SelectItem value="multi-select">Multi-Select Services</SelectItem>
+              </SelectContent>
+            </Select>
+
+            {serviceSelectionTab === 'multi-select' && (
+              <div className="pt-2">
+                <div className="flex flex-col gap-3 sm:grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 sm:gap-4">
+                  {services.map(service => (
+                    <div key={service.sys.id} className="flex items-center space-x-3 p-3 rounded-lg border border-border-muted bg-surface hover:bg-surface-alt transition-colors">
+                      <Checkbox
+                        id={`service-${service.sys.id}`}
+                        checked={selectedServiceIds.includes(service.sys.id)}
+                        onCheckedChange={() => handleMultiSelectChange(service.sys.id)}
+                        className="h-5 w-5"
+                      />
+                      <Label
+                        htmlFor={`service-${service.sys.id}`}
+                        className="flex-1 cursor-pointer text-sm font-medium"
+                      >
+                        {service.name}
+                      </Label>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </TabsContent>
-          </Tabs>
+            )}
+          </div>
         </CardContent>
       </Card>
 
@@ -364,8 +364,9 @@ export function YogaAvailabilityManager({ initialYogaServices }: { initialYogaSe
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="single-day" disabled={selectedServiceIds.length === 0}>Single Day Management</TabsTrigger>
           <TabsTrigger value="bulk-dates" disabled={selectedServiceIds.length === 0}>Bulk Date Management</TabsTrigger>
+          <TabsTrigger value="weekly-schedule" disabled={selectedServiceIds.length === 0}>Weekly Schedule</TabsTrigger>
         </TabsList>
-        
+
         <TabsContent value="single-day" className="space-y-6 pt-4">
           <div className="grid md:grid-cols-2 gap-6">
             <Card>
@@ -416,40 +417,40 @@ export function YogaAvailabilityManager({ initialYogaServices }: { initialYogaSe
                     <Button onClick={removeSelectedTimeSlots} variant="outline" disabled={selectedSingleTimeSlots.length === 0 || isSaving}>Remove</Button>
                   </div>
                   <Separator />
-                   <div>
-                      <h4 className="font-medium text-beauty-dark mb-3">
-                        Add Custom Time Slot
-                      </h4>
-                      <div className="flex space-x-2 items-end">
-                        <div className="grid grid-cols-3 gap-2 w-full max-w-xs">
-                          <div className="space-y-1">
-                            <Label htmlFor="custom-hour">Hour</Label>
-                            <Input id="custom-hour" type="number" placeholder="1-12" min="1" max="12" value={customHour} onChange={(e) => setCustomHour(e.target.value)} />
-                          </div>
-                          <div className="space-y-1">
-                            <Label htmlFor="custom-minute">Minute</Label>
-                            <Input id="custom-minute" type="number" placeholder="00-59" min="0" max="59" value={customMinute} onChange={(e) => setCustomMinute(e.target.value)} />
-                          </div>
-                          <div className="space-y-1">
-                            <Label htmlFor="custom-period">Period</Label>
-                            <Select value={customPeriod} onValueChange={(value: 'AM' | 'PM') => setCustomPeriod(value)}>
-                              <SelectTrigger><SelectValue /></SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="AM">AM</SelectItem>
-                                <SelectItem value="PM">PM</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
+                  <div>
+                    <h4 className="font-medium text-beauty-dark mb-3">
+                      Add Custom Time Slot
+                    </h4>
+                    <div className="flex space-x-2 items-end">
+                      <div className="grid grid-cols-3 gap-2 w-full max-w-xs">
+                        <div className="space-y-1">
+                          <Label htmlFor="custom-hour">Hour</Label>
+                          <Input id="custom-hour" type="number" placeholder="1-12" min="1" max="12" value={customHour} onChange={(e) => setCustomHour(e.target.value)} />
                         </div>
-                        <Button onClick={() => handleAddCustomTimeSlot(false)} disabled={isSaving}>Add</Button>
+                        <div className="space-y-1">
+                          <Label htmlFor="custom-minute">Minute</Label>
+                          <Input id="custom-minute" type="number" placeholder="00-59" min="0" max="59" value={customMinute} onChange={(e) => setCustomMinute(e.target.value)} />
+                        </div>
+                        <div className="space-y-1">
+                          <Label htmlFor="custom-period">Period</Label>
+                          <Select value={customPeriod} onValueChange={(value: 'AM' | 'PM') => setCustomPeriod(value)}>
+                            <SelectTrigger><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="AM">AM</SelectItem>
+                              <SelectItem value="PM">PM</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
                       </div>
+                      <Button onClick={() => handleAddCustomTimeSlot(false)} disabled={isSaving}>Add</Button>
                     </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
           </div>
         </TabsContent>
-        
+
         <TabsContent value="bulk-dates" className="space-y-6 pt-4">
           <Card>
             <CardHeader>
@@ -500,7 +501,7 @@ export function YogaAvailabilityManager({ initialYogaServices }: { initialYogaSe
                 title="Select Time Slots to Add"
                 description="These time slots will be added to all dates in the selected range."
               />
-               <div>
+              <div>
                 <h4 className="font-medium text-beauty-dark mb-4">
                   Add Custom Time Slot
                 </h4>
@@ -534,6 +535,14 @@ export function YogaAvailabilityManager({ initialYogaServices }: { initialYogaSe
               {showSuccessMessage && <p className="text-sm text-green-600">Bulk update successful!</p>}
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="weekly-schedule" className="space-y-6 pt-4">
+          <WeeklyScheduleTab
+            commonTimeSlots={commonTimeSlots}
+            onUpdateAvailability={updateAvailabilityAction}
+            isSaving={isSaving}
+          />
         </TabsContent>
       </Tabs>
     </div>

@@ -78,8 +78,8 @@ export async function GET(request: NextRequest) {
       case 'funnel':
       default:
         result = await ConversionTrackingService.analyzeConversionFunnel({
-          userId,
-          productId,
+          userId: userId ?? undefined,
+          productId: productId ?? undefined,
           startDate,
           endDate,
           includeDemoData

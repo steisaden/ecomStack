@@ -105,8 +105,8 @@ class EmailService {
    */
   async sendSaleConfirmation(saleData: SaleConfirmationData): Promise<boolean> {
     const subject = `🛍️ New Sale Confirmation - Order #${saleData.orderId}`
-    
-    const itemsList = saleData.items.map(item => 
+
+    const itemsList = saleData.items.map(item =>
       `<li>${item.name} - Qty: ${item.quantity} - $${item.price.toFixed(2)}</li>`
     ).join('')
 
@@ -153,8 +153,8 @@ class EmailService {
    */
   async sendYogaBookingNotification(bookingData: YogaBookingData): Promise<boolean> {
     const subject = `🧘‍♀️ New Yoga Booking - ${bookingData.service}`
-    
-    const addOnsList = bookingData.addOns && bookingData.addOns.length > 0 
+
+    const addOnsList = bookingData.addOns && bookingData.addOns.length > 0
       ? `<p><strong>Add-ons:</strong> ${bookingData.addOns.join(', ')}</p>`
       : ''
 
@@ -217,8 +217,8 @@ class EmailService {
 
   private async sendSaleCustomerConfirmation(customerEmail: string, saleData: SaleConfirmationData): Promise<boolean> {
     const subject = `Order Confirmation - Goddess Hair & Beauty #${saleData.orderId}`
-    
-    const itemsList = saleData.items.map(item => 
+
+    const itemsList = saleData.items.map(item =>
       `<li style="padding: 5px 0;">${item.name} - Qty: ${item.quantity} - $${item.price.toFixed(2)}</li>`
     ).join('')
 
@@ -268,7 +268,7 @@ class EmailService {
 
   private async sendYogaCustomerConfirmation(customerEmail: string, bookingData: YogaBookingData): Promise<boolean> {
     const subject = `Yoga Booking Confirmed - ${bookingData.service}`
-    
+
     const html = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <div style="background: linear-gradient(135deg, #10B981, #059669); padding: 20px; text-align: center;">
@@ -314,6 +314,58 @@ class EmailService {
 
     return this.sendEmail({
       to: customerEmail,
+      subject,
+      html
+    })
+  }
+
+  /**
+   * Send password reset email
+   */
+  async sendPasswordResetEmail(to: string, resetToken: string, recoveryCode?: string): Promise<boolean> {
+    const subject = 'Password Reset Request - Goddess Hair & Beauty'
+
+    // In a real app, this would be a link to a reset page with the token as a query param
+    // But since the current flow is "copy token to form", we'll display it clearly.
+    // If the app had a dedicated /reset-password/[token] page, we'd link there.
+    // Assuming /login?mode=reset is the place to go.
+
+    const resetLink = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/login?mode=reset&token=${resetToken}`
+
+    const html = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <div style="background: linear-gradient(135deg, #EF4444, #F87171); padding: 20px; text-align: center;">
+          <h1 style="color: white; margin: 0;">Password Reset</h1>
+        </div>
+        
+        <div style="padding: 20px; background: #fff1f2;">
+          <p>Hello,</p>
+          <p>We received a request to reset the password for your admin account at Goddess Hair & Beauty.</p>
+          
+          <div style="background: white; padding: 20px; border-radius: 10px; margin: 20px 0; text-align: center; border: 1px solid #fecdd3;">
+            <p style="margin-top: 0; color: #666; font-size: 14px;">Your Reset Token:</p>
+            <code style="display: block; font-size: 24px; font-weight: bold; color: #e11d48; margin: 10px 0; letter-spacing: 2px;">${resetToken}</code>
+          </div>
+
+          <p style="text-align: center;">
+            <a href="${resetLink}" style="display: inline-block; background: #e11d48; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold;">Reset Password</a>
+          </p>
+          
+          ${recoveryCode ? `
+          <div style="margin-top: 20px; font-size: 12px; color: #881337;">
+            <p><strong>Reminder:</strong> You also have a recovery code saved. You can use that instead of this token if you prefer.</p>
+          </div>
+          ` : ''}
+          
+          <p style="margin-top: 30px; font-size: 14px; color: #666;">
+            The token is valid for 60 minutes. If you didn't request this, you can safely ignore this email.
+          </p>
+        </div>
+      </div>
+    `
+
+    return this.sendEmail({
+      to,
       subject,
       html
     })

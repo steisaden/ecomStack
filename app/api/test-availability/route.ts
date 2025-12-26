@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getCachedAvailability } from '@/lib/availability';
+import { getAvailability } from '@/lib/availability';
 
 export async function GET(request: NextRequest) {
   try {
-    const availability = await getCachedAvailability();
+    const availability = await getAvailability();
     
     return NextResponse.json({
       success: true,

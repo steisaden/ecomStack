@@ -1,23 +1,22 @@
-import { unstable_cache } from 'next/cache';
-import { revalidateTag, cache } from 'next/cache';
+
 
 // Types for tracking events and funnels
 export interface TrackingEvent {
   id: string;
   userId?: string;
   sessionId: string;
-  eventType: 
-    | 'page_view' 
-    | 'product_view' 
-    | 'add_to_cart' 
-    | 'checkout_start' 
-    | 'payment_initiated' 
-    | 'purchase_completed'
-    | 'product_search'
-    | 'category_view'
-    | 'wishlist_add'
-    | 'share_action'
-    | string;
+  eventType:
+  | 'page_view'
+  | 'product_view'
+  | 'add_to_cart'
+  | 'checkout_start'
+  | 'payment_initiated'
+  | 'purchase_completed'
+  | 'product_search'
+  | 'category_view'
+  | 'wishlist_add'
+  | 'share_action'
+  | string;
   productId?: string;
   category?: string;
   timestamp: string;
@@ -62,7 +61,7 @@ class InMemoryEventStore {
 
   addEvent(event: TrackingEvent): void {
     this.events.push(event);
-    
+
     // Trim if we exceed the max size
     if (this.events.length > this.maxSize) {
       this.events = this.events.slice(-this.maxSize);
@@ -82,19 +81,19 @@ class InMemoryEventStore {
       if (filters?.sessionId && event.sessionId !== filters.sessionId) return false;
       if (filters?.eventType && event.eventType !== filters.eventType) return false;
       if (filters?.productId && event.productId !== filters.productId) return false;
-      
+
       if (filters?.startDate) {
         const eventTime = new Date(event.timestamp).getTime();
         const startTime = new Date(filters.startDate).getTime();
         if (eventTime < startTime) return false;
       }
-      
+
       if (filters?.endDate) {
         const eventTime = new Date(event.timestamp).getTime();
         const endTime = new Date(filters.endDate).getTime();
         if (eventTime > endTime) return false;
       }
-      
+
       return true;
     });
   }
@@ -160,25 +159,25 @@ export class ConversionTrackingService {
 
     // Count events for each step
     const stepCounts: { [key: string]: number } = {};
-    
+
     funnelSteps.forEach(step => {
-      stepCounts[step.name] = allEvents.filter(event => 
+      stepCounts[step.name] = allEvents.filter(event =>
         step.eventTypes.includes(event.eventType)
       ).length;
     });
 
     // Calculate drop-off rates
     const processedSteps: ConversionFunnelStep[] = [];
-    
+
     for (let i = 0; i < funnelSteps.length; i++) {
       const step = funnelSteps[i];
       const count = stepCounts[step.name];
-      
+
       let dropOffRate = 0;
       if (i > 0 && stepCounts[funnelSteps[i - 1].name] > 0) {
         dropOffRate = 1 - (count / stepCounts[funnelSteps[i - 1].name]);
       }
-      
+
       processedSteps.push({
         name: step.name,
         eventTypes: step.eventTypes,
@@ -265,7 +264,7 @@ export class ConversionTrackingService {
       }
 
       const stats = productStats[event.productId];
-      
+
       switch (event.eventType) {
         case 'product_view':
           stats.views++;
@@ -294,21 +293,21 @@ export class ConversionTrackingService {
   private static generateDemoEvents(): TrackingEvent[] {
     const events: TrackingEvent[] = [];
     const now = new Date();
-    
+
     // Generate demo events for the last 30 days
     for (let i = 0; i < 50; i++) {
       const daysAgo = Math.floor(Math.random() * 30);
       const eventTime = new Date(now);
       eventTime.setDate(now.getDate() - daysAgo);
-      
+
       const eventTypes: TrackingEvent['eventType'][] = [
-        'page_view', 
-        'product_view', 
-        'add_to_cart', 
-        'checkout_start', 
+        'page_view',
+        'product_view',
+        'add_to_cart',
+        'checkout_start',
         'purchase_completed'
       ];
-      
+
       // Generate events following a conversion path
       const paths = [
         ['page_view', 'product_view'],
@@ -316,17 +315,17 @@ export class ConversionTrackingService {
         ['page_view', 'product_view', 'add_to_cart', 'checkout_start'],
         ['page_view', 'product_view', 'add_to_cart', 'checkout_start', 'purchase_completed']
       ];
-      
+
       const path = paths[Math.floor(Math.random() * paths.length)];
       const userId = `user_${Math.floor(Math.random() * 100)}`;
       const sessionId = `session_${Date.now()}_${i}`;
       const productId = `prod_${Math.floor(Math.random() * 20)}`;
-      
+
       for (let j = 0; j < path.length; j++) {
         const eventType = path[j] as TrackingEvent['eventType'];
         const timestamp = new Date(eventTime);
         timestamp.setMinutes(timestamp.getMinutes() + j * 5); // Spread events within a session
-        
+
         events.push({
           id: `demo_event_${i}_${j}`,
           userId,
@@ -343,7 +342,7 @@ export class ConversionTrackingService {
         });
       }
     }
-    
+
     return events;
   }
 
@@ -366,7 +365,7 @@ export class ConversionTrackingService {
     // Process each session to identify paths
     Object.values(userSessions).forEach(sessionEvents => {
       // Sort events by timestamp
-      sessionEvents.sort((a, b) => 
+      sessionEvents.sort((a, b) =>
         new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
       );
 
@@ -412,7 +411,7 @@ export class ConversionTrackingService {
     Object.values(userSessions).forEach(sessionEvents => {
       const hasPurchase = sessionEvents.some(e => e.eventType === 'purchase_completed');
       if (hasPurchase) {
-        const sortedEvents = sessionEvents.sort((a, b) => 
+        const sortedEvents = sessionEvents.sort((a, b) =>
           new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
         );
 
@@ -433,7 +432,7 @@ export class ConversionTrackingService {
     const avg = conversionTimes.reduce((sum, time) => sum + time, 0) / conversionTimes.length;
 
     const sortedTimes = [...conversionTimes].sort((a, b) => a - b);
-    const median = 
+    const median =
       sortedTimes.length % 2 === 0
         ? (sortedTimes[sortedTimes.length / 2 - 1] + sortedTimes[sortedTimes.length / 2]) / 2
         : sortedTimes[Math.floor(sortedTimes.length / 2)];

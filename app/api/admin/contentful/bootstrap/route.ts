@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from 'contentful-management';
 
@@ -99,10 +100,21 @@ export async function POST(request: NextRequest) {
           { id: 'avatar', name: 'Avatar', type: 'Link', required: false, localized: false, linkType: 'Asset' },
           { id: 'bio', name: 'Bio', type: 'RichText', required: false, localized: false },
         ]
+      },
+      {
+        sys: { id: 'yogaAvailability' },
+        name: 'Yoga Availability',
+        description: 'Availability per service per date',
+        displayField: 'serviceId',
+        fields: [
+          { id: 'serviceId', name: 'Service ID', type: 'Symbol', required: true, localized: false },
+          { id: 'date', name: 'Date', type: 'Date', required: true, localized: false },
+          { id: 'timeSlots', name: 'Time Slots', type: 'Object', required: true, localized: false },
+        ]
       }
     ];
 
-    const results = [];
+    const results: Array<{ id: string; status: string; error?: string }> = [];
 
     for (const contentTypeDef of contentTypes) {
       try {
@@ -113,7 +125,14 @@ export async function POST(request: NextRequest) {
           results.push({ id: contentTypeDef.sys.id, status: 'already exists' });
         } catch (error: any) {
           // If getting the content type fails, it means it doesn't exist
-          if (error.sys?.id === 'notResolvable') {
+          // Contentful SDK can return different error formats depending on version
+          const isNotFound =
+            error.sys?.id === 'notResolvable' ||
+            error.status === 404 ||
+            (error.message && typeof error.message === 'string' && error.message.includes('The resource could not be found')) ||
+            (error.message && typeof error.message === 'string' && error.message.includes('404'));
+
+          if (isNotFound) {
             // Create the content type
             contentType = await environment.createContentTypeWithId(contentTypeDef.sys.id, {
               name: contentTypeDef.name,
@@ -144,9 +163,9 @@ export async function POST(request: NextRequest) {
   } catch (error: any) {
     console.error('Error in bootstrap process:', error);
     return NextResponse.json(
-      { 
-        success: false, 
-        error: error.message 
+      {
+        success: false,
+        error: error.message
       },
       { status: 500 }
     );

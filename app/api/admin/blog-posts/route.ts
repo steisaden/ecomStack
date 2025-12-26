@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
   try {
     // Parse JSON payload
     const reqData = await request.json();
-    const blogPostData: Omit<BlogPost, 'sys' | 'content'> = reqData.blogPostData;
+    const blogPostData: any = reqData.blogPostData;
     const assetIds: any[] = reqData.assetIds || []; // Array of uploaded asset objects
     const authorName: string = reqData.authorName || 'Goddess Care Team';
     

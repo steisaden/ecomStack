@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { BackToAdminButton } from '@/components/admin/BackToAdminButton';
+
 
 export default function EditProductPage() {
   const router = useRouter();
@@ -98,7 +98,7 @@ export default function EditProductPage() {
               required
             />
           </div>
-          
+
           {/* Product Slug */}
           <div>
             <label htmlFor="slug" className="block text-sm font-medium mb-1">Slug *</label>
@@ -111,7 +111,7 @@ export default function EditProductPage() {
               placeholder="e.g. organic-face-oil"
             />
           </div>
-          
+
           {/* Price */}
           <div>
             <label htmlFor="price" className="block text-sm font-medium mb-1">Price *</label>
@@ -125,7 +125,7 @@ export default function EditProductPage() {
               min="0"
             />
           </div>
-          
+
           {/* Description */}
           <div>
             <label htmlFor="description" className="block text-sm font-medium mb-1">Description</label>
@@ -136,7 +136,7 @@ export default function EditProductPage() {
               rows={4}
             />
           </div>
-          
+
           {/* Category */}
           <div>
             <label htmlFor="category" className="block text-sm font-medium mb-1">Category</label>
@@ -151,7 +151,7 @@ export default function EditProductPage() {
               placeholder="e.g. Face Oils"
             />
           </div>
-          
+
           {/* In Stock Toggle */}
           <div className="flex items-center space-x-2">
             <input
@@ -163,7 +163,7 @@ export default function EditProductPage() {
             />
             <label htmlFor="inStock" className="text-sm font-medium">In Stock</label>
           </div>
-          
+
           {/* Affiliate Product Toggle */}
           <div className="flex items-center space-x-2">
             <input
@@ -175,7 +175,7 @@ export default function EditProductPage() {
             />
             <label htmlFor="isAffiliate" className="text-sm font-medium">Affiliate Product</label>
           </div>
-          
+
           {product.isAffiliate && (
             <div>
               <label htmlFor="affiliateUrl" className="block text-sm font-medium mb-1">Affiliate URL</label>
@@ -188,10 +188,10 @@ export default function EditProductPage() {
               />
             </div>
           )}
-          
+
           {/* Submit and Navigation Buttons */}
           <div className="flex justify-between items-center pt-4">
-            <BackToAdminButton />
+
             <div className="flex space-x-3">
               <Button
                 type="button"

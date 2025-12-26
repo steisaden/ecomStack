@@ -1,5 +1,4 @@
-import { unstable_cache } from 'next/cache';
-import { revalidateTag, cache } from 'next/cache';
+
 
 // Types for click tracking
 export interface ClickEvent {
@@ -56,7 +55,7 @@ class InMemoryClickStore {
 
   addClick(click: ClickEvent): void {
     this.clicks.push(click);
-    
+
     // Trim if we exceed the max size
     if (this.clicks.length > this.maxSize) {
       this.clicks = this.clicks.slice(-this.maxSize);
@@ -78,19 +77,19 @@ class InMemoryClickStore {
       if (filters?.elementId && click.elementId !== filters.elementId) return false;
       if (filters?.elementType && click.elementType !== filters.elementType) return false;
       if (filters?.url && click.url !== filters.url) return false;
-      
+
       if (filters?.startDate) {
         const clickTime = new Date(click.timestamp).getTime();
         const startTime = new Date(filters.startDate).getTime();
         if (clickTime < startTime) return false;
       }
-      
+
       if (filters?.endDate) {
         const clickTime = new Date(click.timestamp).getTime();
         const endTime = new Date(filters.endDate).getTime();
         if (clickTime > endTime) return false;
       }
-      
+
       return true;
     });
   }
@@ -98,19 +97,19 @@ class InMemoryClickStore {
   clear(): void {
     this.clicks = [];
   }
-  
+
   getRecentClicks(limit: number = 100): ClickEvent[] {
     return [...this.clicks].slice(-limit);
   }
-  
+
   getAllClicks(): ClickEvent[] {
     return [...this.clicks];
   }
-  
+
   getClickCount(): number {
     return this.clicks.length;
   }
-  
+
   getUniqueUsers(): number {
     const uniqueUsers = new Set();
     this.clicks.forEach(click => {
@@ -160,7 +159,7 @@ export class RealTimeClickTrackingService {
     // Calculate basic metrics
     const totalClicks = clicks.length;
     const uniqueUsers = clickStore.getUniqueUsers();
-    
+
     // Calculate top click elements
     const elementClicks: Record<string, { count: number; users: Set<string> }> = {};
     clicks.forEach(click => {
@@ -196,7 +195,7 @@ export class RealTimeClickTrackingService {
     // Calculate active users (users active in the last 5 minutes)
     const fiveMinutesAgo = new Date();
     fiveMinutesAgo.setMinutes(fiveMinutesAgo.getMinutes() - 5);
-    const recentClicks = clicks.filter(click => 
+    const recentClicks = clicks.filter(click =>
       new Date(click.timestamp) > fiveMinutesAgo
     );
     const activeUsers = new Set(recentClicks.map(c => c.userId)).size;
@@ -217,11 +216,11 @@ export class RealTimeClickTrackingService {
 
     const sessionDurations = Array.from(sessions.values())
       .map(session => (session.end.getTime() - session.start.getTime()) / 1000); // in seconds
-    const avgSessionDuration = sessionDurations.length > 0 
+    const avgSessionDuration = sessionDurations.length > 0
       ? sessionDurations.reduce((sum, dur) => sum + dur, 0) / sessionDurations.length
       : 0;
-    
-    const pageEngagement = sessions.size > 0 
+
+    const pageEngagement = sessions.size > 0
       ? Array.from(sessions.values()).reduce((sum, sess) => sum + sess.clicks, 0) / sessions.size
       : 0;
 
@@ -270,17 +269,17 @@ export class RealTimeClickTrackingService {
     // Calculate element-specific metrics
     const totalClicks = clicks.length;
     const uniqueUsers = new Set(clicks.filter(c => c.userId).map(c => c.userId!)).size;
-    
+
     // In a real implementation, you'd have more sophisticated tracking for CTR
     // For demo, we'll calculate a basic CTR based on view data if available
     const clickThroughRate = 5.0; // Placeholder - would be calculated from view/impression data in real app
-    
+
     // Calculate average time on page (simplified)
     const avgTimeOnPage = 45.5; // Placeholder in seconds
-    
+
     // Calculate conversion rate (placeholder)
     const conversionRate = 2.1; // Placeholder
-    
+
     // Gather click coordinates for heatmap
     const regionClicks = clicks
       .filter(c => c.x !== undefined && c.y !== undefined)
@@ -298,11 +297,11 @@ export class RealTimeClickTrackingService {
       const date = new Date(today);
       date.setDate(date.getDate() - daysAgo);
       const dateStr = date.toISOString().split('T')[0];
-      
-      const dayClicks = clicks.filter(c => 
+
+      const dayClicks = clicks.filter(c =>
         c.timestamp.startsWith(dateStr)
       ).length;
-      
+
       return {
         date: dateStr,
         clicks: dayClicks
@@ -365,12 +364,18 @@ export class RealTimeClickTrackingService {
       elementClicks[elementId].push(click);
     });
 
-    const recommendations = [];
+    const recommendations: Array<{
+      elementId: string;
+      elementName: string;
+      issue: string;
+      recommendation: string;
+      potentialImpact: number;
+    }> = [];
 
     // Analyze each element
     for (const [elementId, elementClicksList] of Object.entries(elementClicks)) {
       const totalClicks = elementClicksList.length;
-      
+
       // If the element has very few clicks, recommend improving visibility
       if (totalClicks < 5) {
         recommendations.push({
@@ -380,7 +385,7 @@ export class RealTimeClickTrackingService {
           recommendation: 'Consider improving visibility, placement, or design to increase clicks',
           potentialImpact: 50 + Math.random() * 100 // 50-150% potential increase
         });
-      } 
+      }
       // If there's high click count, recommend optimizing the experience
       else if (totalClicks > 50) {
         recommendations.push({
@@ -397,16 +402,16 @@ export class RealTimeClickTrackingService {
     const totalClicks = clicks.length;
     const uniqueElements = Object.keys(elementClicks).length;
     const avgClicksPerElement = uniqueElements > 0 ? totalClicks / uniqueElements : 0;
-    
+
     const overallInsights = [
       `Total clicks analyzed: ${totalClicks}`,
       `Unique elements clicked: ${uniqueElements}`,
       `Average clicks per element: ${avgClicksPerElement.toFixed(2)}`,
-      totalClicks > 100 
-        ? 'High engagement detected - consider A/B testing to optimize further' 
+      totalClicks > 100
+        ? 'High engagement detected - consider A/B testing to optimize further'
         : 'Low engagement detected - focus on improving user experience',
-      uniqueElements > 10 
-        ? 'Good element diversity in user interactions' 
+      uniqueElements > 10
+        ? 'Good element diversity in user interactions'
         : 'Limited element interaction - consider adding more interactive elements'
     ];
 

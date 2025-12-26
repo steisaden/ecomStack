@@ -1,7 +1,7 @@
 import { SimplifiedAmazonAdder } from '@/components/admin/SimplifiedAmazonAdder'
 import { ManualAmazonProductEntry } from '@/components/admin/ManualAmazonProductEntry'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { BackToAdminButton } from '@/components/admin/BackToAdminButton'
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 // Force dynamic rendering for admin routes that use authentication
@@ -22,7 +22,7 @@ export default function AddAmazonProductPage() {
             Add products from Amazon with affiliate links
           </p>
         </div>
-        <BackToAdminButton />
+
       </div>
 
       <Tabs defaultValue="manual" className="mb-8">
@@ -30,11 +30,11 @@ export default function AddAmazonProductPage() {
           <TabsTrigger value="manual">Manual Entry</TabsTrigger>
           <TabsTrigger value="auto">Auto-Fetch (Mock Data)</TabsTrigger>
         </TabsList>
-        
+
         <TabsContent value="manual" className="mt-6">
           <ManualAmazonProductEntry />
         </TabsContent>
-        
+
         <TabsContent value="auto" className="mt-6">
           <Card>
             <CardHeader>

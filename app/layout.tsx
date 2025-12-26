@@ -11,18 +11,19 @@ import { CartProvider } from '@/context/CartContext'
 import { WebSiteStructuredData, OrganizationStructuredData } from '@/components/StructuredData'
 import { ClientToaster } from '@/components/ClientToaster'
 import ClientHead from '@/components/ClientHead'
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
+}
 
 export async function generateMetadata(): Promise<Metadata> {
   // Centralized metadata generation logic
   return {
     metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'),
     applicationName: 'Goddess Care Co',
-    viewport: {
-      width: 'device-width',
-      initialScale: 1,
-      viewportFit: 'cover',
-    },
     openGraph: {
       type: 'website',
       siteName: 'Goddess Care Co',
@@ -67,7 +68,7 @@ export default async function RootLayout({
     console.error('Error fetching initial global settings in layout:', error)
     // initialSettings remains undefined, provider will handle loading
   }
-  
+
   return (
     <html lang="en" className={`${inter.variable} ${playfair_display.variable} font-body`}>
       <head>
@@ -90,7 +91,7 @@ export default async function RootLayout({
 
             {/* Footer */}
             <Footer />
-            
+
             {/* Toast Notifications */}
             <ClientToaster />
           </CartProvider>

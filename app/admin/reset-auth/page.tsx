@@ -17,7 +17,7 @@ export default function ResetAuthPage() {
   const handleReset = async () => {
     setIsResetting(true);
     setResetStatus(null);
-    
+
     try {
       const response = await fetch('/api/auth/reset', {
         method: 'POST',
@@ -25,13 +25,13 @@ export default function ResetAuthPage() {
           'Content-Type': 'application/json',
         },
       });
-      
+
       const data = await response.json();
-      
+
       setResetStatus({
         success: data.success,
-        message: data.success 
-          ? 'Authentication status reset successfully' 
+        message: data.success
+          ? 'Authentication status reset successfully'
           : data.error || 'Failed to reset authentication status',
       });
     } catch (error) {
@@ -69,25 +69,19 @@ export default function ResetAuthPage() {
               </AlertDescription>
             </Alert>
           )}
-          
-          <Button 
-            onClick={handleReset} 
+
+          <Button
+            onClick={handleReset}
             disabled={isResetting}
             className="w-full"
           >
             {isResetting ? 'Resetting...' : 'Reset Authentication Status'}
           </Button>
-          
+
           <div className="mt-6 space-y-3 text-center">
             <a href="/login" className="block text-blue-600 hover:underline">
               Return to Login
             </a>
-            <Link
-              href="/admin"
-              className="inline-flex items-center justify-center w-full rounded-md border border-border-muted bg-surface px-4 py-2 text-sm font-medium text-text-strong hover:bg-surface-alt"
-            >
-              ← Back to Admin Dashboard
-            </Link>
           </div>
         </CardContent>
       </Card>

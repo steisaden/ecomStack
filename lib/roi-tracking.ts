@@ -56,27 +56,27 @@ export class ROITrackingService {
   ): Promise<ROIMetric> {
     // In a real implementation, you would fetch actual sales data from your database
     // For now, we'll simulate the data
-    
+
     // Simulate sales data
     const salesCount = Math.floor(Math.random() * 100) + 10; // Random sales between 10-110
     const averageOrderValue = Math.random() * 50 + 20; // Random AOV between $20-$70
     const totalRevenue = salesCount * averageOrderValue;
-    
+
     // Calculate costs
-    const totalCosts = costs.marketingSpend + 
-                      costs.inventoryCost + 
-                      costs.operationalCosts + 
-                      costs.otherCosts;
-    
+    const totalCosts = costs.marketingSpend +
+      costs.inventoryCost +
+      costs.operationalCosts +
+      costs.otherCosts;
+
     const netProfit = totalRevenue - totalCosts;
     const roiPercentage = totalCosts > 0 ? (netProfit / totalCosts) * 100 : 0;
-    
+
     // Simulate tracking metrics
     const impressions = salesCount * (Math.random() * 20 + 50); // 50-70x impressions per sale
     const clicks = impressions * (Math.random() * 0.05 + 0.02); // 2-7% CTR
     const conversionRate = salesCount > 0 ? (salesCount / clicks) * 100 : 0;
     const clickThroughRate = impressions > 0 ? (clicks / impressions) * 100 : 0;
-    
+
     // Get product name
     let productName = `Product ${productId}`;
     try {
@@ -88,11 +88,11 @@ export class ROITrackingService {
     } catch (error) {
       console.warn('Could not fetch product name for ROI calculation');
     }
-    
+
     // Calculate CAC and CLV (simplified)
     const customerAcquisitionCost = costs.marketingSpend / salesCount || 0;
     const customerLifetimeValue = averageOrderValue * 3; // Assuming 3 purchases per customer
-    
+
     return {
       productId,
       productName,
@@ -128,7 +128,7 @@ export class ROITrackingService {
         const avgSalePrice = product.price || Math.random() * 40 + 15; // Use product price or random
         const totalRevenue = salesCount * avgSalePrice;
         const unitsSold = salesCount;
-        
+
         // Simulate costs - typically 60-80% of revenue for cost of goods
         const costPercentage = 0.65 + (Math.random() * 0.15 - 0.075); // 57.5% to 82.5%
         const costOfGoods = totalRevenue * costPercentage;
@@ -136,15 +136,15 @@ export class ROITrackingService {
         const grossProfit = totalRevenue - costOfGoods;
         const netProfit = grossProfit - marketingSpend;
         const roi = marketingSpend > 0 ? (netProfit / marketingSpend) * 100 : 0;
-        
+
         // Determine performance trend
         let performanceTrend: 'increasing' | 'decreasing' | 'stable' = 'stable';
         const trendValue = Math.random();
         if (trendValue > 0.6) performanceTrend = 'increasing';
         else if (trendValue < 0.3) performanceTrend = 'decreasing';
-        
+
         // Calculate efficiency rating (0-100 based on multiple factors)
-        const efficiencyRating = Math.min(100, 
+        const efficiencyRating = Math.min(100,
           (netProfit / Math.max(1, marketingSpend)) * 30 + // ROI contribution
           (salesCount / 10) * 10 + // Volume contribution
           (avgSalePrice > 30 ? 20 : 10) // Price point contribution
@@ -167,11 +167,11 @@ export class ROITrackingService {
 
       // Sort by ROI in descending order
       results.sort((a, b) => b.roi - a.roi);
-      
+
       return results;
     } catch (error) {
       console.error('Error calculating all products ROI:', error);
-      
+
       // Return empty array on error
       return [];
     }
@@ -218,14 +218,19 @@ export class ROITrackingService {
       } catch (error) {
         console.warn('Could not fetch product name for trend analysis');
       }
-      
+
       // Generate trend data based on interval
       const startDate = new Date(timeRange.start);
       const endDate = new Date(timeRange.end);
-      
-      const trendData = [];
+
+      const trendData: {
+        period: string;
+        revenue: number;
+        salesCount: number;
+        roi: number;
+      }[] = [];
       const currentDate = new Date(startDate);
-      
+
       // Calculate the interval step
       let intervalStep: number;
       switch (interval) {
@@ -241,11 +246,11 @@ export class ROITrackingService {
         default:
           intervalStep = 7 * 24 * 60 * 60 * 1000; // Default to weekly
       }
-      
+
       while (currentDate <= endDate) {
         const periodEnd = new Date(currentDate);
         periodEnd.setTime(periodEnd.getTime() + intervalStep);
-        
+
         // Simulate data for this period
         const revenue = Math.random() * 500 + 50; // $50-$550
         const salesCount = Math.floor(Math.random() * 20) + 2; // 2-22 sales
@@ -253,25 +258,25 @@ export class ROITrackingService {
         const costOfGoods = revenue * (0.6 + Math.random() * 0.2); // 60-80% of revenue
         const netProfit = revenue - costOfGoods - marketingSpend;
         const roi = marketingSpend > 0 ? (netProfit / marketingSpend) * 100 : 0;
-        
+
         trendData.push({
           period: currentDate.toISOString().split('T')[0],
           revenue: parseFloat(revenue.toFixed(2)),
           salesCount,
           roi: parseFloat(roi.toFixed(2))
         });
-        
+
         currentDate.setTime(currentDate.getTime() + intervalStep);
       }
-      
+
       // Calculate overall improvement
       if (trendData.length > 1) {
         const firstROIPeriod = trendData[0].roi;
         const lastROIPeriod = trendData[trendData.length - 1].roi;
-        const overallImprovement = firstROIPeriod !== 0 
-          ? ((lastROIPeriod - firstROIPeriod) / Math.abs(firstROIPeriod)) * 100 
+        const overallImprovement = firstROIPeriod !== 0
+          ? ((lastROIPeriod - firstROIPeriod) / Math.abs(firstROIPeriod)) * 100
           : 0;
-        
+
         return {
           productId,
           productName,
@@ -288,7 +293,7 @@ export class ROITrackingService {
       }
     } catch (error) {
       console.error('Error calculating product performance trend:', error);
-      
+
       return {
         productId,
         productName: `Product ${productId}`,
@@ -315,15 +320,21 @@ export class ROITrackingService {
   }> {
     try {
       const productsPerformance = await this.getAllProductsROI(timeRange);
-      
-      const recommendations = [];
-      
+
+      const recommendations: {
+        productId: string;
+        productName: string;
+        action: 'invest_more' | 'optimize' | 'reduce_spend' | 'discontinue';
+        reasoning: string;
+        potentialImpact: number;
+      }[] = [];
+
       // Generate recommendations based on performance
       for (const product of productsPerformance) {
         let action: 'invest_more' | 'optimize' | 'reduce_spend' | 'discontinue' = 'optimize';
         let reasoning = '';
         let potentialImpact = 0;
-        
+
         if (product.roi > 200) {
           // High ROI product, suggest investing more
           action = 'invest_more';
@@ -342,12 +353,12 @@ export class ROITrackingService {
         } else {
           // Negative ROI, suggest reducing spend or discontinuing
           action = product.efficiencyRating > 30 ? 'reduce_spend' : 'discontinue';
-          reasoning = product.efficiencyRating > 30 
-            ? 'Product has negative ROI but some efficiency. Reduce marketing spend and reevaluate.' 
+          reasoning = product.efficiencyRating > 30
+            ? 'Product has negative ROI but some efficiency. Reduce marketing spend and reevaluate.'
             : 'Product has negative ROI and low efficiency. Consider discontinuing.';
           potentialImpact = action === 'reduce_spend' ? Math.random() * 15 : -product.roi; // Potential improvement if optimized or avoided loss
         }
-        
+
         recommendations.push({
           productId: product.productId,
           productName: product.productName,
@@ -356,28 +367,28 @@ export class ROITrackingService {
           potentialImpact: parseFloat(potentialImpact.toFixed(2))
         });
       }
-      
+
       // Sort recommendations by potential impact (descending)
       recommendations.sort((a, b) => b.potentialImpact - a.potentialImpact);
-      
+
       // Generate overall recommendations
       const topPerformers = productsPerformance.slice(0, 3);
       const bottomPerformers = productsPerformance.slice(-3).reverse();
-      
+
       const overallRecommendations = [
         `Focus marketing budget on top performers like ${topPerformers[0]?.productName || 'Product A'} (ROI: ${topPerformers[0]?.roi?.toFixed(2) || 0}%)`,
         `Reassess strategy for lowest performers like ${bottomPerformers[0]?.productName || 'Product Z'} (ROI: ${bottomPerformers[0]?.roi?.toFixed(2) || 0}%)`,
         `Consider repricing or cost reduction for products with high cost of goods sold`,
         `Optimize marketing channels with lowest customer acquisition costs`
       ];
-      
+
       return {
         topRecommendations: recommendations.slice(0, 10),
         overallRecommendations
       };
     } catch (error) {
       console.error('Error generating ROI recommendations:', error);
-      
+
       return {
         topRecommendations: [],
         overallRecommendations: ['Unable to generate recommendations due to data processing error']

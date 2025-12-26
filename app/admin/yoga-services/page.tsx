@@ -1,5 +1,5 @@
 import { YogaServicesManager } from '@/components/admin/YogaServicesManager'
-import { BackToAdminButton } from '@/components/admin/BackToAdminButton'
+
 
 export const dynamic = 'force-dynamic'
 
@@ -11,8 +11,8 @@ export const metadata = {
 export default function YogaServicesPage() {
   return (
     <div className="container mx-auto py-8 px-4">
-      <BackToAdminButton />
-      
+
+
       <div className="mt-8">
         <YogaServicesManager />
       </div>

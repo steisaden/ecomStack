@@ -10,13 +10,13 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
-import { BackToAdminButton } from '@/components/admin/BackToAdminButton';
+
 
 export default function CreateProductPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
+
   // State for product form
   const [product, setProduct] = useState<Omit<Product, 'sys' | 'images'>>({
     title: '',
@@ -41,21 +41,21 @@ export default function CreateProductPage() {
     try {
       // Comprehensive form validation
       const errors = [];
-      
+
       if (!product.title.trim()) {
         errors.push('Product name is required');
       }
-      
+
       if (!product.slug.trim()) {
         errors.push('Slug is required');
       } else if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(product.slug)) {
         errors.push('Slug must contain only lowercase letters, numbers, and hyphens');
       }
-      
+
       if (product.price < 0) {
         errors.push('Price must be a positive number');
       }
-      
+
       if (product.isAffiliate && !product.affiliateUrl) {
         errors.push('Affiliate URL is required for affiliate products');
       } else if (product.isAffiliate && product.affiliateUrl && !/^https?:\/\/.+/.test(product.affiliateUrl)) {
@@ -70,26 +70,26 @@ export default function CreateProductPage() {
       // 1. Upload each file as an asset to Contentful
       // 2. Get the asset IDs
       // 3. Create the product with references to those assets
-      
+
       // Array to hold references to uploaded asset IDs
       const assetIds = [];
       const uploadedAssets = [];
-      
+
       if (files.length > 0) {
         for (const file of files) {
           const assetFormData = new FormData();
           assetFormData.append('file', file);
-          
+
           const assetResponse = await fetch('/api/admin/upload-asset', {
             method: 'POST',
             body: assetFormData,
           });
-          
+
           if (!assetResponse.ok) {
             const assetError = await assetResponse.json();
             throw new Error(`Failed to upload image: ${assetError.error || 'Unknown error'}`);
           }
-          
+
           // Get the uploaded asset
           const assetResult = await assetResponse.json();
           uploadedAssets.push(assetResult.asset);
@@ -162,7 +162,7 @@ export default function CreateProductPage() {
               {error}
             </div>
           )}
-          
+
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Product Name */}
             <div>
@@ -175,7 +175,7 @@ export default function CreateProductPage() {
                 required
               />
             </div>
-            
+
             {/* Product Slug */}
             <div>
               <Label htmlFor="slug">Slug *</Label>
@@ -188,7 +188,7 @@ export default function CreateProductPage() {
                 placeholder="e.g. organic-face-oil"
               />
             </div>
-            
+
             {/* Price */}
             <div>
               <Label htmlFor="price">Price *</Label>
@@ -202,7 +202,7 @@ export default function CreateProductPage() {
                 min="0"
               />
             </div>
-            
+
             {/* Description */}
             <div>
               <Label htmlFor="description">Description</Label>
@@ -213,7 +213,7 @@ export default function CreateProductPage() {
                 rows={4}
               />
             </div>
-            
+
             {/* Category */}
             <div>
               <Label htmlFor="category">Category</Label>
@@ -228,7 +228,7 @@ export default function CreateProductPage() {
                 placeholder="e.g. Face Oils"
               />
             </div>
-            
+
             {/* In Stock */}
             <div className="flex items-center space-x-2">
               <Checkbox
@@ -238,7 +238,7 @@ export default function CreateProductPage() {
               />
               <Label htmlFor="inStock">In Stock</Label>
             </div>
-            
+
             {/* Affiliate Product */}
             <div className="flex items-center space-x-2">
               <Checkbox
@@ -248,7 +248,7 @@ export default function CreateProductPage() {
               />
               <Label htmlFor="isAffiliate">Affiliate Product</Label>
             </div>
-            
+
             {product.isAffiliate && (
               <div>
                 <Label htmlFor="affiliateUrl">Affiliate URL</Label>
@@ -261,7 +261,7 @@ export default function CreateProductPage() {
                 />
               </div>
             )}
-            
+
             {/* Image Upload */}
             <div>
               <Label>Product Images</Label>
@@ -303,10 +303,10 @@ export default function CreateProductPage() {
                 )}
               </div>
             </div>
-            
+
             {/* Submit Button */}
             <div className="flex justify-between items-center">
-              <BackToAdminButton />
+
               <div className="flex space-x-3">
                 <Button
                   type="button"

@@ -186,7 +186,6 @@ function transformValidatedAffiliateToProduct(validatedProduct: ValidatedProduct
     description: validatedProduct.description,
     price: validatedProduct.price,
     images: validatedProduct.thumbnailUrl ? [{
-      sys: { id: `${validatedProduct.sys.id}-image` },
       url: validatedProduct.thumbnailUrl,
       title: validatedProduct.title,
       description: `Image for ${validatedProduct.title}`,
@@ -234,15 +233,14 @@ export const getAllProducts = unstable_cache(
         ...vp,
         // Ensure regular products have proper image URLs
         images: vp.images && vp.images.length > 0 ? vp.images :
-                vp.thumbnailUrl ? [{
-                  sys: { id: `${vp.sys.id}-image` },
-                  url: vp.thumbnailUrl,
-                  title: vp.title,
-                  description: `Image for ${vp.title}`,
-                  width: 400,
-                  height: 400,
-                  contentType: 'image/jpeg'
-                }] : []
+          vp.thumbnailUrl ? [{
+            url: vp.thumbnailUrl,
+            title: vp.title,
+            description: `Image for ${vp.title}`,
+            width: 400,
+            height: 400,
+            contentType: 'image/jpeg'
+          }] : []
       }))
 
       // Transform affiliate products to Product format
@@ -250,9 +248,8 @@ export const getAllProducts = unstable_cache(
         sys: { id: ap.id },
         title: ap.title,
         description: ap.description,
-        price: ap.price,
+        price: ap.price.amount,
         images: ap.imageUrl ? [{
-          sys: { id: `${ap.id}-image` },
           url: ap.imageUrl,
           title: ap.title,
           description: `Image for ${ap.title}`,
@@ -409,7 +406,7 @@ export const getProductStats = unstable_cache(
     }
   },
   ['product-stats'],
-  { 
+  {
     revalidate: 1800,
     tags: ['products', 'stats']
   }

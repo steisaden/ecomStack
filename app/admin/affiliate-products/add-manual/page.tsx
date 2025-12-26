@@ -1,12 +1,12 @@
 import { ManualAmazonProductEntry } from '@/components/admin/ManualAmazonProductEntry'
-import { BackToAdminButton } from '@/components/admin/BackToAdminButton'
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
 export default function ManualAmazonProductPage() {
   return (
     <div className="container mx-auto py-8 px-4">
-      <BackToAdminButton href="/admin/affiliate-products/manage" />
-      
+
+
       <div className="max-w-3xl mx-auto mt-8">
         <div className="mb-6">
           <h1 className="text-3xl font-bold mb-2">Add Amazon Product Manually</h1>

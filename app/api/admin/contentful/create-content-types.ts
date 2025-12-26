@@ -30,7 +30,3 @@ if (require.main === module) {
     console.error('Error during content type creation:', error);
   });
 }
-
-export { 
-  createContentTypes 
-};

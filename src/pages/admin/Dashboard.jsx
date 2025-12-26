@@ -49,7 +49,7 @@ const cards = [
   },
 ];
 
-export default function DashboardPage() {
+export default function DashboardPage({ user }) {
   return (
     <AdminShell
       title="Admin Dashboard"

@@ -12,7 +12,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { X, Sparkles, Download } from 'lucide-react';
-import { BackToAdminButton } from '@/components/admin/BackToAdminButton';
+
 
 export default function CreateBlogPostPage() {
   const router = useRouter();
@@ -108,7 +108,7 @@ export default function CreateBlogPostPage() {
       }
 
       const result = await response.json();
-      
+
       // Update the appropriate field based on the field type
       if (field === 'title') {
         setBlogPost(prev => ({ ...prev, title: result.content }));
@@ -199,12 +199,12 @@ export default function CreateBlogPostPage() {
       }
 
       const result = await response.json();
-      
+
       // Check if result has a valid imageUrl before attempting to fetch
       if (!result.success || !result.imageUrl) {
         throw new Error(result.error || result.details || 'No image URL returned from API');
       }
-      
+
       // For data URLs (base64), convert directly to blob
       if (result.imageUrl.startsWith('data:image/')) {
         // Extract base64 data from data URL
@@ -217,10 +217,10 @@ export default function CreateBlogPostPage() {
         const byteArray = new Uint8Array(byteNumbers);
         const imageBlob = new Blob([byteArray], { type: 'image/png' });
         const imageFile = new File([imageBlob], `featured-image-${Date.now()}.png`, { type: 'image/png' });
-        
+
         // Add to files array for upload to Contentful
         setFiles(prev => [...prev, imageFile]);
-        
+
         // Update blog post state to include the generated image
         setBlogPost(prev => ({
           ...prev,
@@ -237,18 +237,18 @@ export default function CreateBlogPostPage() {
         // For regular URLs, fetch the image
         try {
           const imageResponse = await fetch(result.imageUrl);
-          
+
           if (!imageResponse.ok) {
             console.error('Image fetch response not ok:', imageResponse.status, imageResponse.statusText);
             throw new Error(`Failed to download image: ${imageResponse.status} ${imageResponse.statusText}`);
           }
-          
+
           const imageBlob = await imageResponse.blob();
           const imageFile = new File([imageBlob], `featured-image-${Date.now()}.png`, { type: 'image/png' });
-          
+
           // Add to files array for upload to Contentful
           setFiles(prev => [...prev, imageFile]);
-          
+
           // Update blog post state to include the generated image
           setBlogPost(prev => ({
             ...prev,
@@ -299,14 +299,14 @@ export default function CreateBlogPostPage() {
       }
 
       const result = await response.json();
-      
+
       // Add the generated tag to the blog post with comma splitting
       if (result.content) {
         // Split tags by comma and process each individually
         const newTags = result.content.split(',')
           .map(tag => tag.trim())
           .filter(tag => tag && !blogPost.tags?.includes(tag));
-        
+
         if (newTags.length > 0) {
           setBlogPost(prev => ({
             ...prev,
@@ -446,7 +446,7 @@ export default function CreateBlogPostPage() {
       ...prev,
       [field]: value
     }));
-    
+
     // Auto-generate slug from title if title is being changed and slug is empty
     if (field === 'title' && !blogPost.slug) {
       const autoSlug = value
@@ -466,7 +466,7 @@ export default function CreateBlogPostPage() {
       const newTags = tagsInput.split(',')
         .map(tag => tag.trim())
         .filter(tag => tag && !blogPost.tags?.includes(tag));
-      
+
       if (newTags.length > 0) {
         setBlogPost(prev => ({
           ...prev,
@@ -511,9 +511,7 @@ export default function CreateBlogPostPage() {
     <div className="container mx-auto py-6 sm:py-10">
       <div className="max-w-4xl mx-auto space-y-6">
         <div>
-          <div className="mb-4">
-            <BackToAdminButton />
-          </div>
+
           <h1 className="text-2xl font-heading text-primary">Create New Blog Post</h1>
           <p className="text-beauty-muted mt-2">Add a new blog post to your content library</p>
         </div>
@@ -521,349 +519,349 @@ export default function CreateBlogPostPage() {
         <Card>
           <CardContent className="pt-6">
             {error && (
-            <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-md">
-              {error}
-            </div>
-          )}
+              <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-md">
+                {error}
+              </div>
+            )}
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Blog Post Title */}
-            <div>
-              <div className="flex justify-between items-center mb-2">
-                <Label htmlFor="title">Title *</Label>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => generateContentWithAI('title', blogPost.title || '')}
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Blog Post Title */}
+              <div>
+                <div className="flex justify-between items-center mb-2">
+                  <Label htmlFor="title">Title *</Label>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => generateContentWithAI('title', blogPost.title || '')}
+                    disabled={generatingTitle}
+                    className="flex items-center gap-1"
+                  >
+                    {generatingTitle ? (
+                      <LoadingSpinner size={16} className="mr-2" />
+                    ) : (
+                      <Sparkles className="h-4 w-4 mr-2" />
+                    )}
+                    Generate with AI
+                  </Button>
+                </div>
+                <Input
+                  id="title"
+                  type="text"
+                  value={blogPost.title}
+                  onChange={(e) => handleInputChange('title', e.target.value)}
+                  required
+                  placeholder="Enter blog post title"
                   disabled={generatingTitle}
-                  className="flex items-center gap-1"
-                >
-                  {generatingTitle ? (
-                    <LoadingSpinner size={16} className="mr-2" />
-                  ) : (
-                    <Sparkles className="h-4 w-4 mr-2" />
-                  )}
-                  Generate with AI
-                </Button>
+                />
               </div>
-              <Input
-                id="title"
-                type="text"
-                value={blogPost.title}
-                onChange={(e) => handleInputChange('title', e.target.value)}
-                required
-                placeholder="Enter blog post title"
-                disabled={generatingTitle}
-              />
-            </div>
 
-            {/* Blog Post Slug */}
-            <div>
-              <div className="flex justify-between items-center mb-2">
-                <Label htmlFor="slug">Slug *</Label>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    const autoSlug = blogPost.title
-                      .toLowerCase()
-                      .replace(/[^a-z0-9]+/g, '-')
-                      .replace(/^-+|-+$/g, '');
-                    // Add timestamp to make it unique
-                    const uniqueSlug = `${autoSlug}-${Date.now()}`;
-                    handleInputChange('slug', uniqueSlug);
-                  }}
-                  disabled={!blogPost.title}
-                  className="text-xs"
-                >
-                  Generate Unique Slug
-                </Button>
+              {/* Blog Post Slug */}
+              <div>
+                <div className="flex justify-between items-center mb-2">
+                  <Label htmlFor="slug">Slug *</Label>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      const autoSlug = blogPost.title
+                        .toLowerCase()
+                        .replace(/[^a-z0-9]+/g, '-')
+                        .replace(/^-+|-+$/g, '');
+                      // Add timestamp to make it unique
+                      const uniqueSlug = `${autoSlug}-${Date.now()}`;
+                      handleInputChange('slug', uniqueSlug);
+                    }}
+                    disabled={!blogPost.title}
+                    className="text-xs"
+                  >
+                    Generate Unique Slug
+                  </Button>
+                </div>
+                <Input
+                  id="slug"
+                  type="text"
+                  value={blogPost.slug}
+                  onChange={(e) => handleInputChange('slug', e.target.value)}
+                  required
+                  placeholder="e.g. how-to-grow-your-business"
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Must be unique. Use lowercase letters, numbers, and hyphens only.
+                </p>
               </div>
-              <Input
-                id="slug"
-                type="text"
-                value={blogPost.slug}
-                onChange={(e) => handleInputChange('slug', e.target.value)}
-                required
-                placeholder="e.g. how-to-grow-your-business"
-              />
-              <p className="text-xs text-muted-foreground mt-1">
-                Must be unique. Use lowercase letters, numbers, and hyphens only.
-              </p>
-            </div>
 
-            {/* Author Display (Read-only) */}
-            <div>
-              <Label htmlFor="author">Author</Label>
-              <Input
-                id="author"
-                type="text"
-                value={authors.length > 0 ? authors[0].name : 'Goddess Care Team'}
-                disabled
-                className="mt-2 bg-muted"
-              />
-              <p className="text-xs text-muted-foreground mt-1">
-                All blog posts are authored by the default author
-              </p>
-            </div>
+              {/* Author Display (Read-only) */}
+              <div>
+                <Label htmlFor="author">Author</Label>
+                <Input
+                  id="author"
+                  type="text"
+                  value={authors.length > 0 ? authors[0].name : 'Goddess Care Team'}
+                  disabled
+                  className="mt-2 bg-muted"
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  All blog posts are authored by the default author
+                </p>
+              </div>
 
-            {/* Excerpt */}
-            <div>
-              <div className="flex justify-between items-center mb-2">
-                <Label htmlFor="excerpt">Excerpt *</Label>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => generateContentWithAI('excerpt', blogPost.excerpt || '')}
+              {/* Excerpt */}
+              <div>
+                <div className="flex justify-between items-center mb-2">
+                  <Label htmlFor="excerpt">Excerpt *</Label>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => generateContentWithAI('excerpt', blogPost.excerpt || '')}
+                    disabled={generatingExcerpt}
+                    className="flex items-center gap-1"
+                  >
+                    {generatingExcerpt ? (
+                      <LoadingSpinner size={16} className="mr-2" />
+                    ) : (
+                      <Sparkles className="h-4 w-4 mr-2" />
+                    )}
+                    Generate with AI
+                  </Button>
+                </div>
+                <Textarea
+                  id="excerpt"
+                  value={blogPost.excerpt}
+                  onChange={(e) => handleInputChange('excerpt', e.target.value)}
+                  rows={3}
+                  required
+                  placeholder="Brief summary of the blog post"
                   disabled={generatingExcerpt}
-                  className="flex items-center gap-1"
-                >
-                  {generatingExcerpt ? (
-                    <LoadingSpinner size={16} className="mr-2" />
-                  ) : (
-                    <Sparkles className="h-4 w-4 mr-2" />
-                  )}
-                  Generate with AI
-                </Button>
+                />
               </div>
-              <Textarea
-                id="excerpt"
-                value={blogPost.excerpt}
-                onChange={(e) => handleInputChange('excerpt', e.target.value)}
-                rows={3}
-                required
-                placeholder="Brief summary of the blog post"
-                disabled={generatingExcerpt}
-              />
-            </div>
 
-            {/* Content */}
-            <div>
-              <div className="flex justify-between items-center mb-2">
-                <Label htmlFor="content">Content *</Label>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => generateContentWithAI('content', content.content[0]?.content[0]?.value || '')}
+              {/* Content */}
+              <div>
+                <div className="flex justify-between items-center mb-2">
+                  <Label htmlFor="content">Content *</Label>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => generateContentWithAI('content', content.content[0]?.content[0]?.value || '')}
+                    disabled={generatingContent}
+                    className="flex items-center gap-1"
+                  >
+                    {generatingContent ? (
+                      <LoadingSpinner size={16} className="mr-2" />
+                    ) : (
+                      <Sparkles className="h-4 w-4 mr-2" />
+                    )}
+                    Generate with AI
+                  </Button>
+                </div>
+                <Textarea
+                  id="content"
+                  value={content.content[0]?.content[0]?.value || ''}
+                  onChange={(e) => {
+                    // Update the content in the rich text structure
+                    const newContent = {
+                      ...content,
+                      content: [
+                        {
+                          ...content.content[0],
+                          content: [
+                            {
+                              ...content.content[0].content[0],
+                              value: e.target.value
+                            }
+                          ]
+                        }
+                      ]
+                    };
+                    setContent(newContent);
+                  }}
+                  rows={8}
+                  required
+                  placeholder="Write your blog post content here..."
                   disabled={generatingContent}
-                  className="flex items-center gap-1"
-                >
-                  {generatingContent ? (
-                    <LoadingSpinner size={16} className="mr-2" />
-                  ) : (
-                    <Sparkles className="h-4 w-4 mr-2" />
-                  )}
-                  Generate with AI
-                </Button>
-              </div>
-              <Textarea
-                id="content"
-                value={content.content[0]?.content[0]?.value || ''}
-                onChange={(e) => {
-                  // Update the content in the rich text structure
-                  const newContent = {
-                    ...content,
-                    content: [
-                      {
-                        ...content.content[0],
-                        content: [
-                          {
-                            ...content.content[0].content[0],
-                            value: e.target.value
-                          }
-                        ]
-                      }
-                    ]
-                  };
-                  setContent(newContent);
-                }}
-                rows={8}
-                required
-                placeholder="Write your blog post content here..."
-                disabled={generatingContent}
-              />
-            </div>
-
-            {/* Categories */}
-            <div>
-              <Label htmlFor="categories">Categories</Label>
-              <div className="flex gap-2 mt-2">
-                <Input
-                  id="categories"
-                  type="text"
-                  value={categoriesInput}
-                  onChange={(e) => setCategoriesInput(e.target.value)}
-                  placeholder="Add a category"
                 />
-                <Button 
-                  type="button" 
-                  variant="outline"
-                  onClick={addCategory}
-                >
-                  Add
-                </Button>
               </div>
-              <div className="flex flex-wrap gap-2 mt-2">
-                {blogPost.categories?.map((category, index) => (
-                  <Badge key={index} variant="secondary" className="flex items-center gap-1">
-                    {typeof category === 'string' ? category : category.name}
-                    <button 
-                      type="button" 
-                      onClick={() => removeCategory(typeof category === 'string' ? category : category.name)}
-                      className="ml-1 text-destructive hover:text-destructive/80"
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
-                  </Badge>
-                ))}
-              </div>
-            </div>
 
-            {/* Tags */}
-            <div>
-              <div className="flex justify-between items-center mb-2">
-                <Label htmlFor="tags">Tags</Label>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={generateTagWithAI}
-                  disabled={generatingTag}
-                  className="flex items-center gap-1"
-                >
-                  {generatingTag ? (
-                    <LoadingSpinner size={16} className="mr-2" />
-                  ) : (
-                    <Sparkles className="h-4 w-4 mr-2" />
-                  )}
-                  Generate SEO Tag
-                </Button>
+              {/* Categories */}
+              <div>
+                <Label htmlFor="categories">Categories</Label>
+                <div className="flex gap-2 mt-2">
+                  <Input
+                    id="categories"
+                    type="text"
+                    value={categoriesInput}
+                    onChange={(e) => setCategoriesInput(e.target.value)}
+                    placeholder="Add a category"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={addCategory}
+                  >
+                    Add
+                  </Button>
+                </div>
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {blogPost.categories?.map((category, index) => (
+                    <Badge key={index} variant="secondary" className="flex items-center gap-1">
+                      {typeof category === 'string' ? category : category.name}
+                      <button
+                        type="button"
+                        onClick={() => removeCategory(typeof category === 'string' ? category : category.name)}
+                        className="ml-1 text-destructive hover:text-destructive/80"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </Badge>
+                  ))}
+                </div>
               </div>
-              <div className="flex gap-2 mt-2">
+
+              {/* Tags */}
+              <div>
+                <div className="flex justify-between items-center mb-2">
+                  <Label htmlFor="tags">Tags</Label>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={generateTagWithAI}
+                    disabled={generatingTag}
+                    className="flex items-center gap-1"
+                  >
+                    {generatingTag ? (
+                      <LoadingSpinner size={16} className="mr-2" />
+                    ) : (
+                      <Sparkles className="h-4 w-4 mr-2" />
+                    )}
+                    Generate SEO Tag
+                  </Button>
+                </div>
+                <div className="flex gap-2 mt-2">
+                  <Input
+                    id="tags"
+                    type="text"
+                    value={tagsInput}
+                    onChange={(e) => setTagsInput(e.target.value)}
+                    placeholder="Add a tag"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={addTag}
+                  >
+                    Add
+                  </Button>
+                </div>
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {blogPost.tags?.map((tag, index) => (
+                    <Badge key={index} variant="secondary" className="flex items-center gap-1">
+                      {tag}
+                      <button
+                        type="button"
+                        onClick={() => removeTag(tag)}
+                        className="ml-1 text-destructive hover:text-destructive/80"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+
+              {/* Publication Date */}
+              <div>
+                <Label htmlFor="publishedAt">Publication Date</Label>
                 <Input
-                  id="tags"
-                  type="text"
-                  value={tagsInput}
-                  onChange={(e) => setTagsInput(e.target.value)}
-                  placeholder="Add a tag"
+                  id="publishedAt"
+                  type="datetime-local"
+                  value={blogPost.publishedAt ? blogPost.publishedAt.substring(0, 16) : ''}
+                  onChange={(e) => handleInputChange('publishedAt', e.target.value + ':00.000Z')}
                 />
-                <Button 
-                  type="button" 
-                  variant="outline"
-                  onClick={addTag}
-                >
-                  Add
-                </Button>
               </div>
-              <div className="flex flex-wrap gap-2 mt-2">
-                {blogPost.tags?.map((tag, index) => (
-                  <Badge key={index} variant="secondary" className="flex items-center gap-1">
-                    {tag}
-                    <button 
-                      type="button" 
-                      onClick={() => removeTag(tag)}
-                      className="ml-1 text-destructive hover:text-destructive/80"
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
-                  </Badge>
-                ))}
-              </div>
-            </div>
 
-            {/* Publication Date */}
-            <div>
-              <Label htmlFor="publishedAt">Publication Date</Label>
-              <Input
-                id="publishedAt"
-                type="datetime-local"
-                value={blogPost.publishedAt ? blogPost.publishedAt.substring(0, 16) : ''}
-                onChange={(e) => handleInputChange('publishedAt', e.target.value + ':00.000Z')}
-              />
-            </div>
-
-            {/* Featured Image Upload */}
-            <div>
-              <div className="flex justify-between items-center mb-2">
-                <Label>Featured Image</Label>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={generateFeaturedImage}
-                  disabled={generatingImage}
-                  className="flex items-center gap-1"
-                >
-                  {generatingImage ? (
-                    <LoadingSpinner size={16} className="mr-2" />
-                  ) : (
-                    <Sparkles className="h-4 w-4 mr-2" />
-                  )}
-                  Generate Image
-                </Button>
-              </div>
-              <div className="mt-2">
-                <Input
-                  type="file"
-                  ref={fileInputRef}
-                  onChange={handleFileChange}
-                  accept="image/*"
-                />
-                {files.length > 0 && (
-                  <div className="mt-4">
-                    <h4 className="text-sm font-medium mb-2">Selected Images:</h4>
-                    <div className="flex flex-wrap gap-4">
-                      {files.map((file, index) => (
-                        <div key={index} className="relative group">
-                          <div className="border rounded-lg overflow-hidden w-32 h-32">
-                            <img
-                              src={URL.createObjectURL(file)}
-                              alt={file.name}
-                              className="w-full h-full object-cover"
-                            />
+              {/* Featured Image Upload */}
+              <div>
+                <div className="flex justify-between items-center mb-2">
+                  <Label>Featured Image</Label>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={generateFeaturedImage}
+                    disabled={generatingImage}
+                    className="flex items-center gap-1"
+                  >
+                    {generatingImage ? (
+                      <LoadingSpinner size={16} className="mr-2" />
+                    ) : (
+                      <Sparkles className="h-4 w-4 mr-2" />
+                    )}
+                    Generate Image
+                  </Button>
+                </div>
+                <div className="mt-2">
+                  <Input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleFileChange}
+                    accept="image/*"
+                  />
+                  {files.length > 0 && (
+                    <div className="mt-4">
+                      <h4 className="text-sm font-medium mb-2">Selected Images:</h4>
+                      <div className="flex flex-wrap gap-4">
+                        {files.map((file, index) => (
+                          <div key={index} className="relative group">
+                            <div className="border rounded-lg overflow-hidden w-32 h-32">
+                              <img
+                                src={URL.createObjectURL(file)}
+                                alt={file.name}
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                            <div className="absolute inset-x-0 bottom-0 bg-black bg-opacity-50 text-white text-xs p-1 truncate">
+                              {file.name}
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveFile(index)}
+                              className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600"
+                            >
+                              ×
+                            </button>
                           </div>
-                          <div className="absolute inset-x-0 bottom-0 bg-black bg-opacity-50 text-white text-xs p-1 truncate">
-                            {file.name}
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveFile(index)}
-                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600"
-                          >
-                            ×
-                          </button>
-                        </div>
-                      ))}
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
-            </div>
 
-            {/* Submit Button */}
-            <div className="flex justify-end space-x-3 pt-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => router.back()}
-                disabled={loading}
-              >
-                Cancel
-              </Button>
-              <Button type="submit" disabled={loading} className="bg-primary hover:bg-primary/90">
-                {loading ? (
-                  <>
-                    <LoadingSpinner size={16} className="mr-2" />
-                    Creating...
-                  </>
-                ) : 'Create Blog Post'}
-              </Button>
-            </div>
-          </form>
+              {/* Submit Button */}
+              <div className="flex justify-end space-x-3 pt-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => router.back()}
+                  disabled={loading}
+                >
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={loading} className="bg-primary hover:bg-primary/90">
+                  {loading ? (
+                    <>
+                      <LoadingSpinner size={16} className="mr-2" />
+                      Creating...
+                    </>
+                  ) : 'Create Blog Post'}
+                </Button>
+              </div>
+            </form>
           </CardContent>
         </Card>
       </div>

@@ -160,12 +160,12 @@ export default function LoginPage() {
 
       const result = await response.json();
       if (response.ok && result.success) {
-        setResetToken(result.resetToken);
-        setResetTokenExpiry(result.expiresAt);
-        resetForm.setValue('resetToken', result.resetToken);
-        setResetStatus('Reset token generated. Use it below within 60 minutes.');
+        // Updated flow: we don't get the token back. We get a message.
+        // setResetToken(result.resetToken); <--- REMOVED
+        setResetStatus(result.message || 'Reset instructions sent to your email.');
+        // We can't auto-fill the token anymore
       } else {
-        setResetStatus(result.error || 'Could not create reset token');
+        setResetStatus(result.error || 'Could not request password reset');
       }
     } catch (err) {
       console.error('Reset token request error:', err);
@@ -268,8 +268,8 @@ export default function LoginPage() {
                     <FormItem>
                       <FormLabel>Username</FormLabel>
                       <FormControl>
-                        <Input 
-                          placeholder="Enter your username" 
+                        <Input
+                          placeholder="Enter your username"
                           {...field}
                           disabled={isLoading}
                         />
@@ -287,9 +287,9 @@ export default function LoginPage() {
                     <FormItem>
                       <FormLabel>Password</FormLabel>
                       <FormControl>
-                        <Input 
+                        <Input
                           type="password"
-                          placeholder="Enter your password" 
+                          placeholder="Enter your password"
                           {...field}
                           disabled={isLoading}
                         />
@@ -305,9 +305,9 @@ export default function LoginPage() {
                   </div>
                 )}
 
-                <Button 
-                  type="submit" 
-                  className="w-full" 
+                <Button
+                  type="submit"
+                  className="w-full"
                   disabled={isLoading}
                 >
                   {isLoading ? 'Signing in...' : 'Sign In'}
@@ -327,8 +327,8 @@ export default function LoginPage() {
                     <FormItem>
                       <FormLabel>Username</FormLabel>
                       <FormControl>
-                        <Input 
-                          placeholder="Choose a username" 
+                        <Input
+                          placeholder="Choose a username"
                           {...field}
                         />
                       </FormControl>
@@ -345,9 +345,9 @@ export default function LoginPage() {
                     <FormItem>
                       <FormLabel>Password</FormLabel>
                       <FormControl>
-                        <Input 
+                        <Input
                           type="password"
-                          placeholder="Create a strong password" 
+                          placeholder="Create a strong password"
                           {...field}
                         />
                       </FormControl>
@@ -364,9 +364,9 @@ export default function LoginPage() {
                     <FormItem>
                       <FormLabel>Confirm Password</FormLabel>
                       <FormControl>
-                        <Input 
+                        <Input
                           type="password"
-                          placeholder="Re-enter your password" 
+                          placeholder="Re-enter your password"
                           {...field}
                         />
                       </FormControl>
@@ -419,15 +419,7 @@ export default function LoginPage() {
                     {requestingResetToken ? 'Generating reset token...' : 'Generate reset token'}
                   </Button>
 
-                  {resetToken && (
-                    <div className="text-xs bg-beauty-light p-3 rounded border border-gray-200">
-                      <p className="font-semibold mb-1">Reset token (copy and paste below)</p>
-                      <Textarea readOnly value={resetToken} className="text-sm font-mono" />
-                      {resetTokenExpiry && (
-                        <p className="mt-1">Expires at: {new Date(resetTokenExpiry).toLocaleString()}</p>
-                      )}
-                    </div>
-                  )}
+
 
                   <FormField
                     control={resetForm.control}

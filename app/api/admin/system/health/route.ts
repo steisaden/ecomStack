@@ -83,7 +83,12 @@ async function checkComponentHealth(): Promise<Array<{
   message?: string;
   responseTime?: number;
 }>> {
-  const components = [];
+  const components: Array<{
+    name: string;
+    status: 'healthy' | 'degraded' | 'unhealthy';
+    message?: string;
+    responseTime?: number;
+  }> = [];
   
   // Check Amazon API
   try {

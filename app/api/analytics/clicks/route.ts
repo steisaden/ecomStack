@@ -37,11 +37,11 @@ export async function POST(request: NextRequest) {
       elementType: elementType || 'unknown',
       url,
       referrer,
-      metadata,
-      x,
-      y,
-      viewportWidth,
-      viewportHeight
+      metadata: metadata ?? undefined,
+      x: x ?? undefined,
+      y: y ?? undefined,
+      viewportWidth: viewportWidth ?? undefined,
+      viewportHeight: viewportHeight ?? undefined
     });
 
     return NextResponse.json({
@@ -87,7 +87,11 @@ export async function GET(request: NextRequest) {
         }
         result = await RealTimeClickTrackingService.getElementAnalytics(
           elementId, 
-          { startDate, endDate, url: urlFilter }
+          { 
+            startDate: startDate || undefined, 
+            endDate: endDate || undefined, 
+            url: urlFilter || undefined 
+          }
         );
         break;
 
@@ -97,18 +101,18 @@ export async function GET(request: NextRequest) {
 
       case 'recommendations':
         result = await RealTimeClickTrackingService.generateClickRecommendations({
-          startDate,
-          endDate,
-          url: urlFilter
+          startDate: startDate || undefined,
+          endDate: endDate || undefined,
+          url: urlFilter || undefined
         });
         break;
 
       case 'realtime':
       default:
         result = await RealTimeClickTrackingService.getRealTimeAnalytics({
-          startDate,
-          endDate,
-          url: urlFilter
+          startDate: startDate || undefined,
+          endDate: endDate || undefined,
+          url: urlFilter || undefined
         });
         break;
     }

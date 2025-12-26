@@ -1,4 +1,4 @@
-import { Product } from '../types';
+import { Product } from './types';
 
 /**
  * Price trend analysis service using external APIs
@@ -25,42 +25,42 @@ export class PriceTrendService {
       // For now, we'll simulate the API call since we don't have a real external service
       // In a real implementation, we would call an actual price tracking API
       console.log(`Simulating price trend analysis for product: ${productName} (${productId})`);
-      
+
       // Simulate getting historical data
       const now = new Date();
-      const historicalPrices = [];
+      const historicalPrices: Array<{ date: string; price: number }> = [];
       let currentPrice = 0;
-      
+
       // Generate simulated historical prices
       for (let i = 0; i <= this.getTimeRangeDays(timeRange); i++) {
         const date = new Date();
         date.setDate(now.getDate() - i);
-        
+
         // Simulate price changes (this would come from real data in production)
         const basePrice = Math.random() * 50 + 20; // Random price between $20-$70
         const variation = (Math.random() - 0.5) * 5; // Random variation
-        
+
         const price = Math.max(5, basePrice + variation); // Minimum $5
-        
+
         if (i === 0) {
           currentPrice = price;
         }
-        
+
         historicalPrices.push({
           date: date.toISOString().split('T')[0],
           price: parseFloat(price.toFixed(2))
         });
       }
-      
+
       // Calculate trend
       const trend = this.calculateTrend(historicalPrices);
-      
+
       // Calculate volatility (standard deviation)
       const volatility = this.calculateVolatility(historicalPrices);
-      
+
       // Generate forecast based on trend
       const forecast = this.generateForecast(historicalPrices, trend);
-      
+
       return {
         productId,
         currentPrice: parseFloat(currentPrice.toFixed(2)),
@@ -71,7 +71,7 @@ export class PriceTrendService {
       };
     } catch (error) {
       console.error('Error in price trend analysis:', error);
-      
+
       // Return default data on error
       return {
         productId,
@@ -105,31 +105,31 @@ export class PriceTrendService {
     try {
       // Simulate competitor price comparison
       console.log(`Simulating price comparison for: ${productName} in category: ${category}`);
-      
+
       // In a real implementation, we would fetch actual competitor prices
       const ourPrice = Math.random() * 50 + 20; // Random price between $20-$70
-      
+
       const competitors = [
         { name: 'Competitor A', price: ourPrice * 0.95, rating: 4.2 },
         { name: 'Competitor B', price: ourPrice * 1.1, rating: 4.5 },
         { name: 'Competitor C', price: ourPrice * 0.98, rating: 4.0 },
       ];
-      
+
       // Determine price position
       const allPrices = [ourPrice, ...competitors.map(c => c.price)];
       let pricePosition: 'lowest' | 'competitive' | 'highest' = 'competitive';
-      
+
       if (ourPrice === Math.min(...allPrices)) {
         pricePosition = 'lowest';
       } else if (ourPrice === Math.max(...allPrices)) {
         pricePosition = 'highest';
       }
-      
+
       // Calculate potential savings opportunity
-      const savingsOpportunity = pricePosition === 'highest' 
+      const savingsOpportunity = pricePosition === 'highest'
         ? ourPrice - Math.min(...competitors.map(c => c.price))
         : 0;
-      
+
       return {
         productId,
         productName,
@@ -144,7 +144,7 @@ export class PriceTrendService {
       };
     } catch (error) {
       console.error('Error in price comparison:', error);
-      
+
       return {
         productId,
         productName,
@@ -168,12 +168,12 @@ export class PriceTrendService {
 
   private static calculateTrend(prices: Array<{ date: string; price: number }>): 'increasing' | 'decreasing' | 'stable' {
     if (prices.length < 2) return 'stable';
-    
+
     const firstPrice = prices[prices.length - 1].price; // Oldest price
     const lastPrice = prices[0].price; // Newest price
-    
+
     const change = ((lastPrice - firstPrice) / firstPrice) * 100;
-    
+
     if (change > 5) return 'increasing';
     if (change < -5) return 'decreasing';
     return 'stable';
@@ -181,14 +181,14 @@ export class PriceTrendService {
 
   private static calculateVolatility(prices: Array<{ date: string; price: number }>): number {
     if (prices.length < 2) return 0;
-    
+
     const pricesOnly = prices.map(p => p.price);
     const mean = pricesOnly.reduce((sum, price) => sum + price, 0) / pricesOnly.length;
-    
+
     const squaredDifferences = pricesOnly.map(price => Math.pow(price - mean, 2));
     const variance = squaredDifferences.reduce((sum, diff) => sum + diff, 0) / squaredDifferences.length;
     const stdDev = Math.sqrt(variance);
-    
+
     // Normalize to 0-1 scale (assuming max possible volatility)
     return Math.min(1, stdDev / 10); // Adjust the divisor based on expected price ranges
   }
@@ -238,14 +238,14 @@ export class PriceTrendService {
     try {
       // This is a simplified recommendation based on trend analysis
       // In a real implementation, this would use more sophisticated models
-      
+
       // Fetch the trend data
       const trendData = await this.getPriceTrends(productId, `Product ${productId}`, '30d');
-      
+
       let recommendedPrice = currentPrice;
       let confidence = 0.7; // Default confidence
       let reasoning = '';
-      
+
       if (trendData.trend === 'increasing' && trendData.volatility < 0.3) {
         // If prices are increasing steadily, consider raising our price
         recommendedPrice = currentPrice * 1.05; // 5% increase
@@ -263,7 +263,7 @@ export class PriceTrendService {
         recommendedPrice = currentPrice * 1.02; // Small increase
         reasoning = 'Market is stable, small price increase to optimize revenue';
       }
-      
+
       return {
         productId,
         currentPrice: parseFloat(currentPrice.toFixed(2)),
@@ -273,7 +273,7 @@ export class PriceTrendService {
       };
     } catch (error) {
       console.error('Error in price recommendations:', error);
-      
+
       return {
         productId,
         currentPrice: parseFloat(currentPrice.toFixed(2)),

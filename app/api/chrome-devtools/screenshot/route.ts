@@ -126,7 +126,7 @@ async function captureWithMCP(url: string, options: ScreenshotOptions): Promise<
 
 // Fallback implementation using Playwright
 async function captureWithPlaywright(url: string, options: ScreenshotOptions): Promise<Buffer | null> {
-  let browser = null
+  let browser: import('playwright').Browser | null = null
   
   try {
     console.log('Attempting screenshot with Playwright fallback...')
@@ -147,7 +147,7 @@ async function captureWithPlaywright(url: string, options: ScreenshotOptions): P
       ]
     })
     
-    const page = await browser.newPage({
+    const page = await browser!.newPage({
       viewport: { width: 1200, height: 800 },
       userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
     })
@@ -216,7 +216,7 @@ async function captureWithPlaywright(url: string, options: ScreenshotOptions): P
       type: 'png'
     })
     
-    await browser.close()
+    await browser!.close()
     browser = null
     
     console.log('Playwright screenshot completed successfully')

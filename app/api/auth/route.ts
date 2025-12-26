@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
-import { getAuthState, updateAuthState, resetAuthState, incrementFailedAttempts, blockAuth } from '@/lib/auth-state';
 import { verifyAdminCredentials } from '@/lib/admin-user-store';
+import { rateLimiter } from '@/lib/rate-limiter';
 
 // Force dynamic rendering for authentication API
 export const dynamic = 'force-dynamic';
@@ -13,29 +13,22 @@ const BLOCK_DURATION = 1800; // 30 minutes
 
 export async function POST(request: NextRequest) {
   try {
-    // Check if account is blocked
-    const authState = getAuthState();
-    if (authState.blocked) {
-      const currentTime = Math.floor(Date.now() / 1000);
-      const remainingTime = authState.retryAfter - currentTime;
-      
-      if (remainingTime > 0) {
-        return NextResponse.json(
-          { 
-            success: false, 
-            message: 'Too many failed attempts. Account temporarily blocked.',
-            retryAfter: remainingTime,
-            blocked: true
-          },
-          { status: 429 }
-        );
-      } else {
-        // Reset block if time has expired
-        updateAuthState({
-          blocked: false,
-          retryAfter: 0
-        });
-      }
+    const ip = request.headers.get('x-forwarded-for') || 'unknown';
+    const rateLimitKey = `login_${ip}`;
+
+    // Check rate limit (5 attempts per 30 minutes)
+    const rateLimit = await rateLimiter.checkLimit(rateLimitKey, 5, 1800);
+
+    if (!rateLimit.success) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: 'Too many failed attempts. Account temporarily blocked.',
+          retryAfter: rateLimit.resetIn,
+          blocked: true
+        },
+        { status: 429 }
+      );
     }
 
     const { username, password } = await request.json();
@@ -50,34 +43,16 @@ export async function POST(request: NextRequest) {
 
     const verification = await verifyAdminCredentials(username, password);
     if (!verification.valid) {
-      console.warn(`Failed login attempt for user: ${username} via ${verification.source}`);
-      
-      incrementFailedAttempts();
-      const currentAuthState = getAuthState();
-      
-      if (currentAuthState.failedAttempts >= MAX_FAILED_ATTEMPTS) {
-        blockAuth(BLOCK_DURATION);
-        
-        return NextResponse.json(
-          { 
-            success: false, 
-            message: 'Too many failed attempts. Account temporarily blocked.',
-            retryAfter: BLOCK_DURATION,
-            blocked: true
-          },
-          { status: 429 }
-        );
-      }
-      
-      const status = verification.error === 'Admin credentials are not configured' ? 500 : 401;
+      console.warn(`Failed login attempt for user: ${username} via ${verification.source} (IP: ${ip})`);
+
       return NextResponse.json(
         { success: false, error: verification.error || 'Invalid credentials' },
-        { status }
+        { status: 401 }
       );
     }
-    
+
     // Reset failed attempts on successful login
-    resetAuthState();
+
 
     // Create JWT token
     const jwtSecret = process.env.JWT_SECRET;
@@ -91,14 +66,14 @@ export async function POST(request: NextRequest) {
 
     const authenticatedUsername = verification.user?.username || username.trim();
     const token = jwt.sign(
-      { 
+      {
         userId: `admin-${authenticatedUsername}`,
         username: authenticatedUsername,
         role: 'admin',
         iat: Math.floor(Date.now() / 1000)
       },
       jwtSecret,
-      { 
+      {
         expiresIn: '24h',
         issuer: 'goddess-admin',
         audience: 'goddess-admin-users'

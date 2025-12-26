@@ -3,8 +3,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { amazonConfig } from '@/lib/config/amazon-config';
 import { authMiddleware } from '@/lib/auth-middleware';
-import { AmazonPAAPIService } from '@/lib/amazon-paapi'; // Import the service to use its validation methods
-import { PAAPICredentials } from '@/lib/types/amazon';
+import { AmazonPAAPIService } from '@/lib/amazon-paapi';
+import { PAAPICredentials, AmazonAPIError, AmazonAPIErrorType } from '@/lib/types/amazon';
 
 export async function GET(request: NextRequest) {
   try {
@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
 
     // Temporarily create a service instance with provided credentials for testing
     const testCredentials: PAAPICredentials = { accessKey, secretKey, partnerTag };
-    const testService = new AmazonPAAPIService(testCredentials, 'webservices.amazon.com', 'us'); // Host and region can be dynamic
+    const testService = new AmazonPAAPIService('webservices.amazon.com', 'us'); // Host and region can be dynamic
 
     // Attempt a simple product fetch to validate credentials
     // Use a known valid ASIN for testing, or a dummy one that will fail gracefully

@@ -9,8 +9,8 @@ const nextConfig = {
   images: {
     // Enable image optimization
     unoptimized: false,
-    // Add domains for image optimization
-    domains: ['images.ctfassets.net', 'localhost', 'images.unsplash.com', 'cdn.contentful.com', 'm.media-amazon.com', 'images-na.ssl-images-amazon.com', 'images-eu.ssl-images-amazon.com', 'images-fe.ssl-images-amazon.com', 'via.placeholder.com', 'placehold.co'],
+    // Add domains for image optimization - DEPRECATED, handled by remotePatterns
+    // domains: ['images.ctfassets.net', 'localhost', 'images.unsplash.com', 'cdn.contentful.com', 'm.media-amazon.com', 'images-na.ssl-images-amazon.com', 'images-eu.ssl-images-amazon.com', 'images-fe.ssl-images-amazon.com', 'via.placeholder.com', 'placehold.co'],
     // Set responsive image sizes - optimized for faster loading
     deviceSizes: [320, 420, 640, 750, 828, 1080],
     imageSizes: [16, 32, 48, 64, 96, 128],
@@ -98,11 +98,11 @@ const nextConfig = {
         fs: false,
       }
     }
-    
+
     // Add compression plugin for better minification
     config.optimization = config.optimization || {}
     config.optimization.minimize = true
-    
+
     // Handle CommonJS modules for Amazon SDK compatibility
     config.module.rules.push({
       test: /\.m?js$/,
@@ -110,7 +110,7 @@ const nextConfig = {
         fullySpecified: false,
       },
     });
-    
+
     // Configure externals for server-side
     if (isServer) {
       config.externals = config.externals || [];
@@ -119,7 +119,7 @@ const nextConfig = {
         'aws4': 'commonjs aws4'
       });
     }
-    
+
     return config
   },
 }

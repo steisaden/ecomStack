@@ -21,8 +21,8 @@ const ContentfulProducts = dynamic(() => import("@/components/ContentfulProducts
 export default function ProductsPage() {
   return (
     <AdminShell
-      title="Products"
-      description="Manage affiliate and regular products."
+      title=""
+      description=""
     >
       <div className="flex items-center justify-between mb-4">
         <div>

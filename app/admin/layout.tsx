@@ -5,6 +5,8 @@ import { redirect } from 'next/navigation';
 // Force dynamic rendering for admin routes that use authentication
 export const dynamic = 'force-dynamic';
 
+import { AdminSidebar } from '@/components/admin/AdminSidebar';
+
 export default async function AdminLayout({
   children,
 }: {
@@ -12,7 +14,7 @@ export default async function AdminLayout({
 }) {
   // Double-check authentication at layout level for extra security
   const user = await getCurrentUser();
-  
+
   if (!user) {
     console.warn('Unauthorized access attempt to admin section - redirecting to login');
     redirect('/login');
@@ -25,8 +27,16 @@ export default async function AdminLayout({
   }
 
   return (
-    <div className="admin-layout">
-      {children}
+    <div className="min-h-screen bg-slate-50 flex">
+      {/* Persistent Sidebar */}
+      <AdminSidebar />
+
+      {/* Main Content Area */}
+      <main className="flex-1 lg:pl-72 transition-all duration-300">
+        <div className="p-4 lg:p-8 max-w-[1600px] mx-auto pt-16 lg:pt-8 min-h-screen">
+          {children}
+        </div>
+      </main>
     </div>
   );
 }

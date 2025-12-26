@@ -7,6 +7,7 @@ import { authMiddleware } from '@/lib/auth-middleware';
 import { amazonLogger } from '@/lib/amazon-logger';
 
 export async function POST(request: NextRequest) {
+  let asinValue: string | undefined;
   try {
     // Apply authentication middleware
     const authResponse = await authMiddleware(request);
@@ -15,6 +16,7 @@ export async function POST(request: NextRequest) {
     }
 
     const { asin } = await request.json();
+    asinValue = asin;
 
     if (typeof asin !== 'string' || !asin) {
       return NextResponse.json(
@@ -36,7 +38,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ success: true, ...validationResult });
   } catch (error: any) {
-    amazonLogger.error('API Error validating Amazon ASIN:', error, { asin });
+    amazonLogger.error('API Error validating Amazon ASIN:', error, { asin: asinValue });
 
     if (error instanceof AmazonAPIError) {
       switch (error.type) {

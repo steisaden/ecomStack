@@ -6,7 +6,7 @@ export async function GET(request: NextRequest) {
     console.log('Testing product generation...')
     
     // Generate a few test products
-    const testProducts = generateUniqueProducts(5)
+    const testProducts = await generateUniqueProducts(5)
     
     // Test each product's affiliate link and image
     const productTests = testProducts.map(product => {
