@@ -8,8 +8,8 @@ export async function POST(request: NextRequest) {
 
     if (!eventType || !sessionId) {
       return NextResponse.json(
-        { 
-          error: 'eventType and sessionId are required' 
+        {
+          error: 'eventType and sessionId are required'
         },
         { status: 400 }
       );
@@ -33,10 +33,10 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error('Conversion Tracking API POST error:', error);
-    
+
     return NextResponse.json(
-      { 
-        success: false, 
+      {
+        success: false,
         error: error instanceof Error ? error.message : 'Failed to track event',
         timestamp: new Date().toISOString()
       },
@@ -54,7 +54,7 @@ export async function GET(request: NextRequest) {
     const startDate = url.searchParams.get('startDate');
     const endDate = url.searchParams.get('endDate');
     const includeDemoData = url.searchParams.get('includeDemoData') === 'true';
-    
+
     let result;
 
     switch (action) {
@@ -70,8 +70,8 @@ export async function GET(request: NextRequest) {
 
       case 'topProducts':
         result = await ConversionTrackingService.getTopConvertingProducts({
-          startDate,
-          endDate
+          startDate: startDate ?? undefined,
+          endDate: endDate ?? undefined
         });
         break;
 
@@ -80,8 +80,8 @@ export async function GET(request: NextRequest) {
         result = await ConversionTrackingService.analyzeConversionFunnel({
           userId: userId ?? undefined,
           productId: productId ?? undefined,
-          startDate,
-          endDate,
+          startDate: startDate ?? undefined,
+          endDate: endDate ?? undefined,
           includeDemoData
         });
         break;
@@ -94,10 +94,10 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error('Conversion Tracking API GET error:', error);
-    
+
     return NextResponse.json(
-      { 
-        success: false, 
+      {
+        success: false,
         error: error instanceof Error ? error.message : 'Failed to analyze conversion data',
         timestamp: new Date().toISOString()
       },
