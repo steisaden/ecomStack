@@ -1,26 +1,26 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useParams } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { 
-  ArrowLeft, 
-  Edit, 
-  ExternalLink, 
+import {
+  ArrowLeft,
+  Edit,
+  ExternalLink,
   Loader2,
   Sparkles
 } from 'lucide-react'
 import { toast } from 'sonner'
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
 } from '@/components/ui/select'
 
 interface AffiliateProduct {
@@ -67,7 +67,9 @@ const CATEGORIES = [
   'Accessories'
 ]
 
-export default function EditAffiliateProductPage({ params }: { params: { id: string } }) {
+export default function EditAffiliateProductPage() {
+  const params = useParams()
+  const id = params?.id as string | undefined
   const [product, setProduct] = useState<AffiliateProduct | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -81,10 +83,10 @@ export default function EditAffiliateProductPage({ params }: { params: { id: str
   const fetchProduct = async () => {
     try {
       setLoading(true)
-      
+
       const response = await fetch(`/api/admin/affiliate-products/${params.id}`)
       if (!response.ok) throw new Error('Failed to fetch product')
-      
+
       const data = await response.json()
       setProduct(data.product)
     } catch (error: any) {
@@ -97,10 +99,10 @@ export default function EditAffiliateProductPage({ params }: { params: { id: str
 
   const handleUpdateProduct = async () => {
     if (!product) return
-    
+
     try {
       setSaving(true)
-      
+
       const response = await fetch(`/api/admin/affiliate-products/${params.id}`, {
         method: 'PUT',
         headers: {
@@ -110,9 +112,9 @@ export default function EditAffiliateProductPage({ params }: { params: { id: str
           product
         }),
       })
-      
+
       if (!response.ok) throw new Error('Failed to update product')
-      
+
       const data = await response.json()
       setProduct(data.product)
       toast.success('Product updated successfully')
@@ -127,7 +129,7 @@ export default function EditAffiliateProductPage({ params }: { params: { id: str
 
   const addTag = (tag: string) => {
     if (!tag.trim() || !product) return
-    
+
     setProduct(prev => prev ? {
       ...prev,
       tags: [...prev.tags, tag.trim()]
@@ -137,7 +139,7 @@ export default function EditAffiliateProductPage({ params }: { params: { id: str
 
   const removeTag = (tagToRemove: string) => {
     if (!product) return
-    
+
     setProduct(prev => prev ? {
       ...prev,
       tags: prev.tags.filter(tag => tag !== tagToRemove)
@@ -157,7 +159,7 @@ export default function EditAffiliateProductPage({ params }: { params: { id: str
             <div className="h-10 w-10 bg-gray-200 rounded-full"></div>
           </div>
         </div>
-        
+
         <Card>
           <CardHeader>
             <div className="h-6 w-48 bg-gray-200 rounded mb-2"></div>
@@ -224,7 +226,7 @@ export default function EditAffiliateProductPage({ params }: { params: { id: str
           <p className="text-gray-600">Update product details and optimize performance with AI insights</p>
         </div>
         <div className="flex gap-2">
-          <Button 
+          <Button
             onClick={() => router.push('/admin/affiliate-products')}
             variant="outline"
           >
@@ -252,7 +254,7 @@ export default function EditAffiliateProductPage({ params }: { params: { id: str
                   placeholder="Enter product title"
                 />
               </div>
-              
+
               <div>
                 <label className="text-sm font-medium mb-2 block">Description</label>
                 <Textarea
@@ -262,7 +264,7 @@ export default function EditAffiliateProductPage({ params }: { params: { id: str
                   rows={4}
                 />
               </div>
-              
+
               <div>
                 <label className="text-sm font-medium mb-2 block">Affiliate URL</label>
                 <Input
@@ -271,7 +273,7 @@ export default function EditAffiliateProductPage({ params }: { params: { id: str
                   placeholder="https://example.com/product"
                 />
               </div>
-              
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm font-medium mb-2 block">Price ($)</label>
@@ -282,7 +284,7 @@ export default function EditAffiliateProductPage({ params }: { params: { id: str
                     placeholder="0.00"
                   />
                 </div>
-                
+
                 <div>
                   <label className="text-sm font-medium mb-2 block">Commission Rate (%)</label>
                   <Input
@@ -294,7 +296,7 @@ export default function EditAffiliateProductPage({ params }: { params: { id: str
                 </div>
               </div>
             </div>
-            
+
             <div className="space-y-4">
               <div>
                 <label className="text-sm font-medium mb-2 block">Category</label>
@@ -309,7 +311,7 @@ export default function EditAffiliateProductPage({ params }: { params: { id: str
                   </SelectContent>
                 </Select>
               </div>
-              
+
               <div>
                 <label className="text-sm font-medium mb-2 block">Platform</label>
                 <Select value={product.platform} onValueChange={(value) => setProduct(prev => prev ? { ...prev, platform: value } : null)}>
@@ -323,7 +325,7 @@ export default function EditAffiliateProductPage({ params }: { params: { id: str
                   </SelectContent>
                 </Select>
               </div>
-              
+
               <div>
                 <label className="text-sm font-medium mb-2 block">Tags</label>
                 <div className="flex gap-2 mb-2">
@@ -337,7 +339,7 @@ export default function EditAffiliateProductPage({ params }: { params: { id: str
                       }
                     }}
                   />
-                  <Button 
+                  <Button
                     onClick={() => addTag(newTag)}
                     variant="outline"
                   >
@@ -348,7 +350,7 @@ export default function EditAffiliateProductPage({ params }: { params: { id: str
                   {product.tags.map(tag => (
                     <Badge key={tag} variant="secondary" className="flex items-center gap-1">
                       {tag}
-                      <button 
+                      <button
                         onClick={() => removeTag(tag)}
                         className="ml-1 text-destructive hover:text-destructive/80"
                       >
@@ -358,7 +360,7 @@ export default function EditAffiliateProductPage({ params }: { params: { id: str
                   ))}
                 </div>
               </div>
-              
+
               <div>
                 <label className="text-sm font-medium mb-2 block">Product Image URL (optional)</label>
                 <Input
@@ -367,7 +369,7 @@ export default function EditAffiliateProductPage({ params }: { params: { id: str
                   placeholder="https://example.com/image.jpg"
                 />
               </div>
-              
+
               <div className="p-4 bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg border border-purple-100">
                 <div className="flex items-center gap-2 mb-2">
                   <Sparkles className="h-5 w-5 text-purple-600" />
@@ -388,8 +390,8 @@ export default function EditAffiliateProductPage({ params }: { params: { id: str
                   </div>
                 </div>
                 <p className="text-sm text-purple-700">
-                  This product has a {product.performance.conversionRate.toFixed(1)}% conversion rate. 
-                  AI recommends adjusting the commission rate to {Math.min(100, product.commissionRate + 0.5).toFixed(1)}% 
+                  This product has a {product.performance.conversionRate.toFixed(1)}% conversion rate.
+                  AI recommends adjusting the commission rate to {Math.min(100, product.commissionRate + 0.5).toFixed(1)}%
                   for improved performance.
                 </p>
               </div>
@@ -397,14 +399,14 @@ export default function EditAffiliateProductPage({ params }: { params: { id: str
           </div>
         </CardContent>
         <CardFooter className="flex justify-between">
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             onClick={() => router.push('/admin/affiliate-products')}
             disabled={saving}
           >
             Cancel
           </Button>
-          <Button 
+          <Button
             onClick={handleUpdateProduct}
             disabled={saving}
           >

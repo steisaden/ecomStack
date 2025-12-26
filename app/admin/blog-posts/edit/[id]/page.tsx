@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, ChangeEvent, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import { BlogPost } from '@/lib/types';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { Input } from '@/components/ui/input';
@@ -14,7 +14,9 @@ import { toast } from 'sonner';
 import { X, Sparkles } from 'lucide-react';
 
 
-export default function EditBlogPostPage({ params }: { params: { id: string } }) {
+export default function EditBlogPostPage() {
+  const params = useParams();
+  const id = params?.id as string;
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [generatingContent, setGeneratingContent] = useState(false);
@@ -30,7 +32,7 @@ export default function EditBlogPostPage({ params }: { params: { id: string } })
     title: '',
     excerpt: '',
     featuredImage: undefined,
-    author: undefined,
+    author: undefined as any,
     categories: [],
     tags: [],
     publishedAt: new Date().toISOString(),
@@ -195,8 +197,8 @@ export default function EditBlogPostPage({ params }: { params: { id: string } })
           url: result.imageUrl,
           title: `Featured image for ${formData.title || 'blog post'}`,
           description: `Featured image generated for the blog post`,
-          width: result.width || width || 1200,
-          height: result.height || height || 630,
+          width: result.width || 1200,
+          height: result.height || 630,
           contentType: 'image/png'
         }
       }));
@@ -262,7 +264,7 @@ export default function EditBlogPostPage({ params }: { params: { id: string } })
     // Fetch the blog post data to populate the form
     async function fetchBlogPost() {
       try {
-        const response = await fetch(`/api/contentful/blog-posts/${params.id}`);
+        const response = await fetch(`/api/contentful/blog-posts/${id}`);
         if (!response.ok) {
           throw new Error('Failed to fetch blog post');
         }
@@ -296,7 +298,7 @@ export default function EditBlogPostPage({ params }: { params: { id: string } })
     }
 
     fetchBlogPost();
-  }, [params.id]);
+  }, [id]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -305,7 +307,7 @@ export default function EditBlogPostPage({ params }: { params: { id: string } })
 
     try {
       // Comprehensive form validation
-      const errors = [];
+      const errors: string[] = [];
 
       if (!formData.title.trim()) {
         errors.push('Blog post title is required');
@@ -335,8 +337,8 @@ export default function EditBlogPostPage({ params }: { params: { id: string } })
       // 3. Update the blog post with references to those assets
 
       // Array to hold references to uploaded asset IDs
-      const assetIds = [];
-      const uploadedAssets = [];
+      const assetIds: any[] = [];
+      const uploadedAssets: any[] = [];
 
       if (files.length > 0) {
         for (const file of files) {
@@ -370,7 +372,7 @@ export default function EditBlogPostPage({ params }: { params: { id: string } })
         assetIds: uploadedAssets,
       };
 
-      const response = await fetch(`/api/admin/blog-posts/${params.id}`, {
+      const response = await fetch(`/api/admin/blog-posts/${id}`, {
         method: 'PUT', // Use PUT for update
         headers: {
           'Content-Type': 'application/json',

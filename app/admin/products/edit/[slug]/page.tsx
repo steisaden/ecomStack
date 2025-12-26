@@ -15,7 +15,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 export default function EditProductPage() {
   const router = useRouter();
   const params = useParams();
-  const { slug } = params;
+  const slug = params?.slug as string;
 
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
