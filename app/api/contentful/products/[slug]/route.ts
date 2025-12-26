@@ -13,27 +13,28 @@ const managementClient = createClient({
   accessToken: process.env.CONTENTFUL_MANAGEMENT_TOKEN!,
 });
 
-export async function GET(request: NextRequest, context: any) {
-  const { slug } = context.params;
+export async function GET(request: NextRequest, props: { params: Promise<{ slug: string }> }) {
+  const params = await props.params;
+  const { slug } = params;
   try {
     const product = await getProductBySlug(slug);
     if (!product) {
       return NextResponse.json({ success: false, error: 'Product not found' }, { status: 404 });
     }
-    
+
     const response = NextResponse.json({ success: true, product });
-    
+
     // Add caching headers for HTTP cache - longer cache for individual products
     response.headers.set('Cache-Control', 'public, s-maxage=1800, stale-while-revalidate=3600');
     response.headers.set('CDN-Cache-Control', 'public, s-maxage=1800, stale-while-revalidate=3600');
     response.headers.set('Vercel-CDN-Cache-Control', 'public, s-maxage=1800, stale-while-revalidate=3600');
-    
+
     return response;
   } catch (error) {
     console.error('Product API error:', error);
     return NextResponse.json(
-      { 
-        success: false, 
+      {
+        success: false,
         error: 'Failed to fetch product',
       },
       { status: 500 }
@@ -41,8 +42,9 @@ export async function GET(request: NextRequest, context: any) {
   }
 }
 
-export async function PUT(request: NextRequest, context: any) {
-  const { slug } = context.params;
+export async function PUT(request: NextRequest, props: { params: Promise<{ slug: string }> }) {
+  const params = await props.params;
+  const { slug } = params;
   try {
     const productData = await request.json();
     const space = await managementClient.getSpace(process.env.CONTENTFUL_SPACE_ID!);
@@ -73,7 +75,7 @@ export async function PUT(request: NextRequest, context: any) {
 
     const updatedEntry = await entry.update();
     await updatedEntry.publish();
-    
+
     // Revalidate the products cache to ensure the updated product appears immediately
     revalidateTag('products');
     revalidateTag('contentful');
@@ -82,8 +84,8 @@ export async function PUT(request: NextRequest, context: any) {
   } catch (error) {
     console.error('Product update error:', error);
     return NextResponse.json(
-      { 
-        success: false, 
+      {
+        success: false,
         error: 'Failed to update product',
       },
       { status: 500 }

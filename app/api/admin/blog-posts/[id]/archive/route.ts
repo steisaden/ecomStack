@@ -9,10 +9,10 @@ const managementClient = createClient({
 // PUT - Archive/Unarchive a blog post
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const { archived } = await request.json();
 
     const space = await managementClient.getSpace(process.env.CONTENTFUL_SPACE_ID!);
@@ -36,7 +36,7 @@ export async function PUT(
     // Revalidate cache
     await revalidateTag('blog-posts');
     await revalidateTag('contentful');
-    
+
     const { revalidatePath } = await import('next/cache');
     await revalidatePath('/blog');
 

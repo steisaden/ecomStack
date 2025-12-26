@@ -8,8 +8,9 @@ const contentful = require('contentful-management');
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   try {
     // Apply authentication middleware
     const authResponse = await authMiddleware(request);
@@ -31,7 +32,7 @@ export async function PUT(
     );
 
     // Get the entry
-    const entry = await environment.getEntry(params.id);
+    const entry = await environment.getEntry(id);
 
     // Update fields
     entry.fields.name = { 'en-US': name };
@@ -70,8 +71,9 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   try {
     // Apply authentication middleware
     const authResponse = await authMiddleware(request);
@@ -90,7 +92,7 @@ export async function DELETE(
     );
 
     // Get the entry
-    const entry = await environment.getEntry(params.id);
+    const entry = await environment.getEntry(id);
 
     // Unpublish first
     if (entry.isPublished()) {

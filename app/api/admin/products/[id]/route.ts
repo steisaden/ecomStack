@@ -7,10 +7,10 @@ const managementClient = createClient({
   accessToken: process.env.CONTENTFUL_MANAGEMENT_TOKEN!,
 });
 
-export async function DELETE(request: NextRequest, context: { params: { id: string } }) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { id } = context.params;
-    
+    const { id } = await params;
+
     // Validate required fields
     if (!id) {
       return NextResponse.json(
@@ -18,14 +18,14 @@ export async function DELETE(request: NextRequest, context: { params: { id: stri
         { status: 400 }
       );
     }
-    
+
     // Get the space and environment
     const space = await managementClient.getSpace(process.env.CONTENTFUL_SPACE_ID!);
     const environment = await space.getEnvironment(process.env.CONTENTFUL_ENVIRONMENT || 'master');
-    
+
     // Get the entry
     const entry = await environment.getEntry(id);
-    
+
     try {
       // First, try to unpublish the entry if it's published
       await entry.unpublish();
@@ -33,21 +33,21 @@ export async function DELETE(request: NextRequest, context: { params: { id: stri
       console.log('Entry was not published or unpublish failed:', unpublishError);
       // Continue with deletion even if unpublish fails
     }
-    
+
     try {
       // Then, try to archive the entry (alternative to delete)
       await entry.archive();
     } catch (archiveError) {
       console.log('Archive failed, proceeding to delete:', archiveError);
     }
-    
+
     // Finally, delete the entry
     await entry.delete();
-    
+
     // Revalidate the products cache to ensure the product disappears immediately
     revalidateTag('products');
     revalidateTag('contentful');
-    
+
     return NextResponse.json({
       success: true,
       message: 'Product deleted successfully'
@@ -55,7 +55,7 @@ export async function DELETE(request: NextRequest, context: { params: { id: stri
   } catch (error: any) {
     console.error('Error deleting product:', error);
     return NextResponse.json(
-      { 
+      {
         error: error.message || 'Failed to delete product',
         details: error.toString ? error.toString() : 'Unknown error'
       },
@@ -64,11 +64,11 @@ export async function DELETE(request: NextRequest, context: { params: { id: stri
   }
 }
 
-export async function PUT(request: NextRequest, context: { params: { id: string } }) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { id } = context.params;
+    const { id } = await params;
     const { archived } = await request.json();
-    
+
     // Validate required fields
     if (!id) {
       return NextResponse.json(
@@ -76,30 +76,30 @@ export async function PUT(request: NextRequest, context: { params: { id: string 
         { status: 400 }
       );
     }
-    
+
     // Get the space and environment
     const space = await managementClient.getSpace(process.env.CONTENTFUL_SPACE_ID!);
     const environment = await space.getEnvironment(process.env.CONTENTFUL_ENVIRONMENT || 'master');
-    
+
     // Get the entry
     const entry = await environment.getEntry(id);
-    
+
     // Update the inStock field to simulate archiving
     // In a real implementation, you might want to add a dedicated 'archived' field
     entry.fields.inStock = {
       'en-US': !archived // Set to false when archiving
     };
-    
+
     // Update the entry
     const updatedEntry = await entry.update();
-    
+
     // Publish the entry
     const publishedEntry = await updatedEntry.publish();
-    
+
     // Revalidate the products cache to ensure the product status updates immediately
     revalidateTag('products');
     revalidateTag('contentful');
-    
+
     return NextResponse.json({
       success: true,
       message: archived ? 'Product archived successfully' : 'Product unarchived successfully',
@@ -108,7 +108,7 @@ export async function PUT(request: NextRequest, context: { params: { id: string 
   } catch (error: any) {
     console.error('Error updating product:', error);
     return NextResponse.json(
-      { 
+      {
         error: error.message || 'Failed to update product',
         details: error.toString ? error.toString() : 'Unknown error'
       },
