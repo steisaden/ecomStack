@@ -2,7 +2,7 @@
 
 import { AmazonProduct, PAAPIItem, AmazonAPIError, AmazonAPIErrorType } from './types/amazon';
 import { cacheManager } from './cache-manager';
-import { defaultRateLimiter } from './rate-limiter';
+import { rateLimiter } from './rate-limiter';
 import { requestDeduplicator } from './request-deduplicator';
 import { amazonConfig } from './config/amazon-config';
 import { amazonLogger } from './amazon-logger';
@@ -50,7 +50,7 @@ export class AmazonPAAPIService {
       defaultClient.secretKey = amazonConfig.credentials.secretKey;
       defaultClient.host = host;
       defaultClient.region = region;
-      
+
       this.client = new paapi.DefaultApi();
     } catch (error: any) {
       const errorMessage = `Failed to initialize Amazon PA-API client: ${error.message}`;
@@ -67,23 +67,23 @@ export class AmazonPAAPIService {
     try {
       // Check if configuration is loaded
       if (!amazonConfig.isConfigured) {
-        return { 
-          isValid: false, 
-          error: amazonConfig.validationError || 'Amazon PA-API not configured' 
+        return {
+          isValid: false,
+          error: amazonConfig.validationError || 'Amazon PA-API not configured'
         };
       }
 
       // Test API connectivity with a simple validation call
       const testAsin = 'B08N5WRWNW'; // Known valid ASIN for testing
       await this.validateASIN(testAsin);
-      
+
       amazonConfig.setValidationStatus(true);
       return { isValid: true };
     } catch (error: any) {
-      const errorMessage = error instanceof AmazonAPIError 
-        ? error.message 
+      const errorMessage = error instanceof AmazonAPIError
+        ? error.message
         : `Configuration validation failed: ${error.message}`;
-      
+
       amazonConfig.setValidationStatus(false, errorMessage);
       return { isValid: false, error: errorMessage };
     }
@@ -226,7 +226,7 @@ export class AmazonPAAPIService {
 
     return requestDeduplicator.deduplicate(cacheKey, async () => {
       return withRetry(async () => {
-        await defaultRateLimiter.waitForToken();
+        await rateLimiter.waitForToken();
         amazonLogger.info(`Fetching product ${asin} from PA-API.`, { asin });
 
         // Dynamically import types
@@ -277,79 +277,79 @@ export class AmazonPAAPIService {
         } catch (error: any) {
           console.error('Full PA-API error:', error);
           amazonLogger.error(`Error fetching product ${asin}:`, error, { asin });
-          
+
           // Handle different error types comprehensively
           if (error instanceof AmazonAPIError) {
             amazonConfig.setValidationStatus(true);
             throw error;
           }
-          
+
           // Handle HTTP response errors
           if (error.response) {
             const status = error.response.status;
             const errorData = error.response.data || {};
-            
+
             switch (status) {
               case 400:
                 amazonConfig.setValidationStatus(true);
                 throw new AmazonAPIError(
-                  `Invalid request for ASIN ${asin}: ${errorData.message || error.message}`, 
-                  AmazonAPIErrorType.InvalidASIN, 
+                  `Invalid request for ASIN ${asin}: ${errorData.message || error.message}`,
+                  AmazonAPIErrorType.InvalidASIN,
                   400
                 );
               case 403:
                 amazonConfig.setValidationStatus(false, 'Authentication failed. Check your PA-API credentials.');
                 throw new AmazonAPIError(
-                  'Authentication failed. Check your PA-API credentials.', 
-                  AmazonAPIErrorType.AuthenticationFailed, 
+                  'Authentication failed. Check your PA-API credentials.',
+                  AmazonAPIErrorType.AuthenticationFailed,
                   403
                 );
               case 429:
                 amazonConfig.setValidationStatus(true);
                 throw new AmazonAPIError(
-                  'Rate limit exceeded. Please wait before making more requests.', 
-                  AmazonAPIErrorType.RateLimitExceeded, 
+                  'Rate limit exceeded. Please wait before making more requests.',
+                  AmazonAPIErrorType.RateLimitExceeded,
                   429
                 );
               case 503:
                 amazonConfig.setValidationStatus(true);
                 throw new AmazonAPIError(
-                  'Amazon PA-API service temporarily unavailable.', 
-                  AmazonAPIErrorType.ServiceUnavailable, 
+                  'Amazon PA-API service temporarily unavailable.',
+                  AmazonAPIErrorType.ServiceUnavailable,
                   503
                 );
               default:
                 amazonConfig.setValidationStatus(true);
                 throw new AmazonAPIError(
-                  `HTTP ${status} error: ${errorData.message || error.message}`, 
-                  AmazonAPIErrorType.Unknown, 
+                  `HTTP ${status} error: ${errorData.message || error.message}`,
+                  AmazonAPIErrorType.Unknown,
                   status
                 );
             }
           }
-          
+
           // Handle network errors
           if (error.code === 'ENOTFOUND' || error.code === 'ECONNREFUSED' || error.code === 'ETIMEDOUT') {
             amazonConfig.setValidationStatus(true);
             throw new AmazonAPIError(
-              `Network error: Unable to connect to Amazon PA-API. ${error.message}`, 
+              `Network error: Unable to connect to Amazon PA-API. ${error.message}`,
               AmazonAPIErrorType.ServiceUnavailable
             );
           }
-          
+
           // Handle SDK-specific errors
           if (error.name === 'ValidationException' || error.name === 'InvalidParameterException') {
             amazonConfig.setValidationStatus(true);
             throw new AmazonAPIError(
-              `Invalid request parameters: ${error.message}`, 
+              `Invalid request parameters: ${error.message}`,
               AmazonAPIErrorType.InvalidASIN
             );
           }
-          
+
           // Handle unknown errors
           amazonConfig.setValidationStatus(true);
           throw new AmazonAPIError(
-            `Unknown error fetching product ${asin}: ${error.message || 'Unexpected error occurred'}`, 
+            `Unknown error fetching product ${asin}: ${error.message || 'Unexpected error occurred'}`,
             AmazonAPIErrorType.Unknown
           );
         }
@@ -388,7 +388,7 @@ export class AmazonPAAPIService {
 
       const batchProducts = await requestDeduplicator.deduplicate(batchCacheKey, async () => {
         return withRetry(async () => {
-          await defaultRateLimiter.waitForToken();
+          await rateLimiter.waitForToken();
           amazonLogger.info(`Fetching batch products ${batchAsins.join(', ')} from PA-API.`, { asins: batchAsins });
 
           // Dynamically import types

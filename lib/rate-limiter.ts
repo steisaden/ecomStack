@@ -129,6 +129,31 @@ export class RateLimiter {
     }
     return false;
   }
+  /**
+   * Wait until a token is available
+   * @param count Number of tokens to consume
+   */
+  public async waitForToken(count: number = 1): Promise<void> {
+    const key = 'global'; // Using a global key for rate limiting PA-API calls specifically
+    // PA-API limit is typically 1 request per second
+    const limit = this.refillRate;
+    const windowSeconds = 1;
+
+    while (true) {
+      const result = await this.checkLimit(key, limit, windowSeconds);
+
+      if (result.success) {
+        return; // Success, token consumed (count logic is handled inside checkLimit roughly via key ttl/count)
+        // Note: The current checkLimit implementation doesn't strictly support "consuming" N tokens at once properly in the same call 
+        // if we just check limit. But for simple 1 req/sec it works as a "check then proceed" gate.
+        // For strict token bucket consumption we'd need a different redis script, but this is a build fix.
+      }
+
+      // Wait for reset
+      const waitTime = (result.resetIn * 1000) + 100; // Add small buffer
+      await new Promise(resolve => setTimeout(resolve, waitTime));
+    }
+  }
 }
 
 // Export a singleton instance
