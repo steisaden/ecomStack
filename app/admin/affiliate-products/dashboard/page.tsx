@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
+// Forces Vercel rebuild
 export default function AffiliateDashboardPage() {
     return (
         <div className="container mx-auto py-8">
