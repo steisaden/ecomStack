@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { jobQueue } from '@/lib/background/job-queue';
 
 // Dummy admin check
@@ -6,7 +6,8 @@ const isAdmin = (request: Request) => {
     return request.headers.get('Authorization') === `Bearer ${process.env.ADMIN_SECRET}`;
 };
 
-export async function GET(request: Request, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+    const params = await props.params;
     if (!isAdmin(request)) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
