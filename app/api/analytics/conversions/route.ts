@@ -1,8 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { ConversionTrackingService, TrackingEvent } from '@/lib/conversion-tracking';
+import { verifyAuth } from '@/lib/auth';
+import { enforceSameOrigin } from '@/lib/security';
 
 export async function POST(request: NextRequest) {
   try {
+    const originError = enforceSameOrigin(request);
+    if (originError) return originError;
+
     const body = await request.json();
     const { eventType, userId, sessionId, productId, metadata, url, referrer } = body;
 
@@ -47,6 +52,13 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
+    const auth = await verifyAuth(request);
+    if (!auth.success) {
+      return NextResponse.json(
+        { error: auth.error || 'Unauthorized' },
+        { status: auth.error === 'Insufficient permissions' ? 403 : 401 }
+      );
+    }
     const url = new URL(request.url);
     const action = url.searchParams.get('action') || 'funnel';
     const userId = url.searchParams.get('userId');

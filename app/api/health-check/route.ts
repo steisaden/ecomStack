@@ -9,7 +9,6 @@ export async function GET(request: NextRequest) {
       endpoints: {
         catalog: '/api/curated-catalog',
         refresh: '/api/curated-catalog/refresh',
-        testCatalog: '/api/test-catalog',
         verifyAsin: '/api/verify-asin'
       }
     })

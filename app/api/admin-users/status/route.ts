@@ -1,16 +1,24 @@
-import { NextResponse } from 'next/server';
-import { adminUserExists, getAdminUsername } from '@/lib/admin-user-store';
+import { NextRequest, NextResponse } from 'next/server';
+import { adminUserExists } from '@/lib/admin-user-store';
+import { verifyAuth } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const configured = await adminUserExists();
-    const username = configured ? await getAdminUsername() : null;
+    if (configured) {
+      const auth = await verifyAuth(request);
+      if (!auth.success) {
+        return NextResponse.json(
+          { error: auth.error || 'Unauthorized' },
+          { status: auth.error === 'Insufficient permissions' ? 403 : 401 }
+        );
+      }
+    }
 
     return NextResponse.json({
       configured,
-      username,
     });
   } catch (error) {
     console.error('Error checking admin user status:', error);

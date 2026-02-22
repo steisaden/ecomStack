@@ -16,7 +16,7 @@ export default async function YogaServiceDetailPage({ params }: PageProps) {
   if (!service) return notFound();
 
   const allAddOns = await getAddOnExperiences();
-  const applicableAddOns = allAddOns.filter(a => 
+  const applicableAddOns = allAddOns.filter(a =>
     a.applicableServices?.includes('All Services') || a.applicableServices?.includes(service.name)
   );
 
@@ -27,7 +27,7 @@ export default async function YogaServiceDetailPage({ params }: PageProps) {
           <Link href="/yoga-booking" className="text-sm text-beauty-primary hover:underline">← Back to Yoga Booking</Link>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
           <Card className="h-fit">
             <CardContent className="p-6">
               {service.image && (

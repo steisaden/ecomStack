@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from 'contentful-management';
 import { revalidateTag } from 'next/cache';
+import { verifyAuth } from '@/lib/auth';
 
 const managementClient = createClient({
   accessToken: process.env.CONTENTFUL_MANAGEMENT_TOKEN!,
@@ -12,6 +13,13 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const auth = await verifyAuth(request);
+    if (!auth.success) {
+      return NextResponse.json(
+        { error: auth.error || 'Unauthorized' },
+        { status: auth.error === 'Insufficient permissions' ? 403 : 401 }
+      );
+    }
     const { id } = await params;
 
     const space = await managementClient.getSpace(process.env.CONTENTFUL_SPACE_ID!);

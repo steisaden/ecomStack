@@ -1,23 +1,25 @@
 // app/api/admin/affiliate-products/list/route.ts
 
 import { NextRequest, NextResponse } from 'next/server';
-import { authMiddleware } from '@/lib/auth-middleware';
+import { verifyAuth } from '@/lib/auth';
 
 const contentful = require('contentful');
 
 export async function GET(request: NextRequest) {
   try {
-    // Apply authentication middleware
-    const authResponse = await authMiddleware(request);
-    if (authResponse instanceof NextResponse) {
-      return authResponse;
+    const auth = await verifyAuth(request);
+    if (!auth.success) {
+      return NextResponse.json(
+        { error: auth.error || 'Unauthorized' },
+        { status: auth.error === 'Insufficient permissions' ? 403 : 401 }
+      );
     }
 
     // Initialize Contentful client
     const client = contentful.createClient({
       space: process.env.CONTENTFUL_SPACE_ID!,
       accessToken: process.env.CONTENTFUL_ACCESS_TOKEN!,
-      environment: process.env.CONTENTFUL_ENVIRONMENT_ID || 'master'
+      environment: process.env.CONTENTFUL_ENVIRONMENT || process.env.CONTENTFUL_ENVIRONMENT_ID || 'master'
     });
 
     // Fetch all affiliate products

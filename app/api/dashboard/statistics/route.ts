@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getProducts, getBlogPosts } from '@/lib/contentful'
 import Stripe from 'stripe'
 import { unstable_cache } from 'next/cache'
+import { verifyAuth } from '@/lib/auth'
 
 // Force dynamic rendering for API route
 export const dynamic = 'force-dynamic';
@@ -118,6 +119,13 @@ const groupChargesByWeek = (charges: any[]): any[] => {
 
 export async function GET(request: NextRequest) {
   try {
+    const auth = await verifyAuth(request)
+    if (!auth.success) {
+      return NextResponse.json(
+        { error: auth.error || 'Unauthorized' },
+        { status: auth.error === 'Insufficient permissions' ? 403 : 401 }
+      )
+    }
     // ✅ REUSE existing functions
     const [products, blogPosts] = await Promise.all([
       getProducts(),

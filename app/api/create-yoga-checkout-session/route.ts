@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { validateAvailability } from '@/lib/availability';
+import { enforceSameOrigin } from '@/lib/security';
 
 // Force dynamic rendering for checkout API
 export const dynamic = 'force-dynamic';
@@ -16,6 +17,9 @@ if (STRIPE_SECRET_KEY) {
 
 export async function POST(request: NextRequest) {
   try {
+    const originError = enforceSameOrigin(request);
+    if (originError) return originError;
+
     const body = await request.json();
 
     // Support both legacy and new payload shapes

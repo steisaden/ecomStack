@@ -3,16 +3,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { amazonPAAPIService } from '@/lib/amazon-paapi';
 import { AmazonAPIError, AmazonAPIErrorType } from '@/lib/types/amazon';
-import { authMiddleware } from '@/lib/auth-middleware';
+import { verifyAuth } from '@/lib/auth';
 import { amazonLogger } from '@/lib/amazon-logger';
 
 export async function POST(request: NextRequest) {
   let asinValue: string | undefined;
   try {
     // Apply authentication middleware
-    const authResponse = await authMiddleware(request);
-    if (authResponse instanceof NextResponse) {
-      return authResponse;
+    const auth = await verifyAuth(request);
+    if (!auth.success) {
+      return NextResponse.json(
+        { error: auth.error || 'Unauthorized' },
+        { status: auth.error === 'Insufficient permissions' ? 403 : 401 }
+      );
     }
 
     const { asin } = await request.json();

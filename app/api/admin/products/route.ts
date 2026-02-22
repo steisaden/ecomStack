@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from 'contentful-management';
 import { Product } from '@/lib/types';
 import { revalidateTag } from 'next/cache';
+import { verifyAuth } from '@/lib/auth';
 
 // Initialize Contentful management client
 const managementClient = createClient({
@@ -10,6 +11,13 @@ const managementClient = createClient({
 
 export async function POST(request: NextRequest) {
   try {
+    const auth = await verifyAuth(request);
+    if (!auth.success) {
+      return NextResponse.json(
+        { error: auth.error || 'Unauthorized' },
+        { status: auth.error === 'Insufficient permissions' ? 403 : 401 }
+      );
+    }
     // Parse JSON payload
     const reqData = await request.json();
     const productData: Omit<Product, 'sys' | 'images'> = reqData.productData;

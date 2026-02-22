@@ -1,24 +1,27 @@
 import { NextResponse } from 'next/server';
 import { jobQueue } from '@/lib/background/job-queue';
 import { productSyncService } from '@/lib/background/product-sync';
-
-// Dummy admin check
-const isAdmin = (request: Request) => {
-    // In a real app, you'd have proper authentication
-    return request.headers.get('Authorization') === `Bearer ${process.env.ADMIN_SECRET}`;
-};
+import { verifyAuth } from '@/lib/auth';
 
 export async function GET(request: Request) {
-    if (!isAdmin(request)) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const auth = await verifyAuth(request);
+    if (!auth.success) {
+        return NextResponse.json(
+            { error: auth.error || 'Unauthorized' },
+            { status: auth.error === 'Insufficient permissions' ? 403 : 401 }
+        );
     }
     const jobs = await jobQueue.listJobs();
     return NextResponse.json(jobs);
 }
 
 export async function POST(request: Request) {
-    if (!isAdmin(request)) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const auth = await verifyAuth(request);
+    if (!auth.success) {
+        return NextResponse.json(
+            { error: auth.error || 'Unauthorized' },
+            { status: auth.error === 'Insufficient permissions' ? 403 : 401 }
+        );
     }
 
     const { type, productId } = await request.json();

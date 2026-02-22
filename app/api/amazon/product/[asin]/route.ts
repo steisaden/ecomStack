@@ -3,7 +3,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { amazonPAAPIService } from '@/lib/amazon-paapi';
 import { AmazonAPIError, AmazonAPIErrorType } from '@/lib/types/amazon';
-import { authMiddleware } from '@/lib/auth-middleware';
+import { verifyAuth } from '@/lib/auth';
 import { amazonLogger } from '@/lib/amazon-logger';
 
 export async function GET(
@@ -19,9 +19,12 @@ export async function GET(
     if (!allowPublic) {
       // If a service key is provided and matches, skip cookie-based auth
       if (!(expectedServiceKey && serviceKey && serviceKey === expectedServiceKey)) {
-        const authResponse = await authMiddleware(request);
-        if (authResponse instanceof NextResponse) {
-          return authResponse;
+        const auth = await verifyAuth(request);
+        if (!auth.success) {
+            return NextResponse.json(
+              { error: auth.error || 'Unauthorized' },
+              { status: auth.error === 'Insufficient permissions' ? 403 : 401 }
+            );
         }
       }
     }

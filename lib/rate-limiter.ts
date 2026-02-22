@@ -6,9 +6,6 @@ export class RateLimiter {
   private refillRate: number; // tokens per second
   private capacity: number; // max tokens
 
-  // In-memory fallback storage
-  private static memoryStore: Map<string, { count: number, resetAt: number }> = new Map();
-
   constructor(capacity: number, refillRate: number) {
     this.capacity = capacity;
     this.refillRate = refillRate;
@@ -27,90 +24,55 @@ export class RateLimiter {
     remaining: number;
     resetIn: number;
   }> {
-    if (redis) {
-      try {
-        const redisKey = `rate_limit:${key}`;
-        const multi = redis.multi();
-        multi.incr(redisKey);
-        multi.ttl(redisKey);
-
-        const results = await multi.exec();
-
-        if (results && results[0] && results[1]) {
-          const count = results[0][1] as number;
-          const ttl = results[1][1] as number;
-
-          if (count === 1) {
-            // First request, set expiration
-            await redis.expire(redisKey, windowSeconds);
-            return {
-              success: true,
-              remaining: limit - 1,
-              resetIn: windowSeconds
-            };
-          }
-
-          if (count > limit) {
-            return {
-              success: false,
-              remaining: 0,
-              resetIn: ttl > 0 ? ttl : windowSeconds
-            };
-          }
-
-          return {
-            success: true,
-            remaining: Math.max(0, limit - count),
-            resetIn: ttl > 0 ? ttl : windowSeconds
-          };
-        }
-      } catch (error) {
-        console.error('Redis rate limit error, falling back to memory:', error);
-      }
-    }
-
-    // Fallback to in-memory (per instance) impl
-    return this.checkMemoryLimit(key, limit, windowSeconds);
-  }
-
-  private checkMemoryLimit(key: string, limit: number, windowSeconds: number): {
-    success: boolean;
-    remaining: number;
-    resetIn: number;
-  } {
-    const now = Date.now();
-    const record = RateLimiter.memoryStore.get(key);
-
-    if (!record || record.resetAt < now) {
-      // New window or expired
-      RateLimiter.memoryStore.set(key, {
-        count: 1,
-        resetAt: now + (windowSeconds * 1000)
-      });
-
+    if (!redis) {
+      console.warn('Rate Limiting Bypass: Redis not configured. Returning success.');
       return {
         success: true,
-        remaining: limit - 1,
+        remaining: limit,
         resetIn: windowSeconds
       };
     }
 
-    // Existing window
-    if (record.count >= limit) {
+    const redisKey = `rate_limit:${key}`;
+    const multi = redis.multi();
+    multi.incr(redisKey);
+    multi.ttl(redisKey);
+
+    const results = await multi.exec();
+
+    if (results && results[0] && results[1]) {
+      const count = results[0][1] as number;
+      const ttl = results[1][1] as number;
+
+      if (count === 1) {
+        // First request, set expiration
+        await redis.expire(redisKey, windowSeconds);
+        return {
+          success: true,
+          remaining: limit - 1,
+          resetIn: windowSeconds
+        };
+      }
+
+      if (count > limit) {
+        return {
+          success: false,
+          remaining: 0,
+          resetIn: ttl > 0 ? ttl : windowSeconds
+        };
+      }
+
       return {
-        success: false,
-        remaining: 0,
-        resetIn: Math.ceil((record.resetAt - now) / 1000)
+        success: true,
+        remaining: Math.max(0, limit - count),
+        resetIn: ttl > 0 ? ttl : windowSeconds
       };
     }
 
-    record.count++;
-    RateLimiter.memoryStore.set(key, record);
-
     return {
-      success: true,
-      remaining: limit - record.count,
-      resetIn: Math.ceil((record.resetAt - now) / 1000)
+      success: false,
+      remaining: 0,
+      resetIn: windowSeconds
     };
   }
 

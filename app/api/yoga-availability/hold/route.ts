@@ -1,4 +1,5 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+import { enforceSameOrigin } from '@/lib/security';
 
 // In-memory store for temporary holds
 // In production, this should be replaced with a database
@@ -6,8 +7,11 @@ const temporaryHolds = new Map<string, { expiry: Date }>();
 
 const HOLD_DURATION = 15 * 60 * 1000; // 15 minutes in milliseconds
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
+    const originError = enforceSameOrigin(request);
+    if (originError) return originError;
+
     const { serviceId, date, time } = await request.json();
 
     if (!serviceId || !date || !time) {
@@ -52,8 +56,11 @@ export async function POST(request: Request) {
   }
 }
 
-export async function DELETE(request: Request) {
+export async function DELETE(request: NextRequest) {
   try {
+    const originError = enforceSameOrigin(request);
+    if (originError) return originError;
+
     const { serviceId, date, time } = await request.json();
 
     if (!serviceId || !date || !time) {

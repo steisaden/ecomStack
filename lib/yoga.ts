@@ -61,7 +61,7 @@ if (HAS_CONTENTFUL) {
   client = createClient({
     space: process.env.CONTENTFUL_SPACE_ID!,
     accessToken: process.env.CONTENTFUL_ACCESS_TOKEN!,
-    environment: process.env.CONTENTFUL_ENVIRONMENT_ID || 'master',
+    environment: process.env.CONTENTFUL_ENVIRONMENT || process.env.CONTENTFUL_ENVIRONMENT_ID || 'master',
   });
 }
 
@@ -70,7 +70,7 @@ const YOGA_CT_OVERRIDE = process.env.CONTENTFUL_YOGA_SERVICE_CT_ID;
 const ADDON_CT_OVERRIDE = process.env.CONTENTFUL_ADDON_EXPERIENCE_CT_ID;
 
 // Dynamically resolve Contentful content type IDs (CDA) with caching
-const getYogaContentTypeIds = unstable_cache(
+export const getYogaContentTypeIds = unstable_cache(
   async () => {
     // If in dev without Contentful, short-circuit with defaults
     if (!HAS_CONTENTFUL) {

@@ -5,6 +5,23 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
   try {
+    if (process.env.NODE_ENV === 'production') {
+      const setupToken = process.env.ADMIN_SETUP_TOKEN;
+      if (!setupToken) {
+        return NextResponse.json(
+          { success: false, error: 'Admin setup token not configured' },
+          { status: 503 }
+        );
+      }
+      const provided = request.headers.get('x-setup-token');
+      if (!provided || provided !== setupToken) {
+        return NextResponse.json(
+          { success: false, error: 'Unauthorized' },
+          { status: 401 }
+        );
+      }
+    }
+
     const body = await request.json();
     const username = (body?.username || '').trim();
     const password = body?.password || '';

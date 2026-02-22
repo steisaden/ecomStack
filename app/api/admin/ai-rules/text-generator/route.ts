@@ -1,7 +1,7 @@
 // app/api/admin/ai-rules/text-generator/route.ts
 
 import { NextRequest, NextResponse } from 'next/server';
-import { authMiddleware } from '@/lib/auth-middleware';
+import { verifyAuth } from '@/lib/auth';
 import fs from 'fs';
 import path from 'path';
 
@@ -18,9 +18,12 @@ function ensureDirectoryExists() {
 export async function GET(request: NextRequest) {
   try {
     // Apply authentication middleware
-    const authResponse = await authMiddleware(request);
-    if (authResponse instanceof NextResponse) {
-      return authResponse;
+    const auth = await verifyAuth(request);
+    if (!auth.success) {
+      return NextResponse.json(
+        { error: auth.error || 'Unauthorized' },
+        { status: auth.error === 'Insufficient permissions' ? 403 : 401 }
+      );
     }
 
     ensureDirectoryExists();
@@ -59,9 +62,12 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     // Apply authentication middleware
-    const authResponse = await authMiddleware(request);
-    if (authResponse instanceof NextResponse) {
-      return authResponse;
+    const auth = await verifyAuth(request);
+    if (!auth.success) {
+      return NextResponse.json(
+        { error: auth.error || 'Unauthorized' },
+        { status: auth.error === 'Insufficient permissions' ? 403 : 401 }
+      );
     }
 
     const body = await request.json();

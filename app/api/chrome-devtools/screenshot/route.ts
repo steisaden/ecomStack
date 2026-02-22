@@ -1,7 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { verifyAuth } from '@/lib/auth'
 
 export async function POST(request: NextRequest) {
   try {
+    const auth = await verifyAuth(request)
+    if (!auth.success) {
+      return NextResponse.json(
+        { error: auth.error || 'Unauthorized' },
+        { status: auth.error === 'Insufficient permissions' ? 403 : 401 }
+      )
+    }
     const defaultTimeout = parseInt(process.env.SCREENSHOT_TIMEOUT || '10000')
     const { url, timeout = defaultTimeout, selector, waitForSelector = false, fullPage = false } = await request.json()
     

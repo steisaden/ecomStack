@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getProductBySlug } from '@/lib/contentful';
 import { createClient } from 'contentful-management';
 import { revalidateTag } from 'next/cache';
+import { verifyAuth } from '@/lib/auth';
 
 // Allow dynamic rendering for API route but with cache control
 export const dynamic = 'force-dynamic'
@@ -46,6 +47,13 @@ export async function PUT(request: NextRequest, props: { params: Promise<{ slug:
   const params = await props.params;
   const { slug } = params;
   try {
+    const auth = await verifyAuth(request);
+    if (!auth.success) {
+      return NextResponse.json(
+        { error: auth.error || 'Unauthorized' },
+        { status: auth.error === 'Insufficient permissions' ? 403 : 401 }
+      );
+    }
     const productData = await request.json();
     const space = await managementClient.getSpace(process.env.CONTENTFUL_SPACE_ID!);
     const environment = await space.getEnvironment(process.env.CONTENTFUL_ENVIRONMENT || 'master');

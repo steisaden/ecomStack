@@ -25,6 +25,11 @@ export async function POST(request: NextRequest) {
           { status: 401 }
         )
       }
+    } else if (process.env.NODE_ENV === 'production') {
+      return NextResponse.json(
+        { success: false, error: 'Webhook secret not configured' },
+        { status: 401 }
+      )
     }
 
     // Parse the webhook payload

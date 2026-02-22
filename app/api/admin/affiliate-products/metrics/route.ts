@@ -1,8 +1,16 @@
 // @ts-nocheck
 import { NextRequest, NextResponse } from 'next/server'
+import { verifyAuth } from '@/lib/auth'
 
 export async function GET(request: NextRequest) {
   try {
+    const auth = await verifyAuth(request)
+    if (!auth.success) {
+      return NextResponse.json(
+        { error: auth.error || 'Unauthorized' },
+        { status: auth.error === 'Insufficient permissions' ? 403 : 401 }
+      )
+    }
     // Use the shared cache to ensure consistency
     const { getCachedAffiliateProducts } = await import('@/lib/affiliate-products-cache')
     const products = await getCachedAffiliateProducts()

@@ -1,9 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { revalidateTag } from 'next/cache';
 import { getCuratedAmazonProducts } from '@/lib/amazon-curated-catalog';
+import { verifyAuth } from '@/lib/auth';
 
 export async function POST(request: NextRequest) {
   try {
+    const auth = await verifyAuth(request);
+    if (!auth.success) {
+      return NextResponse.json(
+        { error: auth.error || 'Unauthorized' },
+        { status: auth.error === 'Insufficient permissions' ? 403 : 401 }
+      );
+    }
     console.log('Refreshing catalog with new products from Amazon...');
 
     // Revalidate cache tags to ensure fresh data

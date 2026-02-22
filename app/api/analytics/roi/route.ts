@@ -1,8 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { ROITrackingService } from '@/lib/roi-tracking';
+import { verifyAuth } from '@/lib/auth';
 
 export async function GET(request: NextRequest) {
   try {
+    const auth = await verifyAuth(request);
+    if (!auth.success) {
+      return NextResponse.json(
+        { error: auth.error || 'Unauthorized' },
+        { status: auth.error === 'Insufficient permissions' ? 403 : 401 }
+      );
+    }
     const url = new URL(request.url);
     const action = url.searchParams.get('action') || 'product';
     const productId = url.searchParams.get('productId');
@@ -113,6 +121,13 @@ export async function GET(request: NextRequest) {
 // POST endpoint for calculating ROI with custom costs
 export async function POST(request: NextRequest) {
   try {
+    const auth = await verifyAuth(request);
+    if (!auth.success) {
+      return NextResponse.json(
+        { error: auth.error || 'Unauthorized' },
+        { status: auth.error === 'Insufficient permissions' ? 403 : 401 }
+      );
+    }
     const body = await request.json();
     const { productId, timeRange, costs } = body;
 

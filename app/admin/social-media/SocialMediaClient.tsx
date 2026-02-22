@@ -144,27 +144,14 @@ export default function SocialMediaClient({ user }: { user: User }) {
         return (
             <div className="container mx-auto p-4 md:p-6 lg:p-8">
                 <div className="flex justify-between items-center mb-6">
-                    <div className="flex items-center gap-4">
-                        <Skeleton className="h-10 w-10 rounded-full" />
-                        <Skeleton className="h-8 w-48" />
-                    </div>
-                    <div className="flex items-center gap-4">
-                        <Skeleton className="h-4 w-32" />
-                        <Skeleton className="h-10 w-24 rounded-md" />
+                    <div>
+                        <Skeleton className="h-8 w-64 mb-2" />
+                        <Skeleton className="h-4 w-96" />
                     </div>
                 </div>
 
                 <Card className="w-full">
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <Skeleton className="h-6 w-6 rounded-full" />
-                            <Skeleton className="h-6 w-48" />
-                        </CardTitle>
-                        <CardDescription>
-                            <Skeleton className="h-4 w-64" />
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
+                    <CardContent className="space-y-4 pt-6">
                         {[...Array(7)].map((_, i) => (
                             <div key={i} className="flex items-center gap-4">
                                 <Skeleton className="h-10 w-10 rounded-full" />
@@ -187,8 +174,9 @@ export default function SocialMediaClient({ user }: { user: User }) {
     return (
         <div className="container mx-auto p-4 md:p-6 lg:p-8">
             <div className="flex justify-between items-center mb-6">
-                <div className="flex items-center gap-4">
-                    <h1 className="text-hero font-heading text-primary">Social Media Accounts</h1>
+                <div>
+                    <h1 className="text-2xl font-heading text-primary">Social Media Accounts</h1>
+                    <p className="text-beauty-muted mt-2">Manage your social media links. Add the full URL to your profile on each platform.</p>
                 </div>
                 <div className="flex items-center gap-4">
                     {/* Controls removed as per request */}
@@ -204,16 +192,7 @@ export default function SocialMediaClient({ user }: { user: User }) {
             </div>
 
             <Card className="w-full">
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                        <ExternalLink className="h-6 w-6 text-sage-600" />
-                        Social Media Accounts
-                    </CardTitle>
-                    <CardDescription>
-                        Manage your social media links. Add the full URL to your profile on each platform.
-                    </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
+                <CardContent className="space-y-6 pt-6">
                     {error && (
                         <div className="bg-red-50 border border-red-200 rounded-md p-4 text-red-700">
                             <p>{error}</p>

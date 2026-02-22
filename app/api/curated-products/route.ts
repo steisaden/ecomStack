@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getProducts } from '@/lib/contentful'
 import { validateProducts, getValidationSummary } from '@/lib/product-validation'
 import { unstable_cache } from 'next/cache'
+import { verifyAuth } from '@/lib/auth'
 
 // Cache validated products for 10 minutes to avoid repeated validation
 const getCachedValidatedProducts = unstable_cache(
@@ -83,6 +84,13 @@ export async function GET(request: NextRequest) {
 // POST endpoint to trigger validation refresh
 export async function POST(request: NextRequest) {
   try {
+    const auth = await verifyAuth(request)
+    if (!auth.success) {
+      return NextResponse.json(
+        { error: auth.error || 'Unauthorized' },
+        { status: auth.error === 'Insufficient permissions' ? 403 : 401 }
+      )
+    }
     // This will force a refresh of the cached validation
     const { revalidateTag } = await import('next/cache')
     revalidateTag('validated-products')

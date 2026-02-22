@@ -77,18 +77,42 @@ const nextConfig = {
       { source: '/yoga/', destination: '/yoga-booking', permanent: false },
     ]
   },
-  env: {
-    ADMIN_USERNAME: process.env.ADMIN_USERNAME,
-    ADMIN_PASSWORD_HASH: process.env.ADMIN_PASSWORD_HASH,
-    JWT_SECRET: process.env.JWT_SECRET,
-    JWT_REFRESH_SECRET: process.env.JWT_REFRESH_SECRET,
-    CONTENTFUL_SPACE_ID: process.env.CONTENTFUL_SPACE_ID,
-    CONTENTFUL_ACCESS_TOKEN: process.env.CONTENTFUL_ACCESS_TOKEN,
-    CONTENTFUL_WEBHOOK_SECRET: process.env.CONTENTFUL_WEBHOOK_SECRET,
-    NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
-    STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
-    CONTENTFUL_MANAGEMENT_TOKEN: process.env.CONTENTFUL_MANAGEMENT_TOKEN,
+  async headers() {
+    const headers = [
+      { key: 'X-Content-Type-Options', value: 'nosniff' },
+      { key: 'X-Frame-Options', value: 'DENY' },
+      { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+      { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
+    ];
+
+    if (process.env.NODE_ENV === 'production') {
+      headers.push({ key: 'Strict-Transport-Security', value: 'max-age=31536000; includeSubDomains; preload' });
+      headers.push({
+        key: 'Content-Security-Policy',
+        value: [
+          "default-src 'self'",
+          "img-src 'self' https: data:",
+          "media-src 'self' https:",
+          "script-src 'self' 'unsafe-inline' 'unsafe-eval' https:",
+          "style-src 'self' 'unsafe-inline' https:",
+          "connect-src 'self' https:",
+          "font-src 'self' https: data:",
+          "frame-ancestors 'none'",
+          "base-uri 'self'",
+          "form-action 'self' https:",
+          "upgrade-insecure-requests"
+        ].join('; ')
+      });
+    }
+
+    return [
+      {
+        source: '/(.*)',
+        headers,
+      },
+    ];
   },
+  // Do not expose server secrets to the client bundle via next.config env.
   // Optimize webpack configuration for smaller bundles
   webpack: (config, { isServer }) => {
     // Enable compression for smaller bundles

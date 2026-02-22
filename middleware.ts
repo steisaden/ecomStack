@@ -1,15 +1,10 @@
 import { NextResponse, NextRequest } from 'next/server';
 // Removed import of AuthenticationService to avoid loading fs/bcrypt in Edge Runtime
 
-// Rate limiting storage (in production, use Redis or a database)
-const rateLimitStore = new Map<string, { count: number; resetTime: number; blockedUntil?: number }>();
-
 // Rate limiting configuration
 const RATE_LIMIT_CONFIG = {
-  windowMs: 15 * 60 * 1000, // 15 minutes
+  windowSeconds: 15 * 60, // 15 minutes
   maxAttempts: 5, // Maximum 5 attempts per window
-  blockDuration: 30 * 60 * 1000, // Block for 30 minutes after exceeding limit
-  progressiveDelay: true, // Enable progressive delays
 };
 
 // Protected routes that require authentication
@@ -27,88 +22,62 @@ const AUTH_ROUTES = [
 /**
  * Rate limiting middleware to prevent brute force attacks
  */
-function checkRateLimit(request: NextRequest): { allowed: boolean; response?: NextResponse; headers?: Record<string, string> } {
+async function checkRateLimit(request: NextRequest): Promise<{ allowed: boolean; response?: NextResponse; headers?: Record<string, string> }> {
   const ip = getClientIP(request);
-  const key = `rate_limit:${ip}`;
-  const now = Date.now();
+  const scope = request.nextUrl.pathname;
 
-  // Clean up expired entries
-  const current = rateLimitStore.get(key);
-  if (current && now > current.resetTime && (!current.blockedUntil || now > current.blockedUntil)) {
-    rateLimitStore.delete(key);
-  }
+  try {
+    const rateLimitUrl = new URL('/api/auth/rate-limit', request.url);
+    const rlResponse = await fetch(rateLimitUrl, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        ip,
+        scope,
+        limit: RATE_LIMIT_CONFIG.maxAttempts,
+        windowSeconds: RATE_LIMIT_CONFIG.windowSeconds
+      })
+    });
 
-  // Get or create rate limit entry
-  const rateLimit = rateLimitStore.get(key) || {
-    count: 0,
-    resetTime: now + RATE_LIMIT_CONFIG.windowMs
-  };
+    const result = await rlResponse.json();
 
-  // Check if currently blocked
-  if (rateLimit.blockedUntil && now < rateLimit.blockedUntil) {
-    const retryAfter = Math.ceil((rateLimit.blockedUntil - now) / 1000);
-    const response = NextResponse.json(
-      {
-        success: false,
-        message: 'Too many failed attempts. Account temporarily blocked.',
-        retryAfter,
-        blocked: true
-      },
-      { status: 429 }
-    );
+    if (!result.success) {
+      const response = NextResponse.json(
+        {
+          success: false,
+          message: 'Too many failed attempts. Account temporarily blocked.',
+          retryAfter: result.resetIn,
+          blocked: true
+        },
+        { status: 429 }
+      );
 
-    response.headers.set('Retry-After', retryAfter.toString());
-    response.headers.set('X-RateLimit-Limit', RATE_LIMIT_CONFIG.maxAttempts.toString());
-    response.headers.set('X-RateLimit-Remaining', '0');
-    response.headers.set('X-RateLimit-Reset', rateLimit.blockedUntil.toString());
+      response.headers.set('Retry-After', String(result.resetIn));
+      response.headers.set('X-RateLimit-Limit', RATE_LIMIT_CONFIG.maxAttempts.toString());
+      response.headers.set('X-RateLimit-Remaining', '0');
+      response.headers.set('X-RateLimit-Reset', String(result.resetIn));
 
-    return { allowed: false, response };
-  }
-
-  // Check if rate limit exceeded
-  if (rateLimit.count >= RATE_LIMIT_CONFIG.maxAttempts) {
-    // Block the IP
-    rateLimit.blockedUntil = now + RATE_LIMIT_CONFIG.blockDuration;
-    rateLimitStore.set(key, rateLimit);
-
-    const response = NextResponse.json(
-      {
-        success: false,
-        message: 'Rate limit exceeded. Too many attempts.',
-        retryAfter: Math.ceil(RATE_LIMIT_CONFIG.blockDuration / 1000),
-        blocked: true
-      },
-      { status: 429 }
-    );
-
-    response.headers.set('Retry-After', Math.ceil(RATE_LIMIT_CONFIG.blockDuration / 1000).toString());
-    response.headers.set('X-RateLimit-Limit', RATE_LIMIT_CONFIG.maxAttempts.toString());
-    response.headers.set('X-RateLimit-Remaining', '0');
-    response.headers.set('X-RateLimit-Reset', rateLimit.blockedUntil.toString());
-
-    return { allowed: false, response };
-  }
-
-  // Increment counter for auth attempts (both login and failed attempts)
-  if (request.method === 'POST' && (
-    request.nextUrl.pathname === '/api/auth' ||
-    request.nextUrl.pathname.startsWith('/api/auth/')
-  )) {
-    rateLimit.count++;
-    rateLimitStore.set(key, rateLimit);
-  }
-
-  // Add rate limit headers to successful responses
-  const remaining = Math.max(0, RATE_LIMIT_CONFIG.maxAttempts - rateLimit.count);
-
-  return {
-    allowed: true,
-    headers: {
-      'X-RateLimit-Limit': RATE_LIMIT_CONFIG.maxAttempts.toString(),
-      'X-RateLimit-Remaining': remaining.toString(),
-      'X-RateLimit-Reset': rateLimit.resetTime.toString()
+      return { allowed: false, response };
     }
-  };
+
+    return {
+      allowed: true,
+      headers: {
+        'X-RateLimit-Limit': RATE_LIMIT_CONFIG.maxAttempts.toString(),
+        'X-RateLimit-Remaining': String(result.remaining ?? 0),
+        'X-RateLimit-Reset': String(result.resetIn ?? RATE_LIMIT_CONFIG.windowSeconds)
+      }
+    };
+  } catch (error) {
+    console.error('Rate limit error:', error);
+    return {
+      allowed: false,
+      response: NextResponse.json(
+        { success: false, message: 'Rate limiting unavailable' },
+        { status: 503 }
+      )
+    };
+  }
 }
 
 /**
@@ -137,52 +106,9 @@ function getClientIP(request: NextRequest): string {
 }
 
 /**
- * Simple JWT validation for Edge Runtime
- * This is a simplified version that works in Edge Runtime
- * Full signature verification happens in API routes for security
- */
-function validateJWTToken(token: string): any | null {
-  try {
-    // Split the JWT token
-    const parts = token.split('.');
-    if (parts.length !== 3) {
-      console.warn('Invalid JWT format: incorrect number of parts');
-      return null;
-    }
-
-    // Decode the payload (we skip signature verification in middleware for performance)
-    // Full verification happens in API routes
-    const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
-
-    // Validate required fields
-    if (!payload.userId || !payload.username) {
-      console.warn('Invalid JWT payload: missing required fields');
-      return null;
-    }
-
-    // Check if token is expired
-    if (payload.exp && payload.exp * 1000 < Date.now()) {
-      console.warn('JWT token expired');
-      return null;
-    }
-
-    // Check issuer and audience (basic validation)
-    if (payload.iss !== 'goddess-admin' || payload.aud !== 'goddess-admin-users') {
-      console.warn('Invalid JWT issuer or audience');
-      return null;
-    }
-
-    return payload;
-  } catch (error) {
-    console.error('JWT validation error in middleware:', error);
-    return null;
-  }
-}
-
-/**
  * Validate authentication token from cookies
  */
-async function validateAuthToken(request: NextRequest): Promise<{ valid: boolean; user?: any }> {
+async function validateAuthToken(request: NextRequest): Promise<{ valid: boolean }> {
   try {
     // Get token from cookies
     const token = request.cookies.get('auth-token')?.value;
@@ -191,14 +117,8 @@ async function validateAuthToken(request: NextRequest): Promise<{ valid: boolean
       return { valid: false };
     }
 
-    // Simple validation for middleware (full validation happens in API routes)
-    const user = validateJWTToken(token);
-
-    if (!user) {
-      return { valid: false };
-    }
-
-    return { valid: true, user };
+    // Do not decode or trust JWTs in middleware. Server routes must verify signatures.
+    return { valid: true };
   } catch (error) {
     console.error('Token validation error in middleware:', error);
     return { valid: false };
@@ -227,7 +147,7 @@ export async function middleware(request: NextRequest) {
 
   // Apply rate limiting to auth routes
   if (needsRateLimit(pathname)) {
-    const rateLimitResult = checkRateLimit(request);
+    const rateLimitResult = await checkRateLimit(request);
     if (!rateLimitResult.allowed) {
       return rateLimitResult.response;
     }
@@ -255,15 +175,8 @@ export async function middleware(request: NextRequest) {
   const authResult = await validateAuthToken(request);
 
   if (authResult.valid) {
-    // User is authenticated, allow access
+    // User is authenticated (token presence only); server routes must verify signature.
     const response = NextResponse.next();
-
-    // Add user info to headers for use in API routes
-    if (authResult.user) {
-      response.headers.set('x-user-id', authResult.user.userId || '');
-      response.headers.set('x-user-role', authResult.user.role || 'admin');
-      response.headers.set('x-user-username', authResult.user.username || '');
-    }
 
     // Add security headers
     response.headers.set('X-Content-Type-Options', 'nosniff');

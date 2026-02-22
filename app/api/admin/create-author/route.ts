@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from 'contentful-management';
+import { verifyAuth } from '@/lib/auth';
 
 const managementClient = createClient({
   accessToken: process.env.CONTENTFUL_MANAGEMENT_TOKEN!,
@@ -7,6 +8,13 @@ const managementClient = createClient({
 
 export async function POST(request: NextRequest) {
   try {
+    const auth = await verifyAuth(request);
+    if (!auth.success) {
+      return NextResponse.json(
+        { error: auth.error || 'Unauthorized' },
+        { status: auth.error === 'Insufficient permissions' ? 403 : 401 }
+      );
+    }
     const { name, bio } = await request.json();
     
     const space = await managementClient.getSpace(process.env.CONTENTFUL_SPACE_ID!);

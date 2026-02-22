@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { extractProductImageFromAmazon } from '@/lib/amazon-image-extractor';
+import { verifyAuth } from '@/lib/auth';
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -13,14 +14,13 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    // Apply authentication middleware if needed
-    // (uncomment the following lines if authentication is required)
-    /*
-    const authResponse = await authMiddleware(request);
-    if (authResponse instanceof NextResponse) {
-      return authResponse;
+    const auth = await verifyAuth(request);
+    if (!auth.success) {
+      return NextResponse.json(
+        { error: auth.error || 'Unauthorized' },
+        { status: auth.error === 'Insufficient permissions' ? 403 : 401 }
+      );
     }
-    */
 
     const result = await extractProductImageFromAmazon(asin);
 
@@ -56,14 +56,13 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    // Apply authentication middleware if needed
-    // (uncomment the following lines if authentication is required)
-    /*
-    const authResponse = await authMiddleware(request);
-    if (authResponse instanceof NextResponse) {
-      return authResponse;
+    const auth = await verifyAuth(request);
+    if (!auth.success) {
+      return NextResponse.json(
+        { error: auth.error || 'Unauthorized' },
+        { status: auth.error === 'Insufficient permissions' ? 403 : 401 }
+      );
     }
-    */
 
     const body = await request.json();
     const { asin } = body;

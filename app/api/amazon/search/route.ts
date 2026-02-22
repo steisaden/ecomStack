@@ -1,8 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { amazonAPI } from '@/lib/amazon-api';
+import { verifyAuth } from '@/lib/auth';
 
 export async function GET(request: NextRequest) {
   try {
+    const auth = await verifyAuth(request);
+    if (!auth.success) {
+      return NextResponse.json(
+        { error: auth.error || 'Unauthorized' },
+        { status: auth.error === 'Insufficient permissions' ? 403 : 401 }
+      );
+    }
     const { searchParams } = new URL(request.url);
     const keywords = searchParams.get('keywords');
     const searchIndex = searchParams.get('searchIndex') || 'Beauty';

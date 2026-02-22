@@ -1,9 +1,17 @@
 import { NextResponse } from 'next/server';
 import { productionMonitoring } from '@/lib/monitoring/production-monitoring';
 import { jobQueue } from '@/lib/background/job-queue';
+import { verifyAuth } from '@/lib/auth';
 
 export async function GET(request: Request) {
   try {
+    const auth = await verifyAuth(request);
+    if (!auth.success) {
+      return NextResponse.json(
+        { error: auth.error || 'Unauthorized' },
+        { status: auth.error === 'Insufficient permissions' ? 403 : 401 }
+      );
+    }
     // Get overall health status
     const healthStatus = productionMonitoring.getHealthStatus();
     

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
+import { enforceSameOrigin } from '@/lib/security'
 
 // Force dynamic rendering for API route
 export const dynamic = 'force-dynamic';
@@ -10,6 +11,9 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 
 export async function POST(request: NextRequest) {
   try {
+    const originError = enforceSameOrigin(request)
+    if (originError) return originError
+
     const requestBody = await request.json()
     let cartItems = requestBody.cartItems
     let product = requestBody.product  // Support direct product checkout

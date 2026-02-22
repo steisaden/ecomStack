@@ -2,12 +2,14 @@ import fs from 'fs/promises';
 import path from 'path';
 import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
+import { redis } from './db/config';
 
 // File-based storage for the single admin account. In a hosted environment
 // this should be moved to a durable store (DB/Redis), but keeping it local
 // lets the site owner set their own credentials without editing env vars.
 
 const ADMIN_USER_FILE = path.join(process.cwd(), 'data', 'admin-user.json');
+const ADMIN_USER_REDIS_KEY = 'admin:user';
 const RESET_TOKEN_TTL_MS = 60 * 60 * 1000; // 60 minutes
 
 export interface AdminUserRecord {
@@ -26,6 +28,16 @@ async function ensureDataDir() {
 }
 
 async function readAdminUser(): Promise<AdminUserRecord | null> {
+  if (redis) {
+    try {
+      const data = await redis.get(ADMIN_USER_REDIS_KEY);
+      return data ? (JSON.parse(data) as AdminUserRecord) : null;
+    } catch (error) {
+      console.error('Failed to read admin user from Redis:', error);
+      throw error;
+    }
+  }
+
   try {
     const data = await fs.readFile(ADMIN_USER_FILE, 'utf-8');
     const parsed = JSON.parse(data) as AdminUserRecord;
@@ -40,6 +52,11 @@ async function readAdminUser(): Promise<AdminUserRecord | null> {
 }
 
 async function writeAdminUser(record: AdminUserRecord): Promise<void> {
+  if (redis) {
+    await redis.set(ADMIN_USER_REDIS_KEY, JSON.stringify(record));
+    return;
+  }
+
   await ensureDataDir();
 
   // Avoid persisting undefined reset metadata
@@ -101,7 +118,11 @@ export async function verifyAdminCredentials(username: string, password: string)
     }
 
     const match = await bcrypt.compare(password, stored.passwordHash);
-    return { valid: match, source: 'file' as const, user: match ? stored : undefined, error: match ? undefined : 'Invalid credentials' };
+    if (match) {
+      return { valid: true, source: 'file' as const, user: stored };
+    } else {
+      return { valid: false, source: 'file' as const, error: 'Invalid credentials' };
+    }
   }
 
   // No file-based admin set up yet

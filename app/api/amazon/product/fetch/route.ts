@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { amazonAPI, AmazonProduct } from '@/lib/amazon-api';
 import { captureProductScreenshot } from '@/lib/product-screenshot';
 import { verifyASINAndCaptureInfo } from '@/lib/asin-verification';
+import { verifyAuth } from '@/lib/auth';
 
 // Enhanced function to fetch product details using multiple methods
 async function fetchProductDetails(asin: string): Promise<any> {
@@ -119,6 +120,13 @@ async function getImageFromAmazonPage(asin: string): Promise<string> {
 
 export async function POST(request: NextRequest) {
   try {
+    const auth = await verifyAuth(request);
+    if (!auth.success) {
+      return NextResponse.json(
+        { error: auth.error || 'Unauthorized' },
+        { status: auth.error === 'Insufficient permissions' ? 403 : 401 }
+      );
+    }
     const { asin } = await request.json();
 
     if (!asin) {

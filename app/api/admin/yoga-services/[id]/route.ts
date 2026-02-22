@@ -1,7 +1,7 @@
 // app/api/admin/yoga-services/[id]/route.ts
 
 import { NextRequest, NextResponse } from 'next/server';
-import { authMiddleware } from '@/lib/auth-middleware';
+import { verifyAuth } from '@/lib/auth';
 import { revalidateTag } from 'next/cache';
 
 const contentful = require('contentful-management');
@@ -13,9 +13,12 @@ export async function PUT(
   const { id } = await params;
   try {
     // Apply authentication middleware
-    const authResponse = await authMiddleware(request);
-    if (authResponse instanceof NextResponse) {
-      return authResponse;
+    const auth = await verifyAuth(request);
+    if (!auth.success) {
+      return NextResponse.json(
+        { error: auth.error || 'Unauthorized' },
+        { status: auth.error === 'Insufficient permissions' ? 403 : 401 }
+      );
     }
 
     const body = await request.json();
@@ -28,7 +31,7 @@ export async function PUT(
 
     const space = await client.getSpace(process.env.CONTENTFUL_SPACE_ID!);
     const environment = await space.getEnvironment(
-      process.env.CONTENTFUL_ENVIRONMENT_ID || 'master'
+      process.env.CONTENTFUL_ENVIRONMENT || process.env.CONTENTFUL_ENVIRONMENT_ID || 'master'
     );
 
     // Get the entry
@@ -76,9 +79,12 @@ export async function DELETE(
   const { id } = await params;
   try {
     // Apply authentication middleware
-    const authResponse = await authMiddleware(request);
-    if (authResponse instanceof NextResponse) {
-      return authResponse;
+    const auth = await verifyAuth(request);
+    if (!auth.success) {
+      return NextResponse.json(
+        { error: auth.error || 'Unauthorized' },
+        { status: auth.error === 'Insufficient permissions' ? 403 : 401 }
+      );
     }
 
     // Initialize Contentful Management client
@@ -88,7 +94,7 @@ export async function DELETE(
 
     const space = await client.getSpace(process.env.CONTENTFUL_SPACE_ID!);
     const environment = await space.getEnvironment(
-      process.env.CONTENTFUL_ENVIRONMENT_ID || 'master'
+      process.env.CONTENTFUL_ENVIRONMENT || process.env.CONTENTFUL_ENVIRONMENT_ID || 'master'
     );
 
     // Get the entry

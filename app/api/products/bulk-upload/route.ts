@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from 'contentful-management'
+import { verifyAuth } from '@/lib/auth'
 
 interface BulkProductData {
   title: string
@@ -22,22 +23,11 @@ interface BulkUploadResult {
 
 export async function POST(request: NextRequest) {
   try {
-    // Check authentication using the same method as other admin APIs
-    const authToken = request.cookies.get('auth-token')?.value
-
-    if (!authToken) {
+    const auth = await verifyAuth(request)
+    if (!auth.success) {
       return NextResponse.json(
-        { success: false, message: 'Unauthorized - No auth token' },
-        { status: 401 }
-      )
-    }
-
-    // Verify the auth token matches the expected value
-    const expectedToken = process.env.AUTH_TOKEN
-    if (!expectedToken || authToken !== expectedToken) {
-      return NextResponse.json(
-        { success: false, message: 'Unauthorized - Invalid token' },
-        { status: 401 }
+        { error: auth.error || 'Unauthorized' },
+        { status: auth.error === 'Insufficient permissions' ? 403 : 401 }
       )
     }
 

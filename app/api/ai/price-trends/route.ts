@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PriceTrendService } from '@/lib/price-trend-analysis';
 import { getProducts } from '@/lib/contentful';
+import { enforceSameOrigin } from '@/lib/security';
 
 export async function GET(request: NextRequest) {
   try {
@@ -83,6 +84,9 @@ export async function GET(request: NextRequest) {
 // POST endpoint for price recommendations
 export async function POST(request: NextRequest) {
   try {
+    const originError = enforceSameOrigin(request);
+    if (originError) return originError;
+
     const body = await request.json();
     const { productId, currentPrice } = body;
 

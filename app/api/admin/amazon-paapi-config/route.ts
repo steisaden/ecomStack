@@ -2,15 +2,18 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { amazonConfig } from '@/lib/config/amazon-config';
-import { authMiddleware } from '@/lib/auth-middleware';
+import { verifyAuth } from '@/lib/auth';
 import { AmazonPAAPIService } from '@/lib/amazon-paapi';
 import { PAAPICredentials, AmazonAPIError, AmazonAPIErrorType } from '@/lib/types/amazon';
 
 export async function GET(request: NextRequest) {
   try {
-    const authResponse = await authMiddleware(request);
-    if (authResponse instanceof NextResponse) {
-      return authResponse;
+    const auth = await verifyAuth(request);
+    if (!auth.success) {
+      return NextResponse.json(
+        { error: auth.error || 'Unauthorized' },
+        { status: auth.error === 'Insufficient permissions' ? 403 : 401 }
+      );
     }
 
     return NextResponse.json({
@@ -32,9 +35,12 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const authResponse = await authMiddleware(request);
-    if (authResponse instanceof NextResponse) {
-      return authResponse;
+    const auth = await verifyAuth(request);
+    if (!auth.success) {
+      return NextResponse.json(
+        { error: auth.error || 'Unauthorized' },
+        { status: auth.error === 'Insufficient permissions' ? 403 : 401 }
+      );
     }
 
     const { accessKey, secretKey, partnerTag } = await request.json();

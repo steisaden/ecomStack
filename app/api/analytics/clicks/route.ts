@@ -1,8 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { RealTimeClickTrackingService, ClickEvent } from '@/lib/click-tracking';
+import { verifyAuth } from '@/lib/auth';
+import { enforceSameOrigin } from '@/lib/security';
 
 export async function POST(request: NextRequest) {
   try {
+    const originError = enforceSameOrigin(request);
+    if (originError) return originError;
+
     const body = await request.json();
     const { 
       userId, 
@@ -65,6 +70,13 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
+    const auth = await verifyAuth(request);
+    if (!auth.success) {
+      return NextResponse.json(
+        { error: auth.error || 'Unauthorized' },
+        { status: auth.error === 'Insufficient permissions' ? 403 : 401 }
+      );
+    }
     const url = new URL(request.url);
     const action = url.searchParams.get('action') || 'realtime';
     const elementId = url.searchParams.get('elementId');

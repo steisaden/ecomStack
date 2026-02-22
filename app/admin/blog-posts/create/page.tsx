@@ -553,6 +553,7 @@ export default function CreateBlogPostPage() {
                   required
                   placeholder="Enter blog post title"
                   disabled={generatingTitle}
+                  maxLength={60}
                 />
               </div>
 
@@ -635,6 +636,7 @@ export default function CreateBlogPostPage() {
                   required
                   placeholder="Brief summary of the blog post"
                   disabled={generatingExcerpt}
+                  maxLength={150}
                 />
               </div>
 

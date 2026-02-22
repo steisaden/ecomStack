@@ -1,15 +1,18 @@
 import { NextResponse } from 'next/server';
 import { updateAffiliateProduct } from '@/lib/affiliate-products';
 import { productSyncService } from '@/lib/background/product-sync';
+import { verifyAuth } from '@/lib/auth';
 
 export async function POST(
   request: Request,
   { params }: { params: { id: string } }
 ) {
-  // Authenticate admin user
-  const authHeader = request.headers.get('authorization');
-  if (authHeader !== `Bearer ${process.env.ADMIN_SECRET}`) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const auth = await verifyAuth(request);
+  if (!auth.success) {
+    return NextResponse.json(
+      { error: auth.error || 'Unauthorized' },
+      { status: auth.error === 'Insufficient permissions' ? 403 : 401 }
+    );
   }
 
   try {

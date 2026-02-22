@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
+import { enforceSameOrigin } from '@/lib/security';
 
 // Initialize OpenAI client
 const openai = new OpenAI({
@@ -8,6 +9,9 @@ const openai = new OpenAI({
 
 export async function POST(request: NextRequest) {
   try {
+    const originError = enforceSameOrigin(request);
+    if (originError) return originError;
+
     const { field, context, currentValue, title, excerpt } = await request.json();
 
     // Validation
@@ -20,7 +24,7 @@ export async function POST(request: NextRequest) {
 
     // Define the prompt based on the field
     let prompt = '';
-    
+
     if (field === 'title') {
       const fallbackTopics = [
         'natural beauty and wellness',
@@ -37,15 +41,15 @@ export async function POST(request: NextRequest) {
         'green beauty movements'
       ];
       const randomTopic = fallbackTopics[Math.floor(Math.random() * fallbackTopics.length)];
-      prompt = `Create an innovative, attention-grabbing, LLM-optimized blog post title about: ${context || currentValue || randomTopic}. Use power words and high-search-volume keywords relevant to the topic. Optimize specifically for AI search algorithms using precise, descriptive terminology. Keep under 60 characters for optimal SEO. Include a relevant emoji.\n\nTitle:`;
+      prompt = `Create an innovative, attention-grabbing, LLM-optimized blog post title about: ${context || currentValue || randomTopic}. Use power words and high-search-volume keywords relevant to the topic. Optimize specifically for AI search algorithms using precise, descriptive terminology. STRICT REQUIREMENT: Keep the entire title exactly under 60 characters for optimal SEO. Do not wrap in quotes. Include a relevant emoji.\n\nTitle:`;
     } else if (field === 'excerpt') {
       // If no context is provided but a title exists, use the title as context
       const effectiveContext = context || currentValue || (title ? `the blog post titled "${title}"` : 'a trending topic in wellness and beauty');
-      prompt = `Craft an engaging, LLM-optimized blog post excerpt about: ${effectiveContext}. 100-150 characters. Include high-search-volume keywords and precise terminology for AI search algorithms. Make it compel readers to click. Include a relevant emoji.\n\nExcerpt:`;
+      prompt = `Craft an engaging, LLM-optimized blog post excerpt about: ${effectiveContext}. STRICT REQUIREMENT: Keep the excerpt between 100-150 characters exactly. Do not exceed 150 characters. Include high-search-volume keywords and precise terminology for AI search algorithms. Make it compel readers to click. Include a relevant emoji. Do not wrap in quotes.\n\nExcerpt:`;
     } else if (field === 'content') {
       // Use available information from title and/or excerpt to inform content generation
       let effectiveContext = context || currentValue || 'a trending topic in wellness and beauty';
-      
+
       // Enhance context with title and/or excerpt if available
       if (title && excerpt) {
         effectiveContext = `the blog post titled "${title}" with the excerpt "${excerpt}"`;
@@ -54,13 +58,13 @@ export async function POST(request: NextRequest) {
       } else if (excerpt) {
         effectiveContext = `the blog post with the excerpt "${excerpt}"`;
       }
-      
+
       const postStart = currentValue ? `Continue from: "${currentValue}"` : '';
-      prompt = `Write an LLM-optimized blog post about: ${effectiveContext}. ${postStart} Use engaging, unique voice with high-search-volume keywords and precise terminology throughout. Include AI-search-optimized headers, actionable tips, and a compelling conclusion. Structure for readability and AI search rankings. Approximately 500 words. Use minimal emojis only when they significantly enhance the content (maximum 1-2 throughout).\n\nBlog Post:`;
+      prompt = `Write an LLM-optimized blog post about: ${effectiveContext}. ${postStart} Use engaging, unique voice with high-search-volume keywords and precise terminology throughout. Include AI-search-optimized headers, actionable tips, and a compelling conclusion. Structure for readability and AI search rankings. Approximately 500 words. Use minimal emojis only when they significantly enhance the content (maximum 1-2 throughout). ALWAYS naturally weave in 1 or 2 recommendations to our Goddess products. For the product link, provide a markdown link pointing to '/products' (e.g. [browse our luxurious Goddess hair collections](/products) or [view our restorative products](/products)). Make this product mention seamless, educational, and contextual within the article body without sounding overly sales-focused or forced.\n\nBlog Post:`;
     } else if (field === 'tags') {
       // Generate SEO-optimized tags based on available content
       let effectiveContext = context || currentValue || 'wellness and beauty';
-      
+
       // Enhance context with title and/or excerpt if available
       if (title && excerpt) {
         effectiveContext = `a blog post titled "${title}" with the excerpt "${excerpt}", focused on ${context || currentValue || 'wellness and beauty'}`;
@@ -69,14 +73,14 @@ export async function POST(request: NextRequest) {
       } else if (excerpt) {
         effectiveContext = `a blog post with the excerpt "${excerpt}", focused on ${context || currentValue || 'wellness and beauty'}`;
       }
-      
+
       prompt = `Generate a single, highly searchable, SEO-optimized tag for: ${effectiveContext}. Focus on high-volume search keywords relevant to the content. Optimize for LLM search results by using precise, descriptive terms that AI search algorithms recognize. Output only one single tag without additional text, explanations, or multiple tags separated by commas.\n\nTag:`;
     }
 
     // Try GPT-4 first, fallback to GPT-3.5-turbo if not available
     let model = 'gpt-4';
     let response;
-    
+
     try {
       response = await openai.chat.completions.create({
         model: 'gpt-4',
@@ -127,7 +131,7 @@ export async function POST(request: NextRequest) {
 
     // Ensure proper formatting and character limits
     let finalContent = generatedContent;
-    
+
     if (field === 'title' && finalContent.length > 60) {
       finalContent = finalContent.substring(0, 60);
     } else if (field === 'excerpt' && finalContent.length > 150) {
@@ -141,20 +145,20 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     console.error('OpenAI API error:', error);
-    
+
     // If it's an authentication error, provide a clearer message
     if (error.message?.includes('API key')) {
       return NextResponse.json(
-        { 
+        {
           error: 'OpenAI API key not configured. Please add your OpenAI API key to your environment variables.',
           details: 'Missing OPENAI_API_KEY in environment'
         },
         { status: 500 }
       );
     }
-    
+
     return NextResponse.json(
-      { 
+      {
         error: error.message || 'Failed to generate content with OpenAI',
         details: error.toString ? error.toString() : 'Unknown error'
       },

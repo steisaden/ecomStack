@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { unstable_cache } from 'next/cache';
 import { revalidateTag } from 'next/cache';
+import { verifyAuth } from '@/lib/auth';
 
 // Cache the recommendations fetch with a 1-hour duration
 const getCachedRecommendations = unstable_cache(
@@ -187,8 +188,15 @@ function generateAIRecommendations(products: any[]) {
   return recommendations;
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const auth = await verifyAuth(request);
+    if (!auth.success) {
+      return NextResponse.json(
+        { error: auth.error || 'Unauthorized' },
+        { status: auth.error === 'Insufficient permissions' ? 403 : 401 }
+      );
+    }
     const recommendations = await getCachedRecommendations();
     
     return NextResponse.json({ 
@@ -204,8 +212,15 @@ export async function GET() {
   }
 }
 
-export async function POST() {
+export async function POST(request: NextRequest) {
   try {
+    const auth = await verifyAuth(request);
+    if (!auth.success) {
+      return NextResponse.json(
+        { error: auth.error || 'Unauthorized' },
+        { status: auth.error === 'Insufficient permissions' ? 403 : 401 }
+      );
+    }
     const recommendations = await getCachedRecommendations();
     
     // Revalidate the cache

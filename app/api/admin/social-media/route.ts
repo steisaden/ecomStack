@@ -4,6 +4,7 @@ import { ContentfulSocialMediaSettings } from '@/lib/types';
 import { unstable_cache } from 'next/cache';
 import { revalidateTag } from 'next/cache';
 import { createClient } from 'contentful-management';
+import { verifyAuth } from '@/lib/auth';
 
 // Cache the social media settings fetch with a 1-hour duration
 const getCachedSocialMediaSettings = unstable_cache(
@@ -20,8 +21,15 @@ const getCachedSocialMediaSettings = unstable_cache(
   { revalidate: 3600 } // 1 hour
 );
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const auth = await verifyAuth(request);
+    if (!auth.success) {
+      return NextResponse.json(
+        { error: auth.error || 'Unauthorized' },
+        { status: auth.error === 'Insufficient permissions' ? 403 : 401 }
+      );
+    }
     const settings = await getCachedSocialMediaSettings();
     return NextResponse.json({ success: true, settings });
   } catch (error) {
@@ -35,6 +43,13 @@ export async function GET() {
 
 export async function PUT(request: NextRequest) {
   try {
+    const auth = await verifyAuth(request);
+    if (!auth.success) {
+      return NextResponse.json(
+        { error: auth.error || 'Unauthorized' },
+        { status: auth.error === 'Insufficient permissions' ? 403 : 401 }
+      );
+    }
     const { settings } = await request.json();
     
     // Validate URL formats if provided

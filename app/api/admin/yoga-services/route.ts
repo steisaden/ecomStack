@@ -1,7 +1,8 @@
 // app/api/admin/yoga-services/route.ts
 
 import { NextRequest, NextResponse } from 'next/server';
-import { authMiddleware } from '@/lib/auth-middleware';
+import { verifyAuth } from '@/lib/auth';
+import { getYogaContentTypeIds } from '@/lib/yoga';
 import { revalidateTag } from 'next/cache';
 
 const contentful = require('contentful');
@@ -10,21 +11,24 @@ const contentfulManagement = require('contentful-management');
 export async function GET(request: NextRequest) {
   try {
     // Apply authentication middleware
-    const authResponse = await authMiddleware(request);
-    if (authResponse instanceof NextResponse) {
-      return authResponse;
+    const auth = await verifyAuth(request);
+    if (!auth.success) {
+      return NextResponse.json(
+        { error: auth.error || 'Unauthorized' },
+        { status: auth.error === 'Insufficient permissions' ? 403 : 401 }
+      );
     }
 
     // Initialize Contentful client
     const client = contentful.createClient({
       space: process.env.CONTENTFUL_SPACE_ID!,
       accessToken: process.env.CONTENTFUL_ACCESS_TOKEN!,
-      environment: process.env.CONTENTFUL_ENVIRONMENT_ID || 'master'
+      environment: process.env.CONTENTFUL_ENVIRONMENT || process.env.CONTENTFUL_ENVIRONMENT_ID || 'master'
     });
 
     // Fetch all yoga services
     // Use the content type ID from env or default to the known ID
-    const contentTypeId = process.env.CONTENTFUL_YOGA_SERVICE_CT_ID || '3wJlmm15QcXhlzv6eAME8F';
+    const contentTypeId = (await getYogaContentTypeIds()).yogaService;
     
     let entries;
     try {
@@ -77,9 +81,12 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     // Apply authentication middleware
-    const authResponse = await authMiddleware(request);
-    if (authResponse instanceof NextResponse) {
-      return authResponse;
+    const auth = await verifyAuth(request);
+    if (!auth.success) {
+      return NextResponse.json(
+        { error: auth.error || 'Unauthorized' },
+        { status: auth.error === 'Insufficient permissions' ? 403 : 401 }
+      );
     }
 
     const body = await request.json();
@@ -100,11 +107,11 @@ export async function POST(request: NextRequest) {
 
     const space = await client.getSpace(process.env.CONTENTFUL_SPACE_ID!);
     const environment = await space.getEnvironment(
-      process.env.CONTENTFUL_ENVIRONMENT_ID || 'master'
+      process.env.CONTENTFUL_ENVIRONMENT || process.env.CONTENTFUL_ENVIRONMENT_ID || 'master'
     );
 
     // Create the yoga service entry
-    const contentTypeId = process.env.CONTENTFUL_YOGA_SERVICE_CT_ID || '3wJlmm15QcXhlzv6eAME8F';
+    const contentTypeId = (await getYogaContentTypeIds()).yogaService;
     const entry = await environment.createEntry(contentTypeId, {
       fields: {
         name: { 'en-US': name },

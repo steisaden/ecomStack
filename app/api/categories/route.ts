@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server'
 import { getCategories, createCategory } from '@/lib/contentful'
 import { slugify } from '@/lib/utils'
+import { verifyAuth } from '@/lib/auth'
 
 export async function GET(request: NextRequest) {
   try {
@@ -26,6 +27,13 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const auth = await verifyAuth(request)
+    if (!auth.success) {
+      return Response.json(
+        { error: auth.error || 'Unauthorized' },
+        { status: auth.error === 'Insufficient permissions' ? 403 : 401 }
+      )
+    }
     const { name } = await request.json()
     
     if (!name || typeof name !== 'string') {

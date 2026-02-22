@@ -1,9 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { AIRecommendationService } from '@/lib/ai-recommendations';
 import { getProducts } from '@/lib/contentful';
+import { enforceSameOrigin } from '@/lib/security';
 
 export async function POST(request: NextRequest) {
   try {
+    const originError = enforceSameOrigin(request);
+    if (originError) return originError;
+
     const body = await request.json();
     const {
       userPreferences,

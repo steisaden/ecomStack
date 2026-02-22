@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { CheckCircle, XCircle, AlertTriangle, Loader2, RefreshCw } from 'lucide-react';
+import { CheckCircle, XCircle, AlertTriangle, Loader2, RefreshCw, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
 
 
@@ -18,6 +18,8 @@ export default function AmazonPAAPIConfigPage() {
   const [secretKey, setSecretKey] = useState('');
   const [partnerTag, setPartnerTag] = useState('');
   const [isTesting, setIsTesting] = useState(false);
+  const [showAccessKey, setShowAccessKey] = useState(false);
+  const [showSecretKey, setShowSecretKey] = useState(false);
   const [configStatus, setConfigStatus] = useState<{
     isConfigured: boolean;
     isValid: boolean;
@@ -151,23 +153,57 @@ export default function AmazonPAAPIConfigPage() {
         <CardContent className="space-y-4">
           <div>
             <Label htmlFor="accessKey">Access Key ID</Label>
-            <Input
-              id="accessKey"
-              type="password"
-              value={accessKey}
-              onChange={(e) => setAccessKey(e.target.value)}
-              placeholder="Your Amazon Access Key ID"
-            />
+            <div className="relative">
+              <Input
+                id="accessKey"
+                type={showAccessKey ? "text" : "password"}
+                value={accessKey}
+                onChange={(e) => setAccessKey(e.target.value)}
+                placeholder="Your Amazon Access Key ID"
+                className="pr-10"
+              />
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                onClick={() => setShowAccessKey(!showAccessKey)}
+              >
+                {showAccessKey ? (
+                  <EyeOff className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+                ) : (
+                  <Eye className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+                )}
+                <span className="sr-only">{showAccessKey ? 'Hide key' : 'Show key'}</span>
+              </Button>
+            </div>
           </div>
           <div>
             <Label htmlFor="secretKey">Secret Access Key</Label>
-            <Input
-              id="secretKey"
-              type="password"
-              value={secretKey}
-              onChange={(e) => setSecretKey(e.target.value)}
-              placeholder="Your Amazon Secret Access Key"
-            />
+            <div className="relative">
+              <Input
+                id="secretKey"
+                type={showSecretKey ? "text" : "password"}
+                value={secretKey}
+                onChange={(e) => setSecretKey(e.target.value)}
+                placeholder="Your Amazon Secret Access Key"
+                className="pr-10"
+              />
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                onClick={() => setShowSecretKey(!showSecretKey)}
+              >
+                {showSecretKey ? (
+                  <EyeOff className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+                ) : (
+                  <Eye className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+                )}
+                <span className="sr-only">{showSecretKey ? 'Hide key' : 'Show key'}</span>
+              </Button>
+            </div>
           </div>
           <div>
             <Label htmlFor="partnerTag">Partner Tag</Label>
