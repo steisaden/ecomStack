@@ -349,7 +349,7 @@ function ProductCard({ product }: { product: ValidatedProduct }) {
         {/* Price */}
         <div className="flex items-center justify-between mb-4">
           <span className="text-xl font-bold text-gray-900">
-            {formatPrice(product.price)}
+            {formatPrice(product.price ?? 0)}
           </span>
           {product.inStock && (
             <Badge variant="secondary" className="text-green-700 bg-green-100">
