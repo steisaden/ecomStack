@@ -18,7 +18,7 @@ export async function generateStaticParams() {
 export const generateMetadata = createProductMetadataGenerator(async (params: Promise<{ slug: string }>) => {
   const { slug } = await params
   const product = await getProductBySlug(slug)
-  
+
   if (!product) {
     return null
   }
@@ -93,7 +93,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
               <div className="space-y-4">
                 <p className="text-gray-600">Available on Amazon</p>
                 {(() => {
-                  const safeUrl = validateAndSanitizeUrl(product.affiliateUrl);
+                  const safeUrl = product.affiliateUrl ? validateAndSanitizeUrl(product.affiliateUrl) : null;
                   if (safeUrl) {
                     return (
                       <a
@@ -108,7 +108,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
                   } else {
                     return (
                       <div className="text-red-600 p-4 bg-red-50 rounded-lg">
-                        ⚠️ This product link has been blocked for security reasons. 
+                        ⚠️ This product link has been blocked for security reasons.
                         Please contact support.
                       </div>
                     );
@@ -125,9 +125,9 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
                     <span className="text-red-600 font-medium">Out of Stock</span>
                   )}
                 </div>
-                
+
                 {product.inStock ? (
-                  <StripeCheckout 
+                  <StripeCheckout
                     product={{
                       name: product.title,
                       price: product.price!,
