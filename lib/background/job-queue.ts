@@ -4,16 +4,16 @@ export type JobStatus = 'pending' | 'running' | 'completed' | 'failed';
 export type JobType = 'image_refresh' | 'link_validation' | 'full_sync';
 
 export interface Job {
-  id: string;
-  type: JobType;
-  productId?: string;
-  status: JobStatus;
-  scheduledAt: string;
-  completedAt?: string;
-  error?: string;
-  priority?: number;
-  retryCount?: number;
-  maxRetries?: number;
+    id: string;
+    type: JobType;
+    productId?: string;
+    status: JobStatus;
+    scheduledAt: string;
+    completedAt?: string;
+    error?: string;
+    priority?: number;
+    retryCount?: number;
+    maxRetries?: number;
 }
 
 class JobQueue {
@@ -21,17 +21,17 @@ class JobQueue {
 
     constructor() {
         if (!this.redis) {
-            throw new Error('Redis not configured. Job queue requires REDIS_URL.');
+            console.warn('Redis not configured. Job queue requires REDIS_URL.');
         }
     }
 
     // Redis-based methods
     private async addJobToRedis(job: Job): Promise<void> {
         if (!this.redis) throw new Error('Redis not available');
-        
+
         const priority = job.priority || 0;
         const score = Date.now() + (priority * 1000000); // Higher priority = lower score
-        
+
         await Promise.all([
             this.redis.zadd('jobs:pending', score, job.id),
             this.redis.hset('jobs:data', job.id, JSON.stringify(job))
@@ -40,43 +40,43 @@ class JobQueue {
 
     private async getNextJobFromRedis(): Promise<Job | undefined> {
         if (!this.redis) throw new Error('Redis not available');
-        
+
         const jobIds = await this.redis.zrange('jobs:pending', 0, 0);
         if (jobIds.length === 0) return undefined;
-        
+
         const jobId = jobIds[0];
         const jobData = await this.redis.hget('jobs:data', jobId);
-        
+
         if (!jobData) return undefined;
-        
+
         // Move job from pending to running
         await Promise.all([
             this.redis.zrem('jobs:pending', jobId),
             this.redis.zadd('jobs:running', Date.now(), jobId)
         ]);
-        
+
         const job = JSON.parse(jobData) as Job;
         job.status = 'running';
         await this.redis.hset('jobs:data', jobId, JSON.stringify(job));
-        
+
         return job;
     }
 
     private async updateJobStatusInRedis(jobId: string, status: JobStatus, error?: string): Promise<void> {
         if (!this.redis) throw new Error('Redis not available');
-        
+
         const jobData = await this.redis.hget('jobs:data', jobId);
         if (!jobData) return;
-        
+
         const job = JSON.parse(jobData) as Job;
         job.status = status;
         if (error) job.error = error;
         if (status === 'completed' || status === 'failed') {
             job.completedAt = new Date().toISOString();
         }
-        
+
         await this.redis.hset('jobs:data', jobId, JSON.stringify(job));
-        
+
         // Move job to appropriate queue
         await this.redis.zrem('jobs:running', jobId);
         if (status === 'completed') {
@@ -132,7 +132,7 @@ class JobQueue {
     async listJobs(status?: JobStatus, limit: number = 100): Promise<Job[]> {
         if (!this.redis) throw new Error('Redis not available');
         let jobIds: string[] = [];
-        
+
         if (status) {
             const queueKey = `jobs:${status}`;
             jobIds = await this.redis.zrevrange(queueKey, 0, limit - 1);
@@ -145,7 +145,7 @@ class JobQueue {
             ]);
             jobIds = [...pending, ...running, ...completed, ...failed];
         }
-        
+
         const jobs: Job[] = [];
         for (const jobId of jobIds) {
             const jobData = await this.redis.hget('jobs:data', jobId);
@@ -153,7 +153,7 @@ class JobQueue {
                 jobs.push(JSON.parse(jobData));
             }
         }
-        
+
         return jobs;
     }
 
@@ -165,7 +165,7 @@ class JobQueue {
             this.redis.zcard('jobs:completed'),
             this.redis.zcard('jobs:failed')
         ]);
-        
+
         return { pending, running, completed, failed };
     }
 

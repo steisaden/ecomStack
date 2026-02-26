@@ -7,8 +7,8 @@ export interface CacheConfig {
 }
 
 export interface CacheStrategy {
-  key: string;
-  ttl: number;
+  key: string | ((...args: any[]) => string);
+  ttl: number | ((...args: any[]) => number);
   tags?: string[]; // Cache tags for invalidation
 }
 

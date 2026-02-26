@@ -10,19 +10,14 @@ import {
 } from './performance'
 
 const client = createClient({
-  space: process.env.CONTENTFUL_SPACE_ID!,
-  accessToken: process.env.CONTENTFUL_ACCESS_TOKEN!,
+  space: (process.env.CONTENTFUL_SPACE_ID || '').trim(),
+  accessToken: (process.env.CONTENTFUL_ACCESS_TOKEN || '').trim(),
   // Added configurable environment with sensible defaults
-  environment: process.env.CONTENTFUL_ENVIRONMENT || process.env.CONTENTFUL_ENVIRONMENT_ID || 'master',
-  // Bypass SSL verification in development/non-production environments to avoid "unable to get local issuer certificate" errors
-  ...(process.env.NODE_ENV !== 'production' ? {
-    httpAgent: new (require('http').Agent)({ rejectUnauthorized: false }),
-    httpsAgent: new (require('https').Agent)({ rejectUnauthorized: false }),
-  } : {}),
+  environment: (process.env.CONTENTFUL_ENVIRONMENT || process.env.CONTENTFUL_ENVIRONMENT_ID || 'master').trim(),
 })
 
 const managementClient = createManagementClient({
-  accessToken: process.env.CONTENTFUL_MANAGEMENT_TOKEN || '',
+  accessToken: (process.env.CONTENTFUL_MANAGEMENT_TOKEN || '').trim(),
 });
 
 // Import types from the shared types file
@@ -68,7 +63,7 @@ import { Entry } from 'contentful'
 const textExtractionCache = new Map<string, string>()
 
 // Blog content type ID (configurable via env, defaults to 'testBlog')
-const BLOG_CT_ID = process.env.CONTENTFUL_BLOG_CT_ID || 'testBlog'
+const BLOG_CT_ID = (process.env.CONTENTFUL_BLOG_CT_ID || 'testBlog').trim()
 
 function extractTextFromRichText(richTextContent: any): string {
   if (!richTextContent) return ''

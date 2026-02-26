@@ -23,17 +23,17 @@ export function ProductCard({ product, className, priority = false }: ProductCar
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault()
-    
+
     // For affiliate products, redirect to affiliate URL
     if (isAffiliate && affiliateUrl) {
       window.open(affiliateUrl, '_blank', 'noopener,noreferrer')
       return
     }
-    
+
     // For regular products, add to cart
     const cartProduct = {
       name: product.title,
-      price: product.price,
+      price: product.price ?? 0,
       image: product.images?.[0]?.url,
     }
     addToCart(cartProduct)
@@ -41,13 +41,13 @@ export function ProductCard({ product, className, priority = false }: ProductCar
 
   const handleBuyNow = (e: React.MouseEvent) => {
     e.preventDefault()
-    
+
     // For affiliate products, redirect to affiliate URL
     if (isAffiliate && affiliateUrl) {
       window.open(affiliateUrl, '_blank', 'noopener,noreferrer')
       return
     }
-    
+
     // For regular products, navigate to product page
     window.location.href = `/products/${slug}`
   }
@@ -55,15 +55,15 @@ export function ProductCard({ product, className, priority = false }: ProductCar
   // Precompute image URL and alt text for better performance
   const imageUrl = images[0]?.url || '/images/oil.png'
   const imageAlt = title || 'Product image'
-  
+
   // Precompute formatted price to avoid repeated calculations
   const formattedPrice = price ? `${price.toFixed(2)}` : null
 
   return (
-    <div 
+    <div
       className={cn("w-full", className)}
       // Using CSS transitions for better performance
-      style={{ 
+      style={{
         transition: 'transform 0.2s ease, box-shadow 0.2s ease',
       }}
     >
@@ -81,7 +81,7 @@ export function ProductCard({ product, className, priority = false }: ProductCar
             placeholder="blur"
             blurDataURL={`data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB2ZXJzaW9uPSIxLjEiLz4=`}
           />
-          
+
           {/* Product Status Badges */}
           <div className="absolute top-1.5 right-1.5 flex flex-col gap-0.5">
             {isAffiliate && (
@@ -110,8 +110,8 @@ export function ProductCard({ product, className, priority = false }: ProductCar
         <CardFooter className="pt-0 p-2 flex flex-col gap-1">
           {isAffiliate ? (
             // Affiliate Product Button
-            <Button 
-              className="w-full bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-xs py-1 h-7" 
+            <Button
+              className="w-full bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-xs py-1 h-7"
               onClick={handleBuyNow}
               disabled={!product.inStock}
             >
@@ -121,18 +121,18 @@ export function ProductCard({ product, className, priority = false }: ProductCar
           ) : (
             // Regular Product Buttons
             <>
-              <Button 
-                className="w-full text-xs py-1 h-7" 
+              <Button
+                className="w-full text-xs py-1 h-7"
                 variant="outline"
                 onClick={handleAddToCart}
                 disabled={!product.inStock}
               >
-                <ShoppingCart className="h-2.5 w-2.5 mr-1" /> 
+                <ShoppingCart className="h-2.5 w-2.5 mr-1" />
                 Add to Cart
               </Button>
               <Link href={`/products/${slug}`} className="w-full" aria-label={`Buy Now – ${title}`}>
-                <Button 
-                  className="w-full bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-xs py-1 h-7" 
+                <Button
+                  className="w-full bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-xs py-1 h-7"
                   disabled={!product.inStock}
                 >
                   Buy Now

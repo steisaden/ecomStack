@@ -248,7 +248,7 @@ export const getAllProducts = unstable_cache(
         sys: { id: ap.id },
         title: ap.title,
         description: ap.description,
-        price: ap.price.amount,
+        price: typeof ap.price === 'number' ? ap.price : (ap.price?.amount || 0),
         images: ap.imageUrl ? [{
           url: ap.imageUrl,
           title: ap.title,

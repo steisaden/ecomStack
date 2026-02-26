@@ -10,6 +10,9 @@ import { getFeaturedProducts } from '@/lib/unified-products'
 import { Product } from '@/lib/types'
 import { PhilosophySection, YogaSection } from '@/components/HomePageAnimatedSections'
 
+// Revalidate every 60 seconds so Contentful product changes appear on the live site
+export const revalidate = 60
+
 const Newsletter = lazy(() => import('@/components/Newsletter'))
 
 type ProductsPromise = Promise<Product[]>
@@ -32,12 +35,12 @@ export const metadata: Metadata = {
 async function ProductsSection({ productsPromise }: { productsPromise: ProductsPromise }) {
   try {
     const products = await productsPromise
-    
+
     return (
       <div className={cn(
         'grid gap-8',
-        products.length >= 5 
-          ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' 
+        products.length >= 5
+          ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
           : 'grid-cols-1 sm:grid-cols-2'
       )}>
         {products.map((product) => (
@@ -86,8 +89,8 @@ async function ProductStructuredData({ productsPromise }: { productsPromise: Pro
             '@type': 'Offer',
             priceCurrency: 'USD',
             price: product.price.toFixed(2),
-            availability: product.inStock 
-              ? 'https://schema.org/InStock' 
+            availability: product.inStock
+              ? 'https://schema.org/InStock'
               : 'https://schema.org/OutOfStock',
           } : undefined,
         },
@@ -113,7 +116,7 @@ export default async function HomePage() {
   return (
     <div className="min-h-screen bg-white">
       <main>
-        <Hero 
+        <Hero
           title="Premium Self Care & Lifestyle"
           subtitle="Elevate your experience with our thoughfully curated collection to radiate wellness, confidence, and intention with our luxury essentials."
           ctaText="Shop Collection"
@@ -134,7 +137,7 @@ export default async function HomePage() {
             </div>
 
             <Suspense fallback={
-              <div 
+              <div
                 className={cn(
                   'grid gap-8',
                   'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'

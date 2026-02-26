@@ -19,10 +19,10 @@ interface ScrapeResult {
 export async function extractProductImageFromAmazon(asin: string): Promise<ScrapeResult> {
   try {
     const url = `https://www.amazon.com/dp/${asin}`;
-    
+
     // Fetch the product page content
     const response = await fetch(url);
-    
+
     if (!response.ok) {
       return {
         success: false,
@@ -36,9 +36,9 @@ export async function extractProductImageFromAmazon(asin: string): Promise<Scrap
     // This looks for the main product image in Amazon's structured data
     const imageRegex1 = /"hiRes":"([^"]*)"/;
     const imageRegex2 = /"large":"([^"]*)"/;
-    const imageRegex3 = /<div id="imgTagWrapperId"[^>]*>.*?<img[^>]*src="([^"]*1500[^"]*|[^"]*L[0-9]+[^"]*)"/s;
+    const imageRegex3 = /<div id="imgTagWrapperId"[^>]*>[\s\S]*?<img[^>]*src="([^"]*1500[^"]*|[^"]*L[0-9]+[^"]*)"/;
     const imageRegex4 = /<img[^>]*id="landingImage"[^>]*src="([^"]*)"/;
-    
+
     let imageUrl = '';
     let match;
 
@@ -76,18 +76,18 @@ export async function extractProductImageFromAmazon(asin: string): Promise<Scrap
 
     // Clean up the image URL if needed
     imageUrl = decodeURIComponent(imageUrl.replace(/\\u002F/g, '/'));
-    
+
     // Try to extract additional information
     const titleRegex = /<span[^>]*id="productTitle"[^>]*>([^<]*)</;
     const priceRegex = /<span[^>]*class="[^"]*price[^"]*"[^>]*>([^<]*)</;
-    
+
     let title = '';
     let price = '';
-    
+
     if (match = html.match(titleRegex)) {
       title = match[1].trim();
     }
-    
+
     if (match = html.match(priceRegex)) {
       price = match[1].trim();
     }

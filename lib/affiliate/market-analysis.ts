@@ -24,11 +24,11 @@ interface MarketAnalysis {
 export async function analyzeMarketTrends(products: AffiliateProduct[]): Promise<MarketAnalysis> {
   // Group products by category
   const categories = Array.from(new Set(products.map(p => p.category || 'Uncategorized')));
-  
+
   const trends: MarketTrend[] = categories.map(category => {
     const categoryProducts = products.filter(p => (p.category || 'Uncategorized') === category);
-    const avgPrice = categoryProducts.reduce((sum, p) => sum + p.price, 0) / categoryProducts.length;
-    
+    const avgPrice = categoryProducts.reduce((sum, p) => sum + (typeof p.price === 'number' ? p.price : p.price?.amount || 0), 0) / categoryProducts.length;
+
     return {
       category,
       growth: calculateCategoryGrowth(categoryProducts),
@@ -82,7 +82,7 @@ function determineCategorySeasonality(category: string): { peak: string[]; low: 
 
 function determineCompetitionLevel(products: AffiliateProduct[]): 'low' | 'medium' | 'high' {
   const avgCommissionRate = products.reduce((sum, p) => sum + p.commissionRate, 0) / products.length;
-  
+
   if (avgCommissionRate > 15) return 'low';
   if (avgCommissionRate > 8) return 'medium';
   return 'high';
@@ -92,7 +92,7 @@ function generateRecommendations(products: AffiliateProduct[], trends: MarketTre
   const recommendations: AIRecommendation[] = [];
 
   // Analyze high-performing products
-  const highPerformers = products.filter(p => 
+  const highPerformers = products.filter(p =>
     p.performance.conversionRate > 0.02 || p.performance.revenue > 1000
   );
 
@@ -115,7 +115,7 @@ function generateRecommendations(products: AffiliateProduct[], trends: MarketTre
   // Add seasonal recommendations
   const currentMonth = new Date().getMonth();
   const upcomingSeasons = getUpcomingSeasons(currentMonth);
-  
+
   trends.forEach(trend => {
     if (trend.seasonality.peak.some(season => upcomingSeasons.includes(season))) {
       recommendations.push({
@@ -150,6 +150,6 @@ function getUpcomingSeasons(currentMonth: number): string[] {
   const seasons = ['Winter', 'Spring', 'Summer', 'Fall'];
   const currentSeason = Math.floor(((currentMonth + 1) % 12) / 3);
   const nextSeason = (currentSeason + 1) % 4;
-  
+
   return [seasons[currentSeason], seasons[nextSeason]];
 }

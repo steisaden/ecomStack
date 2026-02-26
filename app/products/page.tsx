@@ -3,6 +3,9 @@ import { getAllProducts } from '@/lib/unified-products'
 import { createCollectionMetadataGenerator } from '@/lib/seo'
 import ResponsiveContainer from '@/components/ResponsiveContainer'
 
+// Revalidate every 60 seconds so Contentful product changes appear on the live site
+export const revalidate = 60
+
 export const generateMetadata = createCollectionMetadataGenerator(async () => {
   const products = await getAllProducts()
   return {
@@ -20,7 +23,7 @@ export default async function ProductsPage() {
   return (
     <div className="relative min-h-screen">
       {/* Background intentionally left plain (no paper shader) */}
-      
+
       <div className="relative z-10">
         <ResponsiveContainer>
           <div className="py-16 md:py-24">

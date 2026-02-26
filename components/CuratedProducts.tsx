@@ -4,11 +4,11 @@ import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '@/lib/utils'
 import { ValidatedProduct } from '@/lib/product-validation'
-import { 
-  ExternalLink, 
-  RefreshCw, 
-  CheckCircle, 
-  AlertCircle, 
+import {
+  ExternalLink,
+  RefreshCw,
+  CheckCircle,
+  AlertCircle,
   Eye,
   ShoppingCart,
   Star,
@@ -35,10 +35,10 @@ interface ValidationSummary {
   validationRate: number
 }
 
-export default function CuratedProducts({ 
-  className, 
+export default function CuratedProducts({
+  className,
   showValidationSummary = false,
-  maxProducts 
+  maxProducts
 }: CuratedProductsProps) {
   const [products, setProducts] = useState<ValidatedProduct[]>([])
   const [validationSummary, setValidationSummary] = useState<ValidationSummary | null>(null)
@@ -52,20 +52,20 @@ export default function CuratedProducts({
       if (includeValidation) {
         url.searchParams.set('summary', 'true')
       }
-      
+
       const response = await fetch(url.toString())
       const data = await response.json()
-      
+
       if (!response.ok) {
         throw new Error(data.message || 'Failed to fetch products')
       }
-      
+
       setProducts(data.products || [])
-      
+
       if (data.validation) {
         setValidationSummary(data.validation)
       }
-      
+
       setError(null)
     } catch (err: any) {
       console.error('Error fetching curated products:', err)
@@ -76,21 +76,21 @@ export default function CuratedProducts({
   const refreshValidation = async () => {
     try {
       setRefreshing(true)
-      
+
       const response = await fetch('/api/curated-products', {
         method: 'POST'
       })
-      
+
       const data = await response.json()
-      
+
       if (!response.ok) {
         throw new Error(data.message || 'Failed to refresh validation')
       }
-      
+
       setProducts(data.products || [])
       setValidationSummary(data.validation)
       setError(null)
-      
+
     } catch (err: any) {
       console.error('Error refreshing validation:', err)
       setError(err.message || 'Failed to refresh validation')
@@ -105,7 +105,7 @@ export default function CuratedProducts({
       await fetchProducts(showValidationSummary)
       setLoading(false)
     }
-    
+
     loadProducts()
   }, [showValidationSummary])
 
@@ -131,7 +131,7 @@ export default function CuratedProducts({
             </CardContent>
           </Card>
         )}
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {[...Array(6)].map((_, i) => (
             <Card key={i} className="overflow-hidden">
@@ -180,8 +180,8 @@ export default function CuratedProducts({
                 Only validated products with thumbnails and working links are displayed
               </CardDescription>
             </div>
-            <Button 
-              onClick={refreshValidation} 
+            <Button
+              onClick={refreshValidation}
               disabled={refreshing}
               variant="outline"
               size="sm"
@@ -253,7 +253,7 @@ export default function CuratedProducts({
       {/* Show More Button */}
       {maxProducts && products.length > maxProducts && (
         <div className="text-center">
-          <Button 
+          <Button
             onClick={() => window.location.href = '/products'}
             variant="outline"
           >
@@ -268,7 +268,7 @@ export default function CuratedProducts({
 // Individual Product Card Component
 function ProductCard({ product }: { product: ValidatedProduct }) {
   const [imageError, setImageError] = useState(false)
-  
+
   const handleImageError = () => {
     setImageError(true)
   }
@@ -308,7 +308,7 @@ function ProductCard({ product }: { product: ValidatedProduct }) {
             </div>
           </div>
         )}
-        
+
         {/* Validation Badge */}
         <div className="absolute top-2 right-2">
           <Badge variant="secondary" className="bg-green-100 text-green-800">
@@ -332,7 +332,7 @@ function ProductCard({ product }: { product: ValidatedProduct }) {
         <h3 className="font-semibold text-lg mb-2 line-clamp-2 group-hover:text-blue-600 transition-colors">
           {product.title}
         </h3>
-        
+
         <p className="text-gray-600 text-sm mb-3 line-clamp-2">
           {product.description}
         </p>
@@ -359,7 +359,7 @@ function ProductCard({ product }: { product: ValidatedProduct }) {
         </div>
 
         {/* Action Button */}
-        <Button 
+        <Button
           onClick={handleProductClick}
           className="w-full"
           variant={product.isAffiliate ? "default" : "outline"}

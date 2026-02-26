@@ -75,8 +75,8 @@ function Button({
     loading?: boolean
     animated?: boolean
   }) {
-  const Comp = asChild ? Slot : (animated ? motion.button : "button")
-  
+  const Comp: any = asChild ? Slot : (animated ? motion.button : "button")
+
   const content = (
     <>
       {loading ? (
@@ -94,7 +94,7 @@ function Button({
 
   const motionProps = animated && !asChild ? {
     initial: "rest",
-    whileHover: "hover", 
+    whileHover: "hover",
     whileTap: "tap",
     variants: motionVariants
   } : {}

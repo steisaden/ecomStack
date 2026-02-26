@@ -6,8 +6,8 @@ import { motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
 import { useResponsive } from '@/lib/responsive'
 import { cardVariants, createGlassEffect } from '@/lib/glass-morphism'
-import { 
-  staggerContainer, 
+import {
+  staggerContainer,
   staggerItem,
   createViewportAnimation,
   glassCardHoverVariants
@@ -40,20 +40,20 @@ interface BlogGridProps {
   layout?: 'grid' | 'masonry' | 'featured'
 }
 
-export default function BlogGrid({ 
-  posts, 
-  className, 
+export default function BlogGrid({
+  posts,
+  className,
   showViewAllButton = false,
   maxItems,
   layout = 'grid'
 }: BlogGridProps) {
   const { isMobile, isTablet, isDesktop } = useResponsive()
-  
+
   const displayPosts = maxItems ? posts.slice(0, maxItems) : posts
-  
+
   // Modern blog card with glassmorphism and animations
   const BlogCard = ({ post, featured = false }: { post: BlogPost, featured?: boolean }) => (
-    <motion.article 
+    <motion.article
       variants={staggerItem}
       initial="rest"
       whileHover="hover"
@@ -69,21 +69,21 @@ export default function BlogGrid({
           'relative overflow-hidden',
           featured ? 'aspect-[16/9] lg:aspect-[21/9]' : 'aspect-[4/3]'
         )}>
-          <img 
+          <img
             src={post.featuredImage.url.startsWith('//') ? `https:${post.featuredImage.url}` : post.featuredImage.url}
             alt={post.title}
             className="w-full h-full object-cover transition-all duration-700 group-hover:scale-110"
             loading="lazy"
           />
-          
+
           {/* Glassmorphism overlay on hover */}
-          <motion.div 
+          <motion.div
             className="absolute inset-0 bg-gradient-to-br from-beauty-500/0 via-white/5 to-beauty-500/0"
             initial={{ opacity: 0 }}
             whileHover={{ opacity: 1 }}
             transition={{ duration: 0.3 }}
           />
-          
+
           {/* Shimmer effect */}
           <motion.div
             className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent w-1/3"
@@ -91,9 +91,9 @@ export default function BlogGrid({
             whileHover={{ x: "300%" }}
             transition={{ duration: 0.8, ease: "easeOut" }}
           />
-          
+
           {/* Category badge */}
-          <motion.div 
+          <motion.div
             className="absolute top-4 right-4 z-10"
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -105,13 +105,13 @@ export default function BlogGrid({
           </motion.div>
         </div>
       )}
-      
+
       <div className={cn(
         'p-6 flex-1 flex flex-col',
         featured && 'lg:p-8'
       )}>
         {/* Enhanced metadata with icons */}
-        <motion.div 
+        <motion.div
           className={createGlassEffect('light', 'flex items-center gap-3 text-xs text-beauty-600 mb-4 p-2 rounded-lg')}
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -134,8 +134,8 @@ export default function BlogGrid({
             </div>
           )}
         </motion.div>
-        
-        <motion.h3 
+
+        <motion.h3
           className={cn(
             'font-bold text-beauty-800 line-clamp-2 mb-3 flex-none',
             featured ? 'text-xl lg:text-2xl lg:mb-4' : 'text-lg'
@@ -146,8 +146,8 @@ export default function BlogGrid({
         >
           {post.title}
         </motion.h3>
-        
-        <motion.p 
+
+        <motion.p
           className={cn(
             'text-beauty-600 mb-6 flex-1',
             featured ? 'text-base line-clamp-4' : 'text-sm line-clamp-3'
@@ -158,16 +158,16 @@ export default function BlogGrid({
         >
           {post.excerpt}
         </motion.p>
-        
+
         <motion.div
           className="mt-auto"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
         >
-          <Button 
-            variant="glassSecondary" 
-            size="sm" 
+          <Button
+            variant="glassSecondary"
+            size="sm"
             className="group transition-all duration-300 hover:shadow-glow-pink"
             asChild
           >
@@ -190,9 +190,9 @@ export default function BlogGrid({
   // Featured layout with one large post and smaller ones
   if (layout === 'featured' && displayPosts.length > 0) {
     const [featuredPost, ...otherPosts] = displayPosts
-    
+
     return (
-      <motion.div 
+      <motion.div
         className={className}
         {...createViewportAnimation(staggerContainer, 0.1)}
       >
@@ -201,12 +201,12 @@ export default function BlogGrid({
           <motion.div variants={staggerItem}>
             <BlogCard post={featuredPost} featured={true} />
           </motion.div>
-          
+
           {/* Other Posts */}
           {otherPosts.length > 0 && (
             <motion.div variants={staggerItem}>
-              <ResponsiveGrid 
-                variant="blog" 
+              <ResponsiveGrid
+                variant="blog"
                 gap={isMobile ? 'medium' : 'large'}
                 className="gap-6 lg:gap-8"
               >
@@ -217,15 +217,15 @@ export default function BlogGrid({
             </motion.div>
           )}
         </div>
-        
+
         {showViewAllButton && (
-          <motion.div 
+          <motion.div
             className="text-center mt-12 lg:mt-16"
             variants={staggerItem}
           >
-            <Button 
-              variant="glass" 
-              size="lg" 
+            <Button
+              variant="glass"
+              size="lg"
               className="px-12 py-4 text-base hover:shadow-glow-beauty"
               asChild
             >
@@ -241,12 +241,12 @@ export default function BlogGrid({
 
   // Standard grid layout
   return (
-    <motion.div 
+    <motion.div
       className={className}
       {...createViewportAnimation(staggerContainer, 0.1)}
     >
-      <ResponsiveGrid 
-        variant="blog" 
+      <ResponsiveGrid
+        variant="blog"
         gap={isMobile ? 'medium' : 'large'}
         className="gap-6 lg:gap-8"
       >
@@ -254,15 +254,15 @@ export default function BlogGrid({
           <BlogCard key={post.slug} post={post} />
         ))}
       </ResponsiveGrid>
-      
+
       {showViewAllButton && (
-        <motion.div 
+        <motion.div
           className="text-center mt-12 lg:mt-16"
           {...createViewportAnimation(staggerItem, 0.2)}
         >
-          <Button 
-            variant="glass" 
-            size="lg" 
+          <Button
+            variant="glass"
+            size="lg"
             className="px-12 py-4 text-base hover:shadow-glow-beauty"
             asChild
           >

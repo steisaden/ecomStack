@@ -10,34 +10,34 @@ const revalidateTag = (() => {
     if (typeof window === 'undefined') {
       return require('next/cache').revalidateTag;
     }
-    return () => {}; // No-op for client-side
+    return () => { }; // No-op for client-side
   } catch {
-    return () => {}; // Fallback no-op
+    return () => { }; // Fallback no-op
   }
 })();
 
 // Initialize Contentful client for reading
 const client = createClient({
-  space: process.env.CONTENTFUL_SPACE_ID!,
-  accessToken: process.env.CONTENTFUL_ACCESS_TOKEN!,
-  environment: process.env.CONTENTFUL_ENVIRONMENT || 'master',
+  space: (process.env.CONTENTFUL_SPACE_ID || '').trim(),
+  accessToken: (process.env.CONTENTFUL_ACCESS_TOKEN || '').trim(),
+  environment: (process.env.CONTENTFUL_ENVIRONMENT || process.env.CONTENTFUL_ENVIRONMENT_ID || 'master').trim(),
 });
 
 // Initialize Contentful Management client for writing
 const managementClient = createManagementClient({
-  accessToken: process.env.CONTENTFUL_MANAGEMENT_TOKEN!,
+  accessToken: (process.env.CONTENTFUL_MANAGEMENT_TOKEN || '').trim(),
 });
 
 // Cache the affiliate products fetch with a 30-minute duration
 export const getCachedAffiliateProducts = unstable_cache(
   async (): Promise<AffiliateProduct[]> => {
     try {
-      const entries = await client.getEntries<ContentfulAffiliateProduct>({
+      const entries = await client.getEntries<any>({
         content_type: 'affiliateProduct',
         limit: 1000, // Reasonable limit for affiliate products
-        order: '-sys.createdAt'
+        order: ['-sys.createdAt']
       });
-      
+
       return entries.items.map(item => {
         const fields = item.fields as any;
         return {
@@ -79,12 +79,12 @@ export const getCachedAffiliateProducts = unstable_cache(
 // Get a single affiliate product by ID
 export async function getAffiliateProductById(id: string): Promise<AffiliateProduct | null> {
   try {
-    const entry = await client.getEntry<ContentfulAffiliateProduct>(id);
-    
+    const entry = await client.getEntry<any>(id);
+
     if (!entry) {
       return null;
     }
-    
+
     const fields = entry.fields as any;
     return {
       id: entry.sys.id,
@@ -125,7 +125,7 @@ export async function createAffiliateProduct(productData: Omit<AffiliateProduct,
     if (!productData.title || !productData.affiliateUrl) {
       throw new Error('Title and affiliate URL are required');
     }
-    
+
     // Validate URL format
     try {
       new URL(productData.affiliateUrl);
@@ -135,11 +135,11 @@ export async function createAffiliateProduct(productData: Omit<AffiliateProduct,
     } catch (urlError) {
       throw new Error('Invalid URL format');
     }
-    
+
     // Get space and environment
     const space = await managementClient.getSpace(process.env.CONTENTFUL_SPACE_ID!);
     const environment = await space.getEnvironment(process.env.CONTENTFUL_ENVIRONMENT || 'master');
-    
+
     // Create new affiliate product entry with only essential fields first
     const essentialFields = {
       fields: {
@@ -191,16 +191,16 @@ export async function createAffiliateProduct(productData: Omit<AffiliateProduct,
 
 
     const newEntry = await environment.createEntry('affiliateProduct', essentialFields);
-    
+
     const entryId = newEntry.sys.id;
-    
+
     // Publish the entry
     await newEntry.publish();
-    
+
     // Revalidate the cache
     revalidateTag('affiliate-products');
     revalidateTag('unified-products');
-    
+
     // Return the created product
     const fields = newEntry.fields as any;
     return {
@@ -246,7 +246,7 @@ export async function updateAffiliateProduct(id: string, productData: Partial<Af
         throw new Error('Invalid affiliate URL format');
       }
     }
-    
+
     if (productData.imageUrl) {
       try {
         new URL(productData.imageUrl);
@@ -254,67 +254,67 @@ export async function updateAffiliateProduct(id: string, productData: Partial<Af
         throw new Error('Invalid image URL format');
       }
     }
-    
+
     // Get space and environment
     const space = await managementClient.getSpace(process.env.CONTENTFUL_SPACE_ID!);
     const environment = await space.getEnvironment(process.env.CONTENTFUL_ENVIRONMENT || 'master');
-    
+
     // Get the existing entry
     const entry = await environment.getEntry(id);
-    
+
     if (!entry) {
       throw new Error('Product not found');
     }
-    
+
     // Update fields
     if (productData.title !== undefined) {
       entry.fields.title = { 'en-US': productData.title };
     }
-    
+
     if (productData.description !== undefined) {
       entry.fields.description = { 'en-US': productData.description || '' };
     }
-    
+
     if (productData.price !== undefined) {
       entry.fields.price = { 'en-US': productData.price || 0 };
     }
-    
+
     if (productData.imageUrl !== undefined) {
       entry.fields.imageUrl = { 'en-US': productData.imageUrl || '' };
     }
-    
+
     if (productData.affiliateUrl !== undefined) {
       entry.fields.affiliateUrl = { 'en-US': productData.affiliateUrl };
     }
-    
+
     if (productData.category !== undefined) {
       entry.fields.category = { 'en-US': productData.category || '' };
     }
-    
+
     if (productData.tags !== undefined) {
       entry.fields.tags = { 'en-US': Array.isArray(productData.tags) ? productData.tags : [] };
     }
-    
+
     if (productData.commissionRate !== undefined) {
       entry.fields.commissionRate = { 'en-US': productData.commissionRate || 0 };
     }
-    
+
     if (productData.platform !== undefined) {
       entry.fields.platform = { 'en-US': productData.platform || 'custom' };
     }
-    
+
     if (productData.performance !== undefined) {
       entry.fields.performance = { 'en-US': productData.performance };
     }
-    
+
     if (productData.status !== undefined) {
       entry.fields.status = { 'en-US': productData.status || 'active' };
     }
-    
+
     if (productData.scheduledPromotions !== undefined) {
       entry.fields.scheduledPromotions = { 'en-US': Array.isArray(productData.scheduledPromotions) ? productData.scheduledPromotions : [] };
     }
-    
+
     if (productData.imageRefreshStatus !== undefined) {
       entry.fields.imageRefreshStatus = { 'en-US': productData.imageRefreshStatus };
     }
@@ -334,15 +334,15 @@ export async function updateAffiliateProduct(id: string, productData: Partial<Af
     if (productData.needsReview !== undefined) {
       entry.fields.needsReview = { 'en-US': productData.needsReview };
     }
-    
+
     // Update and publish the entry
     const updatedEntry = await entry.update();
     await updatedEntry.publish();
-    
+
     // Revalidate the cache
     revalidateTag('affiliate-products');
     revalidateTag('unified-products');
-    
+
     // Return the updated product
     const fields = updatedEntry.fields as any;
     return {
@@ -383,24 +383,24 @@ export async function deleteAffiliateProduct(id: string): Promise<boolean> {
     // Get space and environment
     const space = await managementClient.getSpace(process.env.CONTENTFUL_SPACE_ID!);
     const environment = await space.getEnvironment(process.env.CONTENTFUL_ENVIRONMENT || 'master');
-    
+
     // Get the existing entry
     const entry = await environment.getEntry(id);
-    
+
     if (!entry) {
       throw new Error('Product not found');
     }
-    
+
     // Unpublish and archive the entry
     if (entry.isPublished()) {
       await entry.unpublish();
     }
     await entry.archive();
-    
+
     // Revalidate the cache
     revalidateTag('affiliate-products');
     revalidateTag('unified-products');
-    
+
     return true;
   } catch (error: any) {
     console.error('Error deleting affiliate product:', error);
@@ -412,23 +412,23 @@ export async function deleteAffiliateProduct(id: string): Promise<boolean> {
 export async function getAffiliateProductMetrics(): Promise<any> {
   try {
     const products = await getCachedAffiliateProducts();
-    
+
     // Calculate metrics
     const totalProducts = products.length;
     const activeProducts = products.filter(p => p.status === 'active').length;
     const totalRevenue = products.reduce((sum, p) => sum + (p.performance.revenue || 0), 0);
-    const avgCommissionRate = totalProducts > 0 
-      ? products.reduce((sum, p) => sum + (p.commissionRate || 0), 0) / totalProducts 
+    const avgCommissionRate = totalProducts > 0
+      ? products.reduce((sum, p) => sum + (p.commissionRate || 0), 0) / totalProducts
       : 0;
-    
+
     // Top performing products (by revenue)
     const topPerforming = [...products]
       .sort((a, b) => (b.performance.revenue || 0) - (a.performance.revenue || 0))
       .slice(0, 5);
-    
+
     // AI recommendations (simulated - in a real implementation, this would connect to an AI service)
     const recommendations = await generateAIRecommendations(products);
-    
+
     return {
       totalProducts,
       activeProducts,
@@ -447,17 +447,17 @@ export async function getAffiliateProductMetrics(): Promise<any> {
 async function generateAIRecommendations(products: AffiliateProduct[]) {
   // In a real implementation, this would connect to an AI service
   // For now, we'll generate simulated recommendations with realistic data
-  
-  const recommendations = [];
-  
+
+  const recommendations: any[] = [];
+
   // Calculate total revenue for use in recommendations
   const totalRevenue = products.reduce((sum, p) => sum + (p.performance.revenue || 0), 0);
-  
+
   // 1. Low performance optimization recommendation
   const lowPerformers = products
     .filter(p => p.performance.revenue < 50 && p.performance.clicks > 10)
     .sort((a, b) => (a.performance.revenue - b.performance.revenue));
-  
+
   if (lowPerformers.length > 0) {
     recommendations.push({
       productId: lowPerformers[0].id,
@@ -472,12 +472,12 @@ async function generateAIRecommendations(products: AffiliateProduct[]) {
       suggestedAction: 'optimize'
     });
   }
-  
+
   // 2. High potential promotion recommendation
   const highPotential = products
     .filter(p => p.performance.clicks > 100 && p.performance.conversionRate < 2)
     .sort((a, b) => b.performance.clicks - a.performance.clicks);
-  
+
   if (highPotential.length > 0) {
     recommendations.push({
       productId: highPotential[0].id,
@@ -487,12 +487,12 @@ async function generateAIRecommendations(products: AffiliateProduct[]) {
       predictedPerformance: {
         clicks: highPotential[0].performance.clicks,
         conversions: Math.round(highPotential[0].performance.clicks * 0.05),
-        revenue: Math.round(highPotential[0].performance.clicks * 0.05 * highPotential[0].price)
+        revenue: Math.round(highPotential[0].performance.clicks * 0.05 * (typeof highPotential[0].price === 'number' ? highPotential[0].price : highPotential[0].price?.amount || 0))
       },
       suggestedAction: 'promote'
     });
   }
-  
+
   // 3. Category gap recommendation
   const categories = Array.from(new Set(products.map(p => p.category).filter(Boolean)));
   if (categories.length < 8) {
@@ -506,7 +506,7 @@ async function generateAIRecommendations(products: AffiliateProduct[]) {
       'Self-Care',
       'Accessories'
     ].filter(cat => !categories.includes(cat));
-    
+
     if (missingCategories.length > 0) {
       const suggestedCategory = missingCategories[0];
       recommendations.push({
@@ -523,11 +523,11 @@ async function generateAIRecommendations(products: AffiliateProduct[]) {
       });
     }
   }
-  
+
   // 4. Seasonal recommendation
   const now = new Date();
   const month = now.getMonth();
-  
+
   // Summer products (June-August)
   if (month >= 5 && month <= 7) {
     recommendations.push({
@@ -543,7 +543,7 @@ async function generateAIRecommendations(products: AffiliateProduct[]) {
       suggestedAction: 'promote'
     });
   }
-  
+
   // Holiday products (November-January)
   if (month >= 10 || month <= 0) {
     recommendations.push({
@@ -559,7 +559,7 @@ async function generateAIRecommendations(products: AffiliateProduct[]) {
       suggestedAction: 'promote'
     });
   }
-  
+
   // 5. Platform diversification recommendation
   const platforms = Array.from(new Set(products.map(p => p.platform)));
   if (platforms.length < 3) {
@@ -568,7 +568,7 @@ async function generateAIRecommendations(products: AffiliateProduct[]) {
       'shareasale',
       'cj'
     ].filter(platform => !platforms.includes(platform));
-    
+
     if (missingPlatforms.length > 0) {
       const suggestedPlatform = missingPlatforms[0];
       recommendations.push({
@@ -585,7 +585,7 @@ async function generateAIRecommendations(products: AffiliateProduct[]) {
       });
     }
   }
-  
+
   // 6. Commission optimization recommendation
   const avgCommission = products.reduce((sum, p) => sum + (p.commissionRate || 0), 0) / (products.length || 1);
   if (avgCommission < 5) {
@@ -602,6 +602,6 @@ async function generateAIRecommendations(products: AffiliateProduct[]) {
       suggestedAction: 'optimize'
     });
   }
-  
+
   return recommendations;
 }

@@ -13,6 +13,10 @@ export interface SyncJob {
   processedItems?: number;
 }
 
+export type Job = SyncJob;
+export type JobStatus = SyncJob['status'];
+export type JobType = SyncJob['type'];
+
 export interface JobQueueConfig {
   maxConcurrentJobs?: number;
   jobTimeoutMs?: number;

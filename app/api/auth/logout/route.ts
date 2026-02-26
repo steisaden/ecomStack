@@ -11,10 +11,10 @@ export async function POST(request: NextRequest) {
         cookieStore.delete('auth-token');
 
         // Redirect the user back to the login page
-        return NextResponse.redirect(new URL('/login', request.url));
+        return NextResponse.redirect(new URL('/login', request.url), 303);
     } catch (error) {
         console.error('Logout error:', error);
         // Even if there's an error, redirect to login for security
-        return NextResponse.redirect(new URL('/login', request.url));
+        return NextResponse.redirect(new URL('/login', request.url), 303);
     }
 }

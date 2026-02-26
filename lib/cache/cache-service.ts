@@ -50,7 +50,7 @@ class MemoryCache {
     if (!pattern) {
       return Array.from(this.store.keys());
     }
-    
+
     // Simple pattern matching (supports * wildcard)
     const regex = new RegExp(`^${pattern.replace(/\*/g, '.*')}$`);
     return Array.from(this.store.keys()).filter(key => regex.test(key));
@@ -70,7 +70,7 @@ class RedisCache {
   constructor() {
     // Note: In a real implementation, you would initialize the Redis client here
     // this.client = new Redis(process.env.REDIS_URL || 'redis://localhost:6379');
-    
+
     // For this implementation, we'll simulate Redis functionality
     console.log('Redis cache service initialized (simulated)');
     this.connected = true;
@@ -81,24 +81,24 @@ class RedisCache {
     if (!this.connected) {
       throw new Error('Redis client not connected');
     }
-    
+
     // In a real implementation:
     // const value = await this.client.get(key);
     // return value ? JSON.parse(value) : null;
-    
+
     // For simulation, we'll use a temporary store
     const store = (global as any)._redisStore || {};
     const item = store[key];
-    
+
     if (!item) return null;
-    
+
     // Check if expired
     if (item.expiry && item.expiry < Date.now()) {
       delete store[key];
       (global as any)._redisStore = store;
       return null;
     }
-    
+
     return item.value as T;
   }
 
@@ -106,7 +106,7 @@ class RedisCache {
     if (!this.connected) {
       throw new Error('Redis client not connected');
     }
-    
+
     // In a real implementation:
     // const stringValue = JSON.stringify(value);
     // if (ttl) {
@@ -114,13 +114,13 @@ class RedisCache {
     // } else {
     //   await this.client.set(key, stringValue);
     // }
-    
+
     // For simulation
     const store = (global as any)._redisStore || {};
     const expiry = ttl ? Date.now() + ttl * 1000 : null;
     store[key] = { value, expiry };
     (global as any)._redisStore = store;
-    
+
     return true;
   }
 
@@ -128,10 +128,10 @@ class RedisCache {
     if (!this.connected) {
       throw new Error('Redis client not connected');
     }
-    
+
     // In a real implementation:
     // return await this.client.del(key) > 0;
-    
+
     // For simulation
     const store = (global as any)._redisStore || {};
     const result = delete store[key];
@@ -143,23 +143,23 @@ class RedisCache {
     if (!this.connected) {
       throw new Error('Redis client not connected');
     }
-    
+
     // In a real implementation:
     // return (await this.client.exists(key)) === 1;
-    
+
     // For simulation
     const store = (global as any)._redisStore || {};
     const item = store[key];
-    
+
     if (!item) return false;
-    
+
     // Check if expired
     if (item.expiry && item.expiry < Date.now()) {
       delete store[key];
       (global as any)._redisStore = store;
       return false;
     }
-    
+
     return true;
   }
 
@@ -167,10 +167,10 @@ class RedisCache {
     if (!this.connected) {
       throw new Error('Redis client not connected');
     }
-    
+
     // In a real implementation:
     // await this.client.flushdb();
-    
+
     // For simulation
     (global as any)._redisStore = {};
     return true;
@@ -180,16 +180,16 @@ class RedisCache {
     if (!this.connected) {
       throw new Error('Redis client not connected');
     }
-    
+
     // In a real implementation:
     // return await this.client.keys(pattern);
-    
+
     // For simulation
     const store = (global as any)._redisStore || {};
     const allKeys = Object.keys(store);
-    
+
     if (pattern === '*') return allKeys;
-    
+
     // Simple pattern matching (supports * wildcard)
     const regex = new RegExp(`^${pattern.replace(/\*/g, '.*')}$`);
     return allKeys.filter(key => regex.test(key));
@@ -212,7 +212,7 @@ export class CacheServiceImplementation implements CacheService {
   constructor() {
     // Check if Redis is configured
     this.useRedis = !!process.env.REDIS_URL;
-    
+
     this.redisCache = new RedisCache();
     this.memoryCache = new MemoryCache();
   }
@@ -349,79 +349,79 @@ export class CacheServiceImplementation implements CacheService {
   // Specialized methods for product caching using strategies
   async getProductData(asin: string) {
     const strategy = PRODUCT_CACHE_STRATEGIES.productData;
-    const key = typeof strategy.key === 'function' ? strategy.key(asin) : strategy.key;
+    const key = typeof strategy.key === 'function' ? (strategy.key as any)(asin) : strategy.key;
     return await this.get<any>(key);
   }
 
   async setProductData(asin: string, data: any) {
     const strategy = PRODUCT_CACHE_STRATEGIES.productData;
-    const key = typeof strategy.key === 'function' ? strategy.key(asin) : strategy.key;
-    const ttl = typeof strategy.ttl === 'function' ? strategy.ttl(data) : strategy.ttl;
+    const key = typeof strategy.key === 'function' ? (strategy.key as any)(asin) : strategy.key;
+    const ttl = typeof strategy.ttl === 'function' ? (strategy.ttl as any)(data) : strategy.ttl;
     return await this.set(key, data, ttl);
   }
 
   async getImageUrl(asin: string) {
     const strategy = PRODUCT_CACHE_STRATEGIES.imageUrl;
-    const key = typeof strategy.key === 'function' ? strategy.key(asin) : strategy.key;
+    const key = typeof strategy.key === 'function' ? (strategy.key as any)(asin) : strategy.key;
     return await this.get<string>(key);
   }
 
   async setImageUrl(asin: string, imageUrl: string) {
     const strategy = PRODUCT_CACHE_STRATEGIES.imageUrl;
-    const key = typeof strategy.key === 'function' ? strategy.key(asin) : strategy.key;
-    const ttl = typeof strategy.ttl === 'function' ? strategy.ttl(imageUrl) : strategy.ttl;
+    const key = typeof strategy.key === 'function' ? (strategy.key as any)(asin) : strategy.key;
+    const ttl = typeof strategy.ttl === 'function' ? (strategy.ttl as any)(imageUrl) : strategy.ttl;
     return await this.set(key, imageUrl, ttl);
   }
 
   async getLinkValidation(url: string) {
     const strategy = PRODUCT_CACHE_STRATEGIES.linkValidation;
-    const key = typeof strategy.key === 'function' ? strategy.key(url) : strategy.key;
+    const key = typeof strategy.key === 'function' ? (strategy.key as any)(url) : strategy.key;
     return await this.get<any>(key);
   }
 
   async setLinkValidation(url: string, data: any, isValid: boolean) {
     const strategy = PRODUCT_CACHE_STRATEGIES.linkValidation;
-    const key = typeof strategy.key === 'function' ? strategy.key(url) : strategy.key;
-    const ttl = typeof strategy.ttl === 'function' ? strategy.ttl(isValid) : strategy.ttl;
+    const key = typeof strategy.key === 'function' ? (strategy.key as any)(url) : strategy.key;
+    const ttl = typeof strategy.ttl === 'function' ? (strategy.ttl as any)(isValid) : strategy.ttl;
     return await this.set(key, data, ttl);
   }
 
   async getDashboardData(section: string) {
     const strategy = PRODUCT_CACHE_STRATEGIES.dashboardData;
-    const key = typeof strategy.key === 'function' ? strategy.key(section) : strategy.key;
+    const key = typeof strategy.key === 'function' ? (strategy.key as any)(section) : strategy.key;
     return await this.get<any>(key);
   }
 
   async setDashboardData(section: string, data: any) {
     const strategy = PRODUCT_CACHE_STRATEGIES.dashboardData;
-    const key = typeof strategy.key === 'function' ? strategy.key(section) : strategy.key;
-    const ttl = typeof strategy.ttl === 'function' ? strategy.ttl(data) : strategy.ttl;
+    const key = typeof strategy.key === 'function' ? (strategy.key as any)(section) : strategy.key;
+    const ttl = typeof strategy.ttl === 'function' ? (strategy.ttl as any)(data) : strategy.ttl;
     return await this.set(key, data, ttl);
   }
 
   async getProductStatus() {
     const strategy = PRODUCT_CACHE_STRATEGIES.productStatus;
-    const key = typeof strategy.key === 'function' ? strategy.key() : strategy.key;
+    const key = typeof strategy.key === 'function' ? (strategy.key as any)() : strategy.key;
     return await this.get<any>(key);
   }
 
   async setProductStatus(data: any) {
     const strategy = PRODUCT_CACHE_STRATEGIES.productStatus;
-    const key = typeof strategy.key === 'function' ? strategy.key() : strategy.key;
-    const ttl = typeof strategy.ttl === 'function' ? strategy.ttl(data) : strategy.ttl;
+    const key = typeof strategy.key === 'function' ? (strategy.key as any)() : strategy.key;
+    const ttl = typeof strategy.ttl === 'function' ? (strategy.ttl as any)(data) : strategy.ttl;
     return await this.set(key, data, ttl);
   }
 
   async getJobStatusList() {
     const strategy = PRODUCT_CACHE_STRATEGIES.jobStatusList;
-    const key = typeof strategy.key === 'function' ? strategy.key() : strategy.key;
+    const key = typeof strategy.key === 'function' ? (strategy.key as any)() : strategy.key;
     return await this.get<any>(key);
   }
 
   async setJobStatusList(data: any) {
     const strategy = PRODUCT_CACHE_STRATEGIES.jobStatusList;
-    const key = typeof strategy.key === 'function' ? strategy.key() : strategy.key;
-    const ttl = typeof strategy.ttl === 'function' ? strategy.ttl(data) : strategy.ttl;
+    const key = typeof strategy.key === 'function' ? (strategy.key as any)() : strategy.key;
+    const ttl = typeof strategy.ttl === 'function' ? (strategy.ttl as any)(data) : strategy.ttl;
     return await this.set(key, data, ttl);
   }
 }

@@ -181,7 +181,7 @@ export interface AffiliateProduct {
   id: string;
   title: string;
   description: string;
-  asin: string; // Amazon Standard Identification Number
+  asin?: string; // Amazon Standard Identification Number
   price: number | {
     amount: number;
     currency: string;

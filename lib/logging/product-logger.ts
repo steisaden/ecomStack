@@ -1,4 +1,4 @@
-import { ProductError } from './product-errors';
+import { ProductError } from '../errors/product-errors';
 
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 
@@ -130,12 +130,12 @@ export const productLogger = new ProductLogger({
 // Function to create contextual loggers
 export function createLogger(context: string, config?: LoggerConfig): ProductLogger {
   const logger = new ProductLogger(config);
-  
+
   // Override the log method to include context
   const originalLog = logger['log'].bind(logger);
   logger['log'] = (level: LogLevel, message: string, ctx?: any, error?: ProductError) => {
     return originalLog(level, message, { ...ctx, context }, error);
   };
-  
+
   return logger;
 }

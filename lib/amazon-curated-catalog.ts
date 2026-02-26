@@ -21,11 +21,11 @@ export interface CuratedProduct {
   isTrending: boolean;
   isNewArrival: boolean;
   suitableFor: string[];
-  ingredients: string[];
+  ingredients?: string[];
   benefits: string[];
   priceRange: 'budget' | 'mid-range' | 'luxury';
   availability: 'in-stock' | 'out-of-stock' | 'limited';
-  asin: string;
+  asin?: string;
   // New fields for ASIN validation and data fetching status
   asinValid?: boolean;
   lastValidated?: string;
@@ -52,12 +52,12 @@ export const getCuratedAmazonProducts = unstable_cache(
         const curatedProducts = amazonProducts.map((product, index) => {
           // Enhanced image selection with fallbacks
           const imageUrl = product.Images?.Primary?.Medium?.URL ||
-                           product.Images?.Primary?.Large?.URL ||
-                           getProductImageUrl({
-                             asin: product.ASIN,
-                             size: 'medium',
-                             fallbackUrl: `https://images.unsplash.com/photo-${1620916566398 + index}?w=400&h=400&fit=crop&auto=format&q=80`
-                           });
+            product.Images?.Primary?.Large?.URL ||
+            getProductImageUrl({
+              asin: product.ASIN,
+              size: 'medium',
+              fallbackUrl: `https://images.unsplash.com/photo-${1620916566398 + index}?w=400&h=400&fit=crop&auto=format&q=80`
+            });
 
           return {
             id: `amazon-${product.ASIN}-${rotationId}`,
@@ -80,7 +80,7 @@ export const getCuratedAmazonProducts = unstable_cache(
             ingredients: extractIngredients(product.ItemInfo?.Features?.DisplayValues || []),
             benefits: getBenefits(category, product.ItemInfo?.Title?.DisplayValue || '', product.ItemInfo?.Features?.DisplayValues || []),
             priceRange: getPriceRange(product.Offers?.Listings?.[0]?.Price?.Amount),
-            availability: 'in-stock',
+            availability: 'in-stock' as const,
             asin: product.ASIN
           };
         });

@@ -16,22 +16,22 @@ interface DateTimeSelectorProps {
   initialTime?: string;
 }
 
-export function DateTimeSelector({ 
-  onDateChange, 
-  onTimeChange, 
-  initialDate, 
-  initialTime 
+export function DateTimeSelector({
+  onDateChange,
+  onTimeChange,
+  initialDate,
+  initialTime
 }: DateTimeSelectorProps) {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(initialDate);
   const [selectedTime, setSelectedTime] = useState<string>(initialTime || '');
-  
+
   // Generate time slots with 30-minute intervals from 9 AM to 8 PM
-  const timeSlots = [];
+  const timeSlots: string[] = [];
   for (let i = 9; i <= 20; i++) {
     const hour = i;
     const period = hour >= 12 ? 'PM' : 'AM';
     const displayHour = hour > 12 ? hour - 12 : hour;
-    
+
     timeSlots.push(`${displayHour}:00 ${period}`);
     timeSlots.push(`${displayHour}:30 ${period}`);
   }
@@ -97,7 +97,7 @@ export function DateTimeSelector({
               />
             </div>
           </div>
-          
+
           {/* Time selection section */}
           <div className="p-4 border-t sm:border-t-0 sm:border-l sm:w-1/2">
             <div className="flex items-center gap-2 mb-2">
@@ -124,11 +124,11 @@ export function DateTimeSelector({
                   ))}
                 </SelectContent>
               </Select>
-              
+
               <div className="mt-8 flex justify-end">
-                <Button 
-                  variant="outline" 
-                  size="sm" 
+                <Button
+                  variant="outline"
+                  size="sm"
                   onClick={handleReset}
                   className="text-xs"
                 >

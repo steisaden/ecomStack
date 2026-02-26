@@ -1,5 +1,5 @@
 // Shared cache for affiliate products to ensure consistency across API endpoints
-import { CuratedProduct } from './curated-catalog'
+import { CuratedProduct } from './amazon-curated-catalog'
 
 interface AffiliateProduct extends CuratedProduct {
   performance: {
@@ -20,29 +20,26 @@ const CACHE_DURATION = 5 * 60 * 1000 // 5 minutes
 
 export async function getCachedAffiliateProducts(): Promise<AffiliateProduct[]> {
   const now = Date.now()
-  
+
   // Check if cache is still valid
   if (cachedProducts.length > 0 && (now - cacheTimestamp) < CACHE_DURATION) {
     return cachedProducts
   }
-  
+
   // Generate new products
   try {
     const { generateUniqueProductsSync } = await import('./enhanced-product-database')
-    const { FALLBACK_CURATED_CATALOG } = await import('./curated-catalog')
-    
+
     let products: CuratedProduct[] = []
-    
+
     try {
       // Try to generate unique products
       products = generateUniqueProductsSync(15)
       console.log(`Generated ${products.length} unique products for affiliate cache`)
     } catch (error) {
-      console.warn('Failed to generate unique products for cache, using fallback catalog:', error)
-      // Fallback to basic catalog
-      products = FALLBACK_CURATED_CATALOG
+      console.warn('Failed to generate unique products for cache, proceeding to real Amazon API fallback')
     }
-    
+
     // If no products from either source, use real Amazon catalog
     if (products.length === 0) {
       console.log('No products from enhanced database or fallback, using real Amazon catalog')
@@ -62,7 +59,7 @@ export async function getCachedAffiliateProducts(): Promise<AffiliateProduct[]> 
         products = createStaticRealAmazonCatalog()
       }
     }
-    
+
     // Add performance data and admin-specific fields to each product
     // No mock performance data - use real analytics data
     cachedProducts = products.map((product: CuratedProduct) => ({
@@ -77,16 +74,16 @@ export async function getCachedAffiliateProducts(): Promise<AffiliateProduct[]> 
       status: 'active' as const,
       scheduledPromotions: []
     }))
-    
+
     cacheTimestamp = now
     console.log(`Cached ${cachedProducts.length} affiliate products`)
-    
+
   } catch (error) {
     console.error('Error generating affiliate products cache:', error)
     // Return empty array if everything fails
     cachedProducts = []
   }
-  
+
   return cachedProducts
 }
 
@@ -97,7 +94,7 @@ export function findCachedProduct(id: string): AffiliateProduct | undefined {
 export function updateCachedProduct(id: string, updates: Partial<AffiliateProduct>): AffiliateProduct | null {
   const index = cachedProducts.findIndex(p => p.id === id)
   if (index === -1) return null
-  
+
   cachedProducts[index] = { ...cachedProducts[index], ...updates, id } // Ensure ID doesn't change
   return cachedProducts[index]
 }
@@ -105,14 +102,14 @@ export function updateCachedProduct(id: string, updates: Partial<AffiliateProduc
 export function deleteCachedProduct(id: string): AffiliateProduct | null {
   const index = cachedProducts.findIndex(p => p.id === id)
   if (index === -1) return null
-  
+
   const deletedProduct = cachedProducts[index]
-  
+
   // Check if this is a core Amazon product (prevent deletion of essential products)
   if (deletedProduct.platform === 'amazon' && deletedProduct.id.startsWith('amazon-')) {
     throw new Error('Cannot delete core Amazon products. You can only edit them.')
   }
-  
+
   cachedProducts.splice(index, 1)
   return deletedProduct
 }
@@ -129,7 +126,7 @@ export function clearCache(): void {
 // Static real Amazon catalog as final fallback
 function createStaticRealAmazonCatalog(): CuratedProduct[] {
   const associateTag = process.env.AMAZON_ASSOCIATE_TAG || 'goddesscare0d-20'
-  
+
   const generateAffiliateLink = (asin: string) => {
     return `https://www.amazon.com/dp/${asin}?tag=${associateTag}&linkCode=as2&camp=1789&creative=9325`
   }

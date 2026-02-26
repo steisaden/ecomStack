@@ -15,18 +15,18 @@ interface ProductStatusDashboardProps {
 
 const StatusBadge = ({ status }: { status: ImageRefreshStatus | LinkValidationStatus }) => {
   const variant = {
-    current: 'success',
-    valid: 'success',
-    outdated: 'warning',
-    checking: 'info',
+    current: 'sage',
+    valid: 'sage',
+    outdated: 'outline',
+    checking: 'secondary',
     invalid: 'destructive',
     failed: 'destructive',
-  }[status] as 'success' | 'warning' | 'info' | 'destructive';
+  }[status] as 'sage' | 'outline' | 'secondary' | 'destructive';
 
   return <Badge variant={variant}>{status}</Badge>;
 };
 
-export default function ProductStatusDashboard({ 
+export default function ProductStatusDashboard({
   onRefreshProduct,
   onRefreshImage,
   onValidateLink
@@ -47,7 +47,7 @@ export default function ProductStatusDashboard({
         if (response.ok) {
           // In a real implementation, we'd fetch the actual affiliate products
           // For now, we'll use mock data but would connect to real API
-          const mockProducts: AffiliateProduct[] = [
+          const mockProducts = [
             {
               id: '1', title: 'Premium Skincare Set', affiliateUrl: 'https://amzn.to/1',
               imageRefreshStatus: 'current', linkValidationStatus: 'valid',
@@ -73,7 +73,7 @@ export default function ProductStatusDashboard({
               needsReview: false, description: 'Natural clay face mask for all skin types', price: 19.99, tags: ['skincare', 'mask'], commissionRate: 15, platform: 'amazon', performance: { clicks: 300, conversions: 25, revenue: 499.75, conversionRate: 8.3, lastUpdated: new Date().toISOString() }, status: 'active', scheduledPromotions: []
             },
           ];
-          setProducts(mockProducts);
+          setProducts(mockProducts as any);
         } else {
           // Handle error
           console.error('Failed to fetch product statuses');
@@ -115,13 +115,13 @@ export default function ProductStatusDashboard({
 
         if (response.ok) {
           // Update product status in local state
-          setProducts(prev => prev.map(p => 
-            p.id === productId 
-              ? { 
-                  ...p, 
-                  imageRefreshStatus: 'current', 
-                  lastImageRefresh: new Date().toISOString() 
-                } 
+          setProducts(prev => prev.map(p =>
+            p.id === productId
+              ? {
+                ...p,
+                imageRefreshStatus: 'current',
+                lastImageRefresh: new Date().toISOString()
+              }
               : p
           ));
         } else {
@@ -157,13 +157,13 @@ export default function ProductStatusDashboard({
 
         if (response.ok) {
           // Update product status in local state
-          setProducts(prev => prev.map(p => 
-            p.id === productId 
-              ? { 
-                  ...p, 
-                  linkValidationStatus: 'valid', 
-                  lastLinkCheck: new Date().toISOString() 
-                } 
+          setProducts(prev => prev.map(p =>
+            p.id === productId
+              ? {
+                ...p,
+                linkValidationStatus: 'valid',
+                lastLinkCheck: new Date().toISOString()
+              }
               : p
           ));
         } else {
@@ -202,7 +202,7 @@ export default function ProductStatusDashboard({
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-      
+
       {isLoading ? (
         <div className="flex justify-center items-center py-8">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -225,9 +225,9 @@ export default function ProductStatusDashboard({
                 <TableCell className="font-medium">
                   <div className="flex items-center">
                     <span>{product.title}</span>
-                    <a 
-                      href={product.affiliateUrl} 
-                      target="_blank" 
+                    <a
+                      href={product.affiliateUrl}
+                      target="_blank"
                       rel="noopener noreferrer"
                       className="ml-2 text-blue-500 hover:text-blue-700"
                       onClick={(e) => e.stopPropagation()}
@@ -257,16 +257,16 @@ export default function ProductStatusDashboard({
                 </TableCell>
                 <TableCell>
                   <div className="flex space-x-2">
-                    <Button 
-                      size="sm" 
+                    <Button
+                      size="sm"
                       onClick={() => handleRefreshImage(product.id)}
                       disabled={loadingStates[product.id]?.image}
                     >
                       <RefreshCw className={`h-4 w-4 mr-2 ${loadingStates[product.id]?.image ? 'animate-spin' : ''}`} />
                       {loadingStates[product.id]?.image ? 'Refreshing...' : 'Image'}
                     </Button>
-                    <Button 
-                      size="sm" 
+                    <Button
+                      size="sm"
                       variant="outline"
                       onClick={() => handleValidateLink(product.id)}
                       disabled={loadingStates[product.id]?.link}
@@ -281,7 +281,7 @@ export default function ProductStatusDashboard({
           </TableBody>
         </Table>
       )}
-      
+
       {filteredProducts.length === 0 && !isLoading && (
         <div className="text-center py-8 text-muted-foreground">
           No products match your current filters

@@ -97,24 +97,24 @@ class AmazonAPI {
   // Test the Amazon API connection with a simple search
   async testConnection(): Promise<{ success: boolean; message?: string; error?: string }> {
     if (!this.isConfigured()) {
-      return { 
-        success: false, 
-        error: 'Amazon API credentials not configured. Please add your Amazon Access Key, Secret Key, and Associate Tag to your environment variables.' 
+      return {
+        success: false,
+        error: 'Amazon API credentials not configured. Please add your Amazon Access Key, Secret Key, and Associate Tag to your environment variables.'
       };
     }
 
     try {
       // Perform a simple search to verify the connection
       const testProducts = await this.searchProducts('shampoo', 'Beauty', 1);
-      return { 
-        success: true, 
-        message: `Successfully connected to Amazon API. Found ${testProducts.length} test products.` 
+      return {
+        success: true,
+        message: `Successfully connected to Amazon API. Found ${testProducts.length} test products.`
       };
     } catch (error: any) {
       console.error('Amazon API connection test failed:', error);
-      return { 
-        success: false, 
-        error: `Amazon API connection test failed: ${error.message}` 
+      return {
+        success: false,
+        error: `Amazon API connection test failed: ${error.message}`
       };
     }
   }
@@ -161,8 +161,8 @@ class AmazonAPI {
       PartnerTag: this.associateTag,
       PartnerType: 'Associates',
       Marketplace: this.host.includes('webservices.amazon.co.uk') ? 'www.amazon.co.uk' :
-                  this.host.includes('webservices.amazon.co.jp') ? 'www.amazon.co.jp' :
-                  'www.amazon.com' // Default to US marketplace
+        this.host.includes('webservices.amazon.co.jp') ? 'www.amazon.co.jp' :
+          'www.amazon.com' // Default to US marketplace
     });
 
     const requestOptions: aws4.Request = {
@@ -193,8 +193,8 @@ class AmazonAPI {
       const response = await fetch(fullUrl,
         {
           method: signedRequest.method,
-          headers: signedRequest.headers,
-          body: signedRequest.body
+          headers: signedRequest.headers as any,
+          body: signedRequest.body as any
         }
       );
 
@@ -219,25 +219,25 @@ class AmazonAPI {
 
       // Type guard to ensure we're getting the right data structure
       const items = data.SearchResult?.Items || [];
-      return items.filter((item): item is AmazonProduct => 
-        item !== null && 
-        typeof item === 'object' && 
-        'ASIN' in item && 
+      return items.filter((item): item is AmazonProduct =>
+        item !== null &&
+        typeof item === 'object' &&
+        'ASIN' in item &&
         typeof item.ASIN === 'string'
       );
     } catch (error) {
       console.error('Error searching Amazon products:', error);
-      
+
       // Fallback to mock data if real API fails and we're in development
       if (process.env.NODE_ENV === 'development') {
         console.log('Falling back to mock data due to API error');
         return this.getMockProducts(keywords, itemCount);
       }
-      
+
       throw error;
     }
   }
-  
+
   // Mock products for development/testing
   private getMockProducts(keywords: string, itemCount: number): AmazonProduct[] {
     const mockProducts: AmazonProduct[] = [
@@ -364,20 +364,20 @@ class AmazonAPI {
       console.error('Invalid Amazon product: null or undefined');
       return null;
     }
-    
+
     const asin = amazonProduct.ASIN;
     if (!asin) {
       console.error('Amazon product missing ASIN:', amazonProduct);
       return null; // Skip products without ASIN
     }
-    
+
     return {
       title: amazonProduct.ItemInfo?.Title?.DisplayValue || 'Amazon Product',
       description: amazonProduct.ItemInfo?.Features?.DisplayValues?.join('. ') || '',
       price: amazonProduct.Offers?.Listings?.[0]?.Price?.Amount || 0,
-      imageUrl: amazonProduct.Images?.Primary?.Large?.URL || 
-                amazonProduct.Images?.Primary?.Medium?.URL || 
-                amazonProduct.Images?.Primary?.Small?.URL || '',
+      imageUrl: amazonProduct.Images?.Primary?.Large?.URL ||
+        amazonProduct.Images?.Primary?.Medium?.URL ||
+        amazonProduct.Images?.Primary?.Small?.URL || '',
       affiliateUrl: this.generateAffiliateLink(asin),
       category: 'Beauty',
       tags: [
@@ -389,7 +389,7 @@ class AmazonAPI {
       scheduledPromotions: []
     };
   }
-  
+
   // Generate affiliate link for a product
   generateAffiliateLink(asin: string): string {
     if (!this.associateTag) {
@@ -411,13 +411,13 @@ class AmazonAPI {
     if (!asin || asin.length !== 10) {
       return false;
     }
-    
+
     // Check if ASIN contains only valid characters
     const asinRegex = /^[A-Z0-9]{10}$/;
     if (!asinRegex.test(asin)) {
       return false;
     }
-    
+
     // For now, assume all properly formatted ASINs are valid
     // In a real implementation, you might want to make a HEAD request to Amazon
     // or use the Product Advertising API to verify

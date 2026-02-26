@@ -30,8 +30,7 @@ const CRITICAL_RESOURCES = [
  */
 const PREFETCH_ENDPOINTS = [
   '/api/products',
-  '/api/contentful/blog-posts',
-  '/api/global-settings'
+  '/api/contentful/blog-posts'
 ]
 
 /**
@@ -42,15 +41,15 @@ export function ResourcePreloader() {
   useEffect(() => {
     // Preload critical resources
     resourcePreloader.preloadResources(CRITICAL_RESOURCES)
-    
+
     // Prefetch data endpoints after a short delay
     const prefetchTimer = setTimeout(() => {
       resourcePreloader.prefetchData(PREFETCH_ENDPOINTS)
     }, 1000)
-    
+
     return () => clearTimeout(prefetchTimer)
   }, [])
-  
+
   return null // This component doesn't render anything
 }
 
@@ -62,7 +61,7 @@ export function usePrefetchOnHover() {
     const handleLinkHover = (event: MouseEvent) => {
       const target = event.target as HTMLElement
       const link = target.closest('a[href]') as HTMLAnchorElement
-      
+
       if (link && link.href) {
         // Only prefetch internal links
         if (link.href.startsWith(window.location.origin)) {
@@ -70,10 +69,10 @@ export function usePrefetchOnHover() {
         }
       }
     }
-    
+
     // Add hover listeners to all links
     document.addEventListener('mouseover', handleLinkHover)
-    
+
     return () => {
       document.removeEventListener('mouseover', handleLinkHover)
     }
@@ -131,11 +130,11 @@ export function PerformanceHints() {
       <link rel="dns-prefetch" href="//images.ctfassets.net" />
       <link rel="dns-prefetch" href="//cdn.contentful.com" />
       <link rel="dns-prefetch" href="//api.stripe.com" />
-      
+
       {/* Preconnect to critical origins */}
       <link rel="preconnect" href="https://images.ctfassets.net" crossOrigin="anonymous" />
       <link rel="preconnect" href="https://fonts.googleapis.com" crossOrigin="anonymous" />
-      
+
       {/* Resource hints */}
       <meta httpEquiv="X-DNS-Prefetch-Control" content="on" />
     </>

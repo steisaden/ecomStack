@@ -26,13 +26,13 @@ export function WorkingCalendar({ selected, onSelect, disabled, className }: Wor
   const startingDayOfWeek = firstDay.getDay();
 
   // Generate calendar days
-  const days = [];
-  
+  const days: (Date | null)[] = [];
+
   // Add empty cells for days before the first day of the month
   for (let i = 0; i < startingDayOfWeek; i++) {
     days.push(null);
   }
-  
+
   // Add days of the month
   for (let day = 1; day <= daysInMonth; day++) {
     days.push(new Date(year, month, day));
@@ -54,16 +54,16 @@ export function WorkingCalendar({ selected, onSelect, disabled, className }: Wor
   };
 
   const isSelected = (date: Date) => {
-    return selected && 
-           date.getDate() === selected.getDate() &&
-           date.getMonth() === selected.getMonth() &&
-           date.getFullYear() === selected.getFullYear();
+    return selected &&
+      date.getDate() === selected.getDate() &&
+      date.getMonth() === selected.getMonth() &&
+      date.getFullYear() === selected.getFullYear();
   };
 
   const isToday = (date: Date) => {
     return date.getDate() === today.getDate() &&
-           date.getMonth() === today.getMonth() &&
-           date.getFullYear() === today.getFullYear();
+      date.getMonth() === today.getMonth() &&
+      date.getFullYear() === today.getFullYear();
   };
 
   const isDisabled = (date: Date) => {
@@ -89,11 +89,11 @@ export function WorkingCalendar({ selected, onSelect, disabled, className }: Wor
         >
           <ChevronLeft className="h-4 w-4" />
         </Button>
-        
+
         <h2 className="text-sm font-semibold">
           {monthNames[month]} {year}
         </h2>
-        
+
         <Button
           variant="ghost"
           size="sm"

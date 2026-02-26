@@ -1,4 +1,4 @@
-import { CuratedProduct } from './curated-catalog'
+import { CuratedProduct } from './amazon-curated-catalog'
 import { getProductImageUrl } from './amazon-images'
 
 // Product rotation system for generating fresh catalog variations
@@ -337,13 +337,13 @@ const ROTATION_INTERVAL = 24 * 60 * 60 * 1000 // 24 hours
 
 export function getCurrentProductSet(): ProductSet {
   const now = Date.now()
-  
+
   // Rotate product set every 24 hours or on manual refresh
   if (now - lastRotationTime > ROTATION_INTERVAL) {
     currentProductSetIndex = (currentProductSetIndex + 1) % PRODUCT_SETS.length
     lastRotationTime = now
   }
-  
+
   return PRODUCT_SETS[currentProductSetIndex]
 }
 
@@ -351,12 +351,12 @@ export async function generateNewProductSet(): Promise<{ id: string; products: C
   // Force rotation to next product set
   currentProductSetIndex = (currentProductSetIndex + 1) % PRODUCT_SETS.length
   lastRotationTime = Date.now()
-  
+
   const currentSet = PRODUCT_SETS[currentProductSetIndex]
-  
+
   // Generate products with enhanced images and variety
   const products = generateEnhancedProducts(currentSet)
-  
+
   return {
     id: currentSet.id,
     products
@@ -365,29 +365,29 @@ export async function generateNewProductSet(): Promise<{ id: string; products: C
 
 function generateEnhancedProducts(productSet: ProductSet): CuratedProduct[] {
   const associateTag = process.env.AMAZON_ASSOCIATE_TAG || 'goddesscare0d-20'
-  
+
   const generateAffiliateLink = (asin: string) => {
     return `https://www.amazon.com/dp/${asin}?tag=${associateTag}&linkCode=as2&camp=1789&creative=9325`
   }
 
   // Select products that match the current product set theme
-  const relevantProducts = ENHANCED_REAL_PRODUCTS.filter(product => 
-    productSet.searchTerms.some(term => 
+  const relevantProducts = ENHANCED_REAL_PRODUCTS.filter(product =>
+    productSet.searchTerms.some(term =>
       term.category === product.category ||
       product.tags.some(tag => term.term.toLowerCase().includes(tag.toLowerCase()))
     )
   )
 
   // Add variety with image rotation and enhanced details
-  const enhancedProducts = relevantProducts.map((product, index) => {
+  const enhancedProducts: CuratedProduct[] = relevantProducts.map((product, index) => {
     const imageVariations = productSet.imageVariations
     const selectedImage = imageVariations[index % imageVariations.length]
-    
+
     return {
       ...product,
       id: `amazon-${product.asin}`,
-      imageUrl: getProductImageUrl({ 
-        asin: product.asin, 
+      imageUrl: getProductImageUrl({
+        asin: product.asin,
         size: 'medium',
         fallbackUrl: selectedImage
       }),
@@ -440,8 +440,8 @@ function createProductVariation(
     title: `${baseProduct.title} ${variation.suffix}`,
     price: Math.round(baseProduct.price * variation.priceMultiplier * 100) / 100,
     rating: Math.min(5.0, baseProduct.rating + variation.ratingBoost),
-    imageUrl: getProductImageUrl({ 
-      asin: baseProduct.asin, 
+    imageUrl: getProductImageUrl({
+      asin: baseProduct.asin,
       size: 'medium',
       fallbackUrl: selectedImage
     }),
@@ -461,20 +461,20 @@ export const ENHANCED_SEARCH_TERMS = [
   { term: 'retinol night cream anti aging', category: 'Skincare', maxResults: 3, priority: 'high' as const },
   { term: 'niacinamide 10% zinc pore minimizer', category: 'Skincare', maxResults: 2, priority: 'medium' as const },
   { term: 'ceramide barrier repair moisturizer', category: 'Skincare', maxResults: 2, priority: 'medium' as const },
-  
+
   // Hair Care Focus
   { term: 'argan oil hair treatment organic', category: 'Hair Care', maxResults: 3, priority: 'high' as const },
   { term: 'keratin protein hair mask deep', category: 'Hair Care', maxResults: 2, priority: 'high' as const },
   { term: 'biotin hair growth serum scalp', category: 'Hair Care', maxResults: 2, priority: 'medium' as const },
-  
+
   // Wellness Focus
   { term: 'marine collagen peptides powder', category: 'Wellness', maxResults: 2, priority: 'high' as const },
   { term: 'biotin gummies 10000 mcg hair', category: 'Wellness', maxResults: 2, priority: 'medium' as const },
-  
+
   // Beauty Tools Focus
   { term: 'jade roller gua sha set authentic', category: 'Beauty Tools', maxResults: 2, priority: 'high' as const },
   { term: 'LED light therapy mask professional', category: 'Beauty Tools', maxResults: 1, priority: 'medium' as const },
-  
+
   // Organic Products Focus
   { term: 'rosehip seed oil organic cold pressed', category: 'Organic Products', maxResults: 2, priority: 'high' as const },
   { term: 'jojoba oil pure organic golden', category: 'Organic Products', maxResults: 2, priority: 'medium' as const }

@@ -1,19 +1,19 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
 } from '@/components/ui/table';
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle 
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle
 } from '@/components/ui/dialog';
 import { Job, JobStatus, JobType } from '@/lib/background/types';
 import { RefreshCw, Play, AlertCircle, CheckCircle, Clock, Info } from 'lucide-react';
@@ -76,7 +76,7 @@ export default function JobMonitor({ onRefresh, onJobRetry }: JobMonitorProps) {
           processedItems: 0
         }
       ];
-      
+
       setJobs(mockJobs);
       setError(null);
     } catch (err) {
@@ -106,10 +106,10 @@ export default function JobMonitor({ onRefresh, onJobRetry }: JobMonitorProps) {
     }
   };
 
-  const getStatusVariant = (status: JobStatus) => {
+  const getStatusVariant = (status: JobStatus): "sage" | "destructive" | "default" | "secondary" | "outline" => {
     switch (status) {
       case 'completed':
-        return 'success';
+        return 'sage'; // mapped from success
       case 'failed':
         return 'destructive';
       case 'running':
@@ -173,14 +173,14 @@ export default function JobMonitor({ onRefresh, onJobRetry }: JobMonitorProps) {
           {isLoading ? 'Refreshing...' : 'Refresh'}
         </Button>
       </div>
-      
+
       {error && (
         <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-md flex items-center">
           <AlertCircle className="h-4 w-4 mr-2" />
           {error}
         </div>
       )}
-      
+
       <Table>
         <TableHeader>
           <TableRow>
@@ -237,8 +237,8 @@ export default function JobMonitor({ onRefresh, onJobRetry }: JobMonitorProps) {
                 <TableCell>
                   {job.totalItems !== undefined && job.processedItems !== undefined ? (
                     <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div 
-                        className="bg-blue-600 h-2 rounded-full" 
+                      <div
+                        className="bg-blue-600 h-2 rounded-full"
                         style={{ width: `${(job.processedItems / job.totalItems) * 100}%` }}
                       ></div>
                     </div>
@@ -283,7 +283,7 @@ export default function JobMonitor({ onRefresh, onJobRetry }: JobMonitorProps) {
           <DialogHeader>
             <DialogTitle>Job Details</DialogTitle>
           </DialogHeader>
-          
+
           {selectedJob && (
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
@@ -309,7 +309,7 @@ export default function JobMonitor({ onRefresh, onJobRetry }: JobMonitorProps) {
                   <p>{selectedJob.productId || 'All products'}</p>
                 </div>
               </div>
-              
+
               <div className="space-y-2">
                 <h4 className="text-sm font-medium text-muted-foreground">Timeline</h4>
                 <div className="text-sm">
@@ -319,7 +319,7 @@ export default function JobMonitor({ onRefresh, onJobRetry }: JobMonitorProps) {
                   )}
                 </div>
               </div>
-              
+
               {selectedJob.error && (
                 <div className="space-y-2">
                   <h4 className="text-sm font-medium text-muted-foreground flex items-center">
@@ -331,7 +331,7 @@ export default function JobMonitor({ onRefresh, onJobRetry }: JobMonitorProps) {
                   </div>
                 </div>
               )}
-              
+
               {selectedJob.totalItems !== undefined && (
                 <div className="space-y-2">
                   <h4 className="text-sm font-medium text-muted-foreground">Progress</h4>

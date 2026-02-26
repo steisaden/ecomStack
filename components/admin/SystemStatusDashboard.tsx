@@ -5,11 +5,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { 
-  CheckCircle, 
-  AlertTriangle, 
-  XCircle, 
-  RefreshCw, 
+import {
+  CheckCircle,
+  AlertTriangle,
+  XCircle,
+  RefreshCw,
   Activity,
   Server,
   Database,
@@ -96,10 +96,10 @@ export default function SystemStatusDashboard() {
 
   useEffect(() => {
     fetchHealthStatus();
-    
+
     // Auto-refresh every 30 seconds
     const interval = setInterval(fetchHealthStatus, 30000);
-    
+
     return () => clearInterval(interval);
   }, []);
 
@@ -118,8 +118,8 @@ export default function SystemStatusDashboard() {
 
   const getStatusBadge = (status: string) => {
     const variant = {
-      healthy: 'success' as const,
-      degraded: 'warning' as const,
+      healthy: 'sage' as const,
+      degraded: 'outline' as const,
       unhealthy: 'destructive' as const
     }[status] || 'secondary' as const;
 
@@ -133,7 +133,7 @@ export default function SystemStatusDashboard() {
   const getSeverityBadge = (severity: string) => {
     const variant = {
       low: 'secondary' as const,
-      medium: 'warning' as const,
+      medium: 'outline' as const,
       high: 'destructive' as const,
       critical: 'destructive' as const
     }[severity] || 'secondary' as const;
@@ -149,7 +149,7 @@ export default function SystemStatusDashboard() {
     const days = Math.floor(seconds / 86400);
     const hours = Math.floor((seconds % 86400) / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
-    
+
     if (days > 0) {
       return `${days}d ${hours}h ${minutes}m`;
     } else if (hours > 0) {
@@ -184,9 +184,9 @@ export default function SystemStatusDashboard() {
         <XCircle className="h-4 w-4" />
         <AlertDescription>
           {error}
-          <Button 
-            variant="outline" 
-            size="sm" 
+          <Button
+            variant="outline"
+            size="sm"
             className="ml-2"
             onClick={fetchHealthStatus}
           >
@@ -218,8 +218,8 @@ export default function SystemStatusDashboard() {
             </span>
             <div className="flex items-center space-x-2">
               {getStatusBadge(health.status)}
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 size="sm"
                 onClick={fetchHealthStatus}
                 disabled={loading}

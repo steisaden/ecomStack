@@ -8,7 +8,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Spinner } from '@/components/ui/spinner';
+
 import { useBookingCart } from '@/lib/contexts/BookingCartContext';
 import { checkSlotAvailability, reserveTimeSlot, formatAvailabilityTime } from '@/lib/yoga/availability';
 
@@ -24,7 +24,7 @@ export default function ServiceBookingPanel({ service, addOns }: ServiceBookingP
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [currentStep, setCurrentStep] = useState<'calendar' | 'form'>('calendar');
   const [isFlipped, setIsFlipped] = useState(false);
-  const [availability, setAvailability] = useState<ServiceAvailability | null>(null);
+  const [availability, setAvailability] = useState<any | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedAddOns, setSelectedAddOns] = useState<string[]>([]);
@@ -174,7 +174,7 @@ export default function ServiceBookingPanel({ service, addOns }: ServiceBookingP
               <CardContent className="p-0">
                 <div className="p-4 sm:p-6 space-y-8 sm:space-y-10">
                   <h2 className="text-xl font-semibold text-center sm:text-left mb-4 sm:mb-6">Select Date & Time</h2>
-                  
+
                   {/* Availability calendar with proper mobile spacing */}
                   <div className="space-y-8 sm:space-y-10">
                     <AvailabilityCalendar
@@ -213,7 +213,7 @@ export default function ServiceBookingPanel({ service, addOns }: ServiceBookingP
                       </div>
                     </div>
                   </div>
-                  
+
                   {/* Booking Summary with responsive spacing */}
                   <div className="bg-beauty-light p-4 sm:p-5 md:p-6 rounded-lg sm:rounded-xl mb-8 sm:mb-10 mx-3 sm:mx-4 md:mx-6 mt-6 sm:mt-8">
                     <h3 className="text-lg font-semibold text-beauty-dark mb-4">
@@ -237,8 +237,8 @@ export default function ServiceBookingPanel({ service, addOns }: ServiceBookingP
                   </div>
 
                   <div className="px-2 sm:px-0">
-                    <Button 
-                      onClick={handleContinue} 
+                    <Button
+                      onClick={handleContinue}
                       className="w-full py-3 text-base font-medium"
                       disabled={!selectedDate || !selectedTime}
                     >
@@ -253,9 +253,9 @@ export default function ServiceBookingPanel({ service, addOns }: ServiceBookingP
               <CardContent className="p-0">
                 <div className="p-4 sm:p-6">
                   <div className="flex items-center mb-4">
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
+                    <Button
+                      variant="outline"
+                      size="sm"
                       onClick={handleBack}
                       className="mr-2"
                     >
@@ -263,7 +263,7 @@ export default function ServiceBookingPanel({ service, addOns }: ServiceBookingP
                     </Button>
                     <h2 className="text-xl font-semibold">Complete Your Booking</h2>
                   </div>
-                  
+
                   <BookingForm
                     service={service}
                     addOns={addOns}
@@ -277,20 +277,18 @@ export default function ServiceBookingPanel({ service, addOns }: ServiceBookingP
           )}
         </motion.div>
       </AnimatePresence>
-      
+
       {/* Carousel Navigation Dots with improved spacing */}
       <div className="flex justify-center space-x-3 pt-4 pb-2">
-        <button 
-          className={`w-3 h-3 rounded-full transition-colors duration-200 ${
-            currentStep === 'calendar' ? 'bg-beauty-primary' : 'bg-gray-300'
-          }`}
+        <button
+          className={`w-3 h-3 rounded-full transition-colors duration-200 ${currentStep === 'calendar' ? 'bg-beauty-primary' : 'bg-gray-300'
+            }`}
           onClick={() => currentStep !== 'calendar' && handleBack()}
           aria-label="Go to calendar step"
         />
-        <button 
-          className={`w-3 h-3 rounded-full transition-colors duration-200 ${
-            currentStep === 'form' ? 'bg-beauty-primary' : 'bg-gray-300'
-          }`}
+        <button
+          className={`w-3 h-3 rounded-full transition-colors duration-200 ${currentStep === 'form' ? 'bg-beauty-primary' : 'bg-gray-300'
+            }`}
           onClick={() => currentStep !== 'form' && handleContinue()}
           aria-label="Go to form step"
           disabled={!selectedDate || !selectedTime}
