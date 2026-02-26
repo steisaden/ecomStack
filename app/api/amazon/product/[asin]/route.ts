@@ -8,9 +8,10 @@ import { amazonLogger } from '@/lib/amazon-logger';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { asin: string } }
+  context: { params: Promise<{ asin: string }> }
 ) {
   try {
+    const { asin } = await context.params;
     const allowPublic = process.env.AMAZON_API_ALLOW_PUBLIC === 'true';
     const serviceKey = request.headers.get('x-service-key');
     const expectedServiceKey = process.env.SERVICE_API_KEY;
@@ -21,15 +22,13 @@ export async function GET(
       if (!(expectedServiceKey && serviceKey && serviceKey === expectedServiceKey)) {
         const auth = await verifyAuth(request);
         if (!auth.success) {
-            return NextResponse.json(
-              { error: auth.error || 'Unauthorized' },
-              { status: auth.error === 'Insufficient permissions' ? 403 : 401 }
-            );
+          return NextResponse.json(
+            { error: auth.error || 'Unauthorized' },
+            { status: auth.error === 'Insufficient permissions' ? 403 : 401 }
+          );
         }
       }
     }
-
-    const { asin } = params;
 
     // Validate ASIN format
     if (!amazonPAAPIService.validateASINFormat(asin)) {
@@ -50,22 +49,29 @@ export async function GET(
       );
     }
 
-    return NextResponse.json({ 
-      success: true, 
+    return NextResponse.json({
+      success: true,
       data: result.product,
       cached: result.cached
     });
   } catch (error: any) {
+    // Attempt to extract ASIN safely if possible since it might fail before resolving
+    let failedAsin = 'unknown';
+    try {
+      const p = await context.params;
+      if (p && p.asin) failedAsin = p.asin;
+    } catch (e) { }
+
     // Log the full error with stack trace for debugging
     console.error('Full error details:', {
       message: error.message,
       stack: error.stack,
       type: error.type,
       name: error.name,
-      asin: params.asin
+      asin: failedAsin
     });
-    
-    amazonLogger.error('API Error fetching single Amazon product:', error, { asin: params.asin });
+
+    amazonLogger.error('API Error fetching single Amazon product:', error, { asin: failedAsin });
 
     if (error instanceof AmazonAPIError) {
       switch (error.type) {
