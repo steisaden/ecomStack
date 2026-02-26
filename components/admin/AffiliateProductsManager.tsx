@@ -36,8 +36,6 @@ interface AffiliateProduct {
 export function AffiliateProductsManager() {
   const [products, setProducts] = useState<AffiliateProduct[]>([])
   const [filteredProducts, setFilteredProducts] = useState<AffiliateProduct[]>([])
-  const [dataSource, setDataSource] = useState<'affiliateProduct' | 'catalogAffiliate'>('affiliateProduct')
-  const [sourceNote, setSourceNote] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all')
   const [loading, setLoading] = useState(true)
@@ -63,21 +61,8 @@ export function AffiliateProductsManager() {
 
       const data = await response.json()
       const affiliateProducts = data.products || []
-      const source = data.source || 'affiliateProduct'
 
       setProducts(affiliateProducts)
-
-      if (source === 'goddessCareProduct') {
-        setDataSource('catalogAffiliate')
-        if (affiliateProducts.length > 0) {
-          setSourceNote('Showing affiliate products from your main product catalog (isAffiliate=true). To edit details, use the Products section.')
-        } else {
-          setSourceNote(null)
-        }
-      } else {
-        setDataSource('affiliateProduct')
-        setSourceNote(null)
-      }
     } catch (error) {
       console.error('Error fetching products:', error)
       toast.error('Failed to load affiliate products')
@@ -106,7 +91,6 @@ export function AffiliateProductsManager() {
   }
 
   const handleEdit = (product: AffiliateProduct) => {
-    if (dataSource === 'catalogAffiliate') return
     setEditingProduct(product)
     setIsEditDialogOpen(true)
   }
@@ -134,7 +118,6 @@ export function AffiliateProductsManager() {
   }
 
   const handleArchive = async (productId: string) => {
-    if (dataSource === 'catalogAffiliate') return
     try {
       const response = await fetch(`/api/admin/affiliate-products/${productId}`, {
         method: 'PATCH',
@@ -154,7 +137,6 @@ export function AffiliateProductsManager() {
   }
 
   const handleDelete = async (productId: string) => {
-    if (dataSource === 'catalogAffiliate') return
     if (!confirm('Are you sure you want to delete this product? This action cannot be undone.')) {
       return
     }
@@ -188,18 +170,6 @@ export function AffiliateProductsManager() {
 
   return (
     <div className="space-y-6">
-      {sourceNote && (
-        <Card>
-          <CardContent className="py-4">
-            <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-              <p className="text-sm text-gray-600">{sourceNote}</p>
-              <Link href="/admin/products">
-                <Button variant="outline" size="sm">Open Products</Button>
-              </Link>
-            </div>
-          </CardContent>
-        </Card>
-      )}
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
@@ -237,15 +207,9 @@ export function AffiliateProductsManager() {
         <Card>
           <CardContent className="py-12 text-center">
             <p className="text-gray-600">No affiliate products found.</p>
-            {dataSource === 'affiliateProduct' ? (
-              <Link href="/admin/affiliate-products/add-manual">
-                <Button className="mt-4">Add Your First Product</Button>
-              </Link>
-            ) : (
-              <Link href="/admin/products">
-                <Button className="mt-4">Go to Products</Button>
-              </Link>
-            )}
+            <Link href="/admin/affiliate-products/add-manual">
+              <Button className="mt-4">Add Your First Product</Button>
+            </Link>
           </CardContent>
         </Card>
       ) : (
@@ -291,40 +255,30 @@ export function AffiliateProductsManager() {
 
                 {/* Action Buttons */}
                 <div className="p-4 pt-0 flex gap-2">
-                  {dataSource === 'affiliateProduct' ? (
-                    <>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleEdit(product)}
-                        className="flex-1"
-                      >
-                        Edit
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleArchive(product.id)}
-                        className="flex-1 text-orange-600 hover:text-orange-700"
-                      >
-                        Archive
-                      </Button>
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => handleDelete(product.id)}
-                        className="flex-1"
-                      >
-                        Delete
-                      </Button>
-                    </>
-                  ) : (
-                    <Link href={product.slug ? `/admin/products/edit/${product.slug}` : '/admin/products'} className="flex-1">
-                      <Button variant="outline" size="sm" className="w-full">
-                        Edit in Products
-                      </Button>
-                    </Link>
-                  )}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleEdit(product)}
+                    className="flex-1"
+                  >
+                    Edit
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleArchive(product.id)}
+                    className="flex-1 text-orange-600 hover:text-orange-700"
+                  >
+                    Archive
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => handleDelete(product.id)}
+                    className="flex-1"
+                  >
+                    Delete
+                  </Button>
                 </div>
               </CardContent>
             </Card>
