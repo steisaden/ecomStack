@@ -1,5 +1,4 @@
 
-import { NextRequest } from 'next/server';
 import Stripe from 'stripe';
 import { Suspense } from 'react';
 import Link from 'next/link';
@@ -57,8 +56,12 @@ function OrderDetails({ session }: { session: Stripe.Checkout.Session | null }) 
   );
 }
 
-export default async function SuccessPage({ searchParams }: { searchParams: { [key: string]: string | string[] | undefined } }) {
-  const session_id = searchParams.session_id as string;
+export default async function SuccessPage({
+  searchParams,
+}: {
+  searchParams?: { [key: string]: string | string[] | undefined };
+}) {
+  const session_id = searchParams?.session_id as string | undefined;
   const session = await getSession(session_id);
 
   return (
