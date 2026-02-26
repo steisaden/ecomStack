@@ -122,7 +122,6 @@ export function AmazonSearch({ onProductAdded }: AmazonSearchProps) {
         price: product.price ?? 0,
         imageUrl: product.imageUrl,
         affiliateUrl: product.affiliateUrl,
-        asin,
         category: product.category,
         tags: product.tags,
         commissionRate: product.commissionRate,
@@ -131,6 +130,7 @@ export function AmazonSearch({ onProductAdded }: AmazonSearchProps) {
         imageRefreshStatus: 'current' as const,
         linkValidationStatus: 'valid' as const,
         needsReview: false,
+        ...(asin ? { asin } : {}),
       }
 
       await createAffiliateProduct(productData)
