@@ -144,10 +144,10 @@ export default function EditProductPage() {
               id="category"
               type="text"
               value={product.category?.name || ''}
-              onChange={(e) => setProduct(prev => ({
-                ...prev,
+              onChange={(e) => setProduct({
+                ...product,
                 category: { name: e.target.value, slug: e.target.value.toLowerCase().replace(/\s+/g, '-') }
-              }))}
+              })}
               placeholder="e.g. Face Oils"
             />
           </div>

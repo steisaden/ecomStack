@@ -1,3 +1,3 @@
-import AiRules from '@/src/pages/admin/AiRules';
+import AiRules from '@/legacy_pages/admin/AiRules';
 
 export default AiRules;

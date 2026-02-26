@@ -1,5 +1,5 @@
 'use client';
 
-import AffiliateBulkScrapePage from '@/src/pages/admin/AffiliateBulkScrape';
+import AffiliateBulkScrapePage from '@/legacy_pages/admin/AffiliateBulkScrape';
 
 export default AffiliateBulkScrapePage;

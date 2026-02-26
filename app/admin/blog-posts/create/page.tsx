@@ -29,8 +29,8 @@ export default function CreateBlogPostPage() {
   const [blogPost, setBlogPost] = useState<Omit<BlogPost, 'sys' | 'content'>>({
     title: '',
     excerpt: '',
-    featuredImage: undefined,
-    author: undefined,
+    featuredImage: undefined as any,
+    author: undefined as any,
     categories: [],
     tags: [],
     publishedAt: new Date().toISOString(),
@@ -331,7 +331,7 @@ export default function CreateBlogPostPage() {
 
     try {
       // Comprehensive form validation
-      const errors = [];
+      const errors: string[] = [];
 
       if (!blogPost.title.trim()) {
         errors.push('Blog post title is required');
@@ -361,8 +361,8 @@ export default function CreateBlogPostPage() {
       // 3. Create the blog post with references to those assets
 
       // Array to hold references to uploaded asset IDs
-      const assetIds = [];
-      const uploadedAssets = [];
+      const assetIds: any[] = [];
+      const uploadedAssets: any[] = [];
 
       if (files.length > 0) {
         for (const file of files) {

@@ -1,3 +1,3 @@
-import Products from '@/src/pages/admin/Products';
+import Products from '@/legacy_pages/admin/Products';
 
 export default Products;

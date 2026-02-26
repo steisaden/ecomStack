@@ -1,5 +1,5 @@
 'use client';
 
-import BlogPostsPage from '@/src/pages/admin/BlogPosts';
+import BlogPostsPage from '@/legacy_pages/admin/BlogPosts';
 
 export default BlogPostsPage;

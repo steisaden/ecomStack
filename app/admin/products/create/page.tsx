@@ -22,7 +22,7 @@ export default function CreateProductPage() {
     title: '',
     description: '',
     price: 0,
-    category: undefined,
+    category: undefined as any,
     inStock: true,
     isAffiliate: false,
     affiliateUrl: '',
@@ -40,7 +40,7 @@ export default function CreateProductPage() {
 
     try {
       // Comprehensive form validation
-      const errors = [];
+      const errors: string[] = [];
 
       if (!product.title.trim()) {
         errors.push('Product name is required');
@@ -52,7 +52,7 @@ export default function CreateProductPage() {
         errors.push('Slug must contain only lowercase letters, numbers, and hyphens');
       }
 
-      if (product.price < 0) {
+      if ((product.price ?? 0) < 0) {
         errors.push('Price must be a positive number');
       }
 
@@ -72,8 +72,8 @@ export default function CreateProductPage() {
       // 3. Create the product with references to those assets
 
       // Array to hold references to uploaded asset IDs
-      const assetIds = [];
-      const uploadedAssets = [];
+      const assetIds: any[] = [];
+      const uploadedAssets: any[] = [];
 
       if (files.length > 0) {
         for (const file of files) {
@@ -146,7 +146,7 @@ export default function CreateProductPage() {
     setProduct(prev => ({
       ...prev,
       [field]: value
-    }));
+    } as any));
   };
 
   return (
@@ -224,7 +224,7 @@ export default function CreateProductPage() {
                 onChange={(e) => setProduct(prev => ({
                   ...prev,
                   category: { name: e.target.value, slug: e.target.value.toLowerCase().replace(/\s+/g, '-') }
-                }))}
+                } as any))}
                 placeholder="e.g. Face Oils"
               />
             </div>

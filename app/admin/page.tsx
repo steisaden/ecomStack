@@ -1,4 +1,4 @@
-import Dashboard from '@/src/pages/admin/Dashboard';
+import Dashboard from '@/legacy_pages/admin/Dashboard';
 import { getCurrentUser } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';

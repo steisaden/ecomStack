@@ -32,10 +32,10 @@
         "./*"
       ],
       "@/layouts/*": [
-        "./src/layouts/*"
+        "./layouts/*"
       ],
       "@/pages/*": [
-        "./src/pages/*"
+        "./legacy_pages/*"
       ]
     },
     "strictNullChecks": true
