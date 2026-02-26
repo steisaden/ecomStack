@@ -18,6 +18,7 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { createAffiliateProduct } from '@/lib/affiliate-products'
 import { extractAsinFromUrl } from '@/lib/amazon/utils'
+import type { AffiliateProduct } from '@/lib/types'
 import { toast } from 'sonner'
 
 interface AmazonProduct {
@@ -116,7 +117,7 @@ export function AmazonSearch({ onProductAdded }: AmazonSearchProps) {
 
     try {
       const asin = product.asin ?? extractAsinFromUrl(product.affiliateUrl) ?? undefined
-      const productData = {
+      const productData: Omit<AffiliateProduct, 'id' | 'performance' | 'status'> = {
         title: product.title,
         description: product.description,
         price: product.price ?? 0,
@@ -130,7 +131,9 @@ export function AmazonSearch({ onProductAdded }: AmazonSearchProps) {
         imageRefreshStatus: 'current' as const,
         linkValidationStatus: 'valid' as const,
         needsReview: false,
-        ...(asin ? { asin } : {}),
+      }
+      if (asin) {
+        productData.asin = asin
       }
 
       await createAffiliateProduct(productData)
