@@ -44,14 +44,14 @@ export async function POST(
         return NextResponse.json({ error: 'Invalid action specified' }, { status: 400 });
     }
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       message: responseMessage,
       jobId
     }, { status: 200 });
   } catch (error) {
     console.error('Error refreshing individual product:', error);
-    return NextResponse.json({ 
-      error: 'Failed to refresh individual product' 
+    return NextResponse.json({
+      error: 'Failed to refresh individual product'
     }, { status: 500 });
   }
 }

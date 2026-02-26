@@ -23,15 +23,15 @@ export async function POST(
 
     // Schedule link validation for specific product
     const jobId = await productSyncService.scheduleLinkValidation(productId);
-    
-    return NextResponse.json({ 
+
+    return NextResponse.json({
       message: 'Link validation scheduled for product',
       jobId
     }, { status: 200 });
   } catch (error) {
     console.error('Error scheduling link validation for product:', error);
-    return NextResponse.json({ 
-      error: 'Failed to schedule link validation for product' 
+    return NextResponse.json({
+      error: 'Failed to schedule link validation for product'
     }, { status: 500 });
   }
 }
