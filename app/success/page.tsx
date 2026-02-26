@@ -59,10 +59,11 @@ function OrderDetails({ session }: { session: Stripe.Checkout.Session | null }) 
 export default async function SuccessPage({
   searchParams,
 }: {
-  searchParams?: { [key: string]: string | string[] | undefined };
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  const session_id = searchParams?.session_id as string | undefined;
-  const session = await getSession(session_id);
+  const resolvedParams = await searchParams;
+  const session_id = resolvedParams.session_id as string | undefined;
+  const session = await getSession(session_id || '');
 
   return (
     <div className="container section-spacing text-center">
