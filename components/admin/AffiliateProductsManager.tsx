@@ -58,47 +58,26 @@ export function AffiliateProductsManager() {
       const response = await fetch('/api/admin/affiliate-products/list', {
         credentials: 'include'
       })
-      
+
       if (!response.ok) throw new Error('Failed to fetch products')
 
       const data = await response.json()
       const affiliateProducts = data.products || []
+      const source = data.source || 'affiliateProduct'
 
-      if (affiliateProducts.length > 0) {
-        setProducts(affiliateProducts)
+      setProducts(affiliateProducts)
+
+      if (source === 'goddessCareProduct') {
+        setDataSource('catalogAffiliate')
+        if (affiliateProducts.length > 0) {
+          setSourceNote('Showing affiliate products from your main product catalog (isAffiliate=true). To edit details, use the Products section.')
+        } else {
+          setSourceNote(null)
+        }
+      } else {
         setDataSource('affiliateProduct')
         setSourceNote(null)
-        return
       }
-
-      const catalogResponse = await fetch('/api/contentful/products')
-      if (!catalogResponse.ok) throw new Error('Failed to fetch catalog products')
-      const catalogData = await catalogResponse.json()
-      const catalogItems = Array.isArray(catalogData.items) ? catalogData.items : []
-      const catalogAffiliateProducts = catalogItems
-        .filter((item: any) => item?.isAffiliate)
-        .map((item: any) => {
-          const imageUrl = item?.images?.[0]?.url
-            ? (item.images[0].url.startsWith('//') ? `https:${item.images[0].url}` : item.images[0].url)
-            : ''
-          return {
-            id: item.sys?.id || item.slug,
-            title: item.title || '',
-            description: item.description || '',
-            price: typeof item.price === 'number' ? item.price : 0,
-            imageUrl,
-            affiliateUrl: item.affiliateUrl || '',
-            category: item.category?.name || '',
-            tags: [],
-            platform: 'catalog',
-            status: item.inStock ? 'active' : 'inactive',
-            slug: item.slug || ''
-          } as AffiliateProduct
-        })
-
-      setProducts(catalogAffiliateProducts)
-      setDataSource('catalogAffiliate')
-      setSourceNote('Affiliate items are coming from the main product catalog. Edit them in the Products section.')
     } catch (error) {
       console.error('Error fetching products:', error)
       toast.error('Failed to load affiliate products')
