@@ -12,13 +12,13 @@ function hasContentfulConfig() {
 }
 
 function getEnvId() {
-  return process.env.CONTENTFUL_ENVIRONMENT || process.env.CONTENTFUL_ENVIRONMENT_ID || 'master';
+  return (process.env.CONTENTFUL_ENVIRONMENT || process.env.CONTENTFUL_ENVIRONMENT_ID || 'master').trim();
 }
 
 function getManagementClient() {
   if (!hasContentfulConfig()) return null;
   return createManagementClient({
-    accessToken: process.env.CONTENTFUL_MANAGEMENT_TOKEN as string,
+    accessToken: (process.env.CONTENTFUL_MANAGEMENT_TOKEN || '').trim(),
   });
 }
 
@@ -26,7 +26,7 @@ async function fetchAvailabilityFromContentful(serviceId?: string): Promise<Avai
   const client = getManagementClient();
   if (!client) return {};
 
-  const space = await client.getSpace(process.env.CONTENTFUL_SPACE_ID!);
+  const space = await client.getSpace((process.env.CONTENTFUL_SPACE_ID || '').trim());
   const environment = await space.getEnvironment(getEnvId());
 
   const query: any = { content_type: 'yogaAvailability', limit: 1000 };
@@ -53,7 +53,7 @@ async function fetchAvailabilityFromContentful(serviceId?: string): Promise<Avai
 async function upsertAvailabilityToContentful(allAvailability: Availability) {
   const client = getManagementClient();
   if (!client) return;
-  const space = await client.getSpace(process.env.CONTENTFUL_SPACE_ID!);
+  const space = await client.getSpace((process.env.CONTENTFUL_SPACE_ID || '').trim());
   const environment = await space.getEnvironment(getEnvId());
 
   for (const [serviceId, dates] of Object.entries(allAvailability)) {
