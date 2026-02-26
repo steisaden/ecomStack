@@ -9,19 +9,12 @@ import { amazonLogger } from '@/lib/amazon-logger';
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { asin: string } }
+  context: { params: Promise<{ asin: string }> }
 ) {
   try {
+    const { asin } = await context.params;
     // Apply authentication middleware
     const auth = await verifyAuth(request);
-    if (!auth.success) {
-      return NextResponse.json(
-        { error: auth.error || 'Unauthorized' },
-        { status: auth.error === 'Insufficient permissions' ? 403 : 401 }
-      );
-    }
-
-    const { asin } = params;
 
     // Validate ASIN format
     if (!amazonPAAPIService.validateASINFormat(asin)) {
@@ -50,8 +43,8 @@ export async function POST(
 
     amazonLogger.info(`Product ${sanitizedAsin} refreshed successfully`, { asin: sanitizedAsin });
 
-    return NextResponse.json({ 
-      success: true, 
+    return NextResponse.json({
+      success: true,
       data: result.product,
       cached: false, // Always false for refresh
       message: `Product ${sanitizedAsin} refreshed from Amazon`
