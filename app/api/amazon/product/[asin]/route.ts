@@ -8,10 +8,10 @@ import { amazonLogger } from '@/lib/amazon-logger';
 
 export async function GET(
   request: NextRequest,
-  context: { params: Promise<{ asin: string }> }
+  context: { params: { asin: string } }
 ) {
   try {
-    const { asin } = await context.params;
+    const { asin } = context.params;
     const allowPublic = process.env.AMAZON_API_ALLOW_PUBLIC === 'true';
     const serviceKey = request.headers.get('x-service-key');
     const expectedServiceKey = process.env.SERVICE_API_KEY;

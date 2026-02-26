@@ -5,10 +5,10 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { 
-  Search, 
-  Plus, 
-  ExternalLink, 
+import {
+  Search,
+  Plus,
+  ExternalLink,
   Star,
   Package,
   DollarSign,
@@ -17,6 +17,7 @@ import {
 } from 'lucide-react'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { createAffiliateProduct } from '@/lib/affiliate-products'
+import { extractAsinFromUrl } from '@/lib/amazon/utils'
 import { toast } from 'sonner'
 
 interface AmazonProduct {
@@ -25,6 +26,7 @@ interface AmazonProduct {
   price: number
   imageUrl: string
   affiliateUrl: string
+  asin?: string
   category: string
   tags: string[]
   commissionRate: number
@@ -63,7 +65,7 @@ export function AmazonSearch({ onProductAdded }: AmazonSearchProps) {
 
     setIsSearching(true)
     setError(null)
-    
+
     try {
       const response = await fetch('/api/amazon/search', {
         method: 'POST',
@@ -91,7 +93,7 @@ export function AmazonSearch({ onProductAdded }: AmazonSearchProps) {
       } else {
         // Handle API errors gracefully
         setSearchResults([])
-        
+
         if (data.configurationRequired) {
           setError('Amazon API not configured. Please add your credentials to continue.')
           toast.error('Amazon API configuration required')
@@ -111,9 +113,27 @@ export function AmazonSearch({ onProductAdded }: AmazonSearchProps) {
 
   const handleAddProduct = async (product: AmazonProduct, index: number) => {
     setAddingProducts(prev => new Set(prev).add(index))
-    
+
     try {
-      await createAffiliateProduct(product)
+      const asin = product.asin ?? extractAsinFromUrl(product.affiliateUrl) ?? undefined
+      const productData = {
+        title: product.title,
+        description: product.description,
+        price: product.price ?? 0,
+        imageUrl: product.imageUrl,
+        affiliateUrl: product.affiliateUrl,
+        asin,
+        category: product.category,
+        tags: product.tags,
+        commissionRate: product.commissionRate,
+        platform: product.platform,
+        scheduledPromotions: product.scheduledPromotions,
+        imageRefreshStatus: 'current' as const,
+        linkValidationStatus: 'valid' as const,
+        needsReview: false,
+      }
+
+      await createAffiliateProduct(productData)
       toast.success(`Added "${product.title}" to your products`)
       onProductAdded?.()
     } catch (error: any) {
@@ -161,8 +181,8 @@ export function AmazonSearch({ onProductAdded }: AmazonSearchProps) {
             </SelectContent>
           </Select>
         </div>
-        <Button 
-          onClick={handleSearch} 
+        <Button
+          onClick={handleSearch}
           disabled={isSearching || !searchTerm.trim()}
           className="w-full sm:w-auto"
         >
@@ -206,7 +226,7 @@ export function AmazonSearch({ onProductAdded }: AmazonSearchProps) {
                 </div>
               </div>
             )}
-            
+
             {error.includes('authentication failed') && (
               <div className="mt-3 p-3 bg-orange-100 rounded-lg">
                 <p className="text-sm text-orange-800">
@@ -281,9 +301,9 @@ export function AmazonSearch({ onProductAdded }: AmazonSearchProps) {
                     {/* Tags */}
                     <div className="flex flex-wrap gap-1">
                       {product.tags.slice(0, 3).map((tag, tagIndex) => (
-                        <Badge 
-                          key={tagIndex} 
-                          variant="outline" 
+                        <Badge
+                          key={tagIndex}
+                          variant="outline"
                           className="text-xs px-2 py-0"
                         >
                           {tag}
@@ -338,7 +358,7 @@ export function AmazonSearch({ onProductAdded }: AmazonSearchProps) {
               Search Amazon Products
             </h3>
             <p className="text-beauty-muted mb-4 max-w-md mx-auto">
-              Enter keywords to search Amazon&apos;s catalog for products that match your brand. 
+              Enter keywords to search Amazon&apos;s catalog for products that match your brand.
               We&apos;ll automatically generate affiliate links with your Associates tag.
             </p>
             <div className="flex flex-wrap justify-center gap-2 text-sm text-beauty-muted">
