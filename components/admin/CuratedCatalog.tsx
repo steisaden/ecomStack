@@ -5,9 +5,9 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { 
-  Search, 
-  Plus, 
+import {
+  Search,
+  Plus,
   Filter,
   Star,
   TrendingUp,
@@ -27,17 +27,17 @@ import {
   RefreshCw,
   Download
 } from 'lucide-react'
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
 } from '@/components/ui/select'
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
   DropdownMenuTrigger,
   DropdownMenuSeparator,
   DropdownMenuLabel
@@ -63,12 +63,12 @@ export function CuratedCatalog({ onProductAdded }: CuratedCatalogProps) {
   const [priceRanges, setPriceRanges] = useState<string[]>([])
   const [allProducts, setAllProducts] = useState<CuratedProduct[]>([])
   const [newCategoryName, setNewCategoryName] = useState('') // New state for category management
-  
+
   // Filter states
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [selectedPlatform, setSelectedPlatform] = useState('amazon')
-  const [selectedPriceRange, setSelectedPriceRange] = useState('all')
+  const [selectedPriceRange, setSelectedPriceRange] = useState<'all' | 'budget' | 'mid-range' | 'luxury'>('all')
   const [selectedSuitableFor, setSelectedSuitableFor] = useState('all')
   const [showPopular, setShowPopular] = useState(false)
   const [showTrending, setShowTrending] = useState(false)
@@ -90,18 +90,18 @@ export function CuratedCatalog({ onProductAdded }: CuratedCatalogProps) {
     try {
       const response = await fetch('/api/curated-catalog')
       const data = await response.json()
-      
+
       if (data.success) {
         const catalog = data.products || []
         setAllProducts(catalog)
         setProducts(catalog)
-        
+
         // Load filter options from the catalog
         setCategories(localGetCuratedCategories(catalog))
         setPlatforms(localGetCuratedPlatforms(catalog))
         setSuitableForOptions(localGetSuitableForOptions(catalog))
         setPriceRanges(localGetPriceRanges())
-        
+
         if (data.source === 'verified-generation') {
           toast.success(data.message || `Generated ${catalog.length} verified products with Amazon data!`)
           if (data.asinsVerified && data.totalASINs) {
@@ -150,9 +150,9 @@ export function CuratedCatalog({ onProductAdded }: CuratedCatalogProps) {
           name: categoryName
         }),
       })
-      
+
       const data = await response.json()
-      
+
       if (data.success) {
         toast.success(data.message || 'Category added successfully')
         setNewCategoryName('')
@@ -171,7 +171,7 @@ export function CuratedCatalog({ onProductAdded }: CuratedCatalogProps) {
     try {
       const response = await fetch('/api/categories')
       const data = await response.json()
-      
+
       if (data.success && data.categories) {
         // We could merge these with the curated categories if needed
         console.log('Loaded categories:', data.categories)
@@ -201,7 +201,7 @@ export function CuratedCatalog({ onProductAdded }: CuratedCatalogProps) {
 
   // Helper functions for filter options (now using state)
   const getCategories = () => categories
-  const getPlatforms = () => platforms  
+  const getPlatforms = () => platforms
   const getPriceRanges = () => priceRanges
   const getSuitableForOptions = () => suitableForOptions
 
@@ -266,7 +266,7 @@ export function CuratedCatalog({ onProductAdded }: CuratedCatalogProps) {
 
   const handleAddProduct = async (curatedProduct: CuratedProduct) => {
     setAddingProducts(prev => new Set(prev).add(curatedProduct.id))
-    
+
     try {
       const affiliateProductData = {
         title: curatedProduct.title,
@@ -280,12 +280,12 @@ export function CuratedCatalog({ onProductAdded }: CuratedCatalogProps) {
         platform: curatedProduct.platform,
         scheduledPromotions: []
       }
-      
-      await createAffiliateProduct(affiliateProductData)
-      
+
+      await createAffiliateProduct(affiliateProductData as any)
+
       toast.success(`Added "${curatedProduct.title}" to your products!`)
       onProductAdded?.()
-      
+
       // Refresh the product cache
       try {
         await fetch('/api/revalidate-products', {
@@ -529,7 +529,7 @@ export function CuratedCatalog({ onProductAdded }: CuratedCatalogProps) {
                 {localGetCuratedCategories(allProducts).map(category => (
                   <Badge key={category} variant="secondary" className="flex items-center gap-1">
                     {category}
-                    <button 
+                    <button
                       onClick={() => {
                         // In a real implementation, this would call an API to remove the category
                         toast.info(`Would remove category: ${category} (not implemented)`)
@@ -542,7 +542,7 @@ export function CuratedCatalog({ onProductAdded }: CuratedCatalogProps) {
                 ))}
               </div>
             </div>
-            
+
             <div>
               <h3 className="font-medium mb-2">Add New Category</h3>
               <div className="flex gap-2">
@@ -558,7 +558,7 @@ export function CuratedCatalog({ onProductAdded }: CuratedCatalogProps) {
                     }
                   }}
                 />
-                <Button 
+                <Button
                   onClick={() => {
                     if (newCategoryName.trim()) {
                       // In a real implementation, this would call an API to add the category
@@ -572,29 +572,29 @@ export function CuratedCatalog({ onProductAdded }: CuratedCatalogProps) {
                 </Button>
               </div>
             </div>
-            
+
             <div>
               <h3 className="font-medium mb-2">Bulk Actions</h3>
               <div className="flex flex-col gap-2">
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   size="sm"
                   onClick={async () => {
                     try {
                       setLoading(true)
                       toast.info('Refreshing catalog with new products and images...')
-                      
+
                       const response = await fetch(`${getBaseUrl()}/api/curated-catalog/refresh`, {
                         method: 'POST',
                         headers: {
                           'Content-Type': 'application/json',
                         },
                       })
-                      
+
                       if (response.ok) {
                         const data = await response.json()
                         toast.success(data.message || 'Catalog refreshed successfully')
-                        
+
                         // Show additional info if available
                         if (data.productsGenerated > 0) {
                           toast.info(`Generated ${data.productsGenerated} completely new products!`)
@@ -611,7 +611,7 @@ export function CuratedCatalog({ onProductAdded }: CuratedCatalogProps) {
                         if (data.source === 'verified-generation') {
                           toast.success('🎉 All products verified with real Amazon data!')
                         }
-                        
+
                         // Reload the products
                         await loadCuratedProducts()
                       } else {
@@ -629,13 +629,13 @@ export function CuratedCatalog({ onProductAdded }: CuratedCatalogProps) {
                   <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
                   {loading ? 'Refreshing...' : 'Refresh Catalog'}
                 </Button>
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   size="sm"
                   onClick={() => {
                     // Export current catalog
                     const dataStr = JSON.stringify(allProducts, null, 2)
-                    const dataBlob = new Blob([dataStr], {type: 'application/json'})
+                    const dataBlob = new Blob([dataStr], { type: 'application/json' })
                     const url = URL.createObjectURL(dataBlob)
                     const link = document.createElement('a')
                     link.href = url
@@ -652,7 +652,7 @@ export function CuratedCatalog({ onProductAdded }: CuratedCatalogProps) {
             </div>
           </div>
         </CardContent>
-            </Card>
+      </Card>
 
       {/* Loading State */}
       {loading && (
@@ -689,7 +689,7 @@ export function CuratedCatalog({ onProductAdded }: CuratedCatalogProps) {
                     e.currentTarget.srcset = '';
                   }}
                 />
-                
+
                 {/* Badges */}
                 <div className="absolute top-2 left-2 flex flex-col gap-1">
                   {product.isPopular && (
@@ -808,7 +808,7 @@ export function CuratedCatalog({ onProductAdded }: CuratedCatalogProps) {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => handleRefreshFromAmazon(product.asin)}
+                      onClick={() => handleRefreshFromAmazon(product.asin!)}
                       disabled={loading} // Disable if overall catalog is loading
                     >
                       <RefreshCw className={`h-3 w-3 mr-1 ${loading ? 'animate-spin' : ''}`} />
@@ -865,7 +865,7 @@ export function CuratedCatalog({ onProductAdded }: CuratedCatalogProps) {
                           <span className="text-sm">{product.rating}</span>
                           <span className="text-xs text-beauty-muted">({product.reviewCount})</span>
                         </div>
-                        
+
                         <Badge className={getPriceRangeColor(product.priceRange)}>
                           {product.priceRange}
                         </Badge>
@@ -908,7 +908,7 @@ export function CuratedCatalog({ onProductAdded }: CuratedCatalogProps) {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => handleRefreshFromAmazon(product.asin)}
+                            onClick={() => handleRefreshFromAmazon(product.asin!)}
                             disabled={loading}
                           >
                             <RefreshCw className={`h-3 w-3 mr-1 ${loading ? 'animate-spin' : ''}`} />
