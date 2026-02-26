@@ -7,7 +7,7 @@ import { YogaService, AddOnExperience } from './types';
 const HAS_CONTENTFUL = Boolean(process.env.CONTENTFUL_SPACE_ID && process.env.CONTENTFUL_ACCESS_TOKEN);
 
 // Development fallback data to enable local QA without Contentful
-const DEV_YOGA_SERVICES: YogaService[] = [
+export const DEV_YOGA_SERVICES: YogaService[] = [
   {
     sys: { id: 'dev-private-yoga' },
     name: 'Private Yoga Session',
@@ -59,9 +59,9 @@ const DEV_ADD_ONS: AddOnExperience[] = [
 let client: ReturnType<typeof createClient> | null = null;
 if (HAS_CONTENTFUL) {
   client = createClient({
-    space: process.env.CONTENTFUL_SPACE_ID!,
-    accessToken: process.env.CONTENTFUL_ACCESS_TOKEN!,
-    environment: process.env.CONTENTFUL_ENVIRONMENT || process.env.CONTENTFUL_ENVIRONMENT_ID || 'master',
+    space: (process.env.CONTENTFUL_SPACE_ID || '').trim(),
+    accessToken: (process.env.CONTENTFUL_ACCESS_TOKEN || '').trim(),
+    environment: (process.env.CONTENTFUL_ENVIRONMENT || process.env.CONTENTFUL_ENVIRONMENT_ID || 'master').trim(),
   });
 }
 
@@ -170,21 +170,21 @@ function transformYogaService(item: any): YogaService {
 }
 
 function transformAddOnExperience(item: any): AddOnExperience {
-    return {
-        sys: { id: item.sys.id },
-        name: item.fields.name || '',
-        description: item.fields.description || '',
-        price: item.fields.price || 0,
-        applicableServices: item.fields.applicableServices || [],
-        image: item.fields.image ? {
-            url: item.fields.image.fields.file.url.startsWith('//') ? `https:${item.fields.image.fields.file.url}` : item.fields.image.fields.file.url,
-            title: item.fields.image.fields.title,
-            description: item.fields.image.fields.description,
-            width: item.fields.image.fields.file.details.image?.width,
-            height: item.fields.image.fields.file.details.image?.height,
-            contentType: item.fields.image.fields.file.contentType
-        } : undefined,
-    };
+  return {
+    sys: { id: item.sys.id },
+    name: item.fields.name || '',
+    description: item.fields.description || '',
+    price: item.fields.price || 0,
+    applicableServices: item.fields.applicableServices || [],
+    image: item.fields.image ? {
+      url: item.fields.image.fields.file.url.startsWith('//') ? `https:${item.fields.image.fields.file.url}` : item.fields.image.fields.file.url,
+      title: item.fields.image.fields.title,
+      description: item.fields.image.fields.description,
+      width: item.fields.image.fields.file.details.image?.width,
+      height: item.fields.image.fields.file.details.image?.height,
+      contentType: item.fields.image.fields.file.contentType
+    } : undefined,
+  };
 }
 
 export async function getYogaServices(): Promise<YogaService[]> {

@@ -64,6 +64,14 @@ export async function GET(request: NextRequest) {
       slug: item.fields.slug || ''
     }));
 
+    if (!services.length) {
+      return NextResponse.json({
+        success: true,
+        services: [],
+        message: 'No yoga services found in Contentful. You can seed the default services to start editing.'
+      });
+    }
+
     return NextResponse.json({
       success: true,
       services

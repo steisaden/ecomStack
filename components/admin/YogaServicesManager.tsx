@@ -41,6 +41,8 @@ export function YogaServicesManager() {
   const [editingService, setEditingService] = useState<YogaService | null>(null)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
+  const [emptyMessage, setEmptyMessage] = useState<string | null>(null)
+  const [seeding, setSeeding] = useState(false)
   const [newService, setNewService] = useState<Partial<YogaService>>({
     name: '',
     description: '',
@@ -78,6 +80,9 @@ export function YogaServicesManager() {
       
       if (data.message) {
         toast.info(data.message)
+        setEmptyMessage(data.message)
+      } else {
+        setEmptyMessage(null)
       }
       
       setServices(data.services || [])
@@ -118,6 +123,27 @@ export function YogaServicesManager() {
       slug: ''
     })
     setIsAddDialogOpen(true)
+  }
+
+  const handleSeedDefaults = async () => {
+    try {
+      setSeeding(true)
+      const response = await fetch('/api/admin/yoga-services/seed', {
+        method: 'POST',
+        credentials: 'include'
+      })
+      const data = await response.json()
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to seed yoga services')
+      }
+      toast.success(data.message || 'Yoga services seeded')
+      await fetchServices()
+    } catch (error: any) {
+      console.error('Error seeding yoga services:', error)
+      toast.error(error.message || 'Failed to seed yoga services')
+    } finally {
+      setSeeding(false)
+    }
   }
 
   const handleSaveNew = async () => {
@@ -217,6 +243,19 @@ export function YogaServicesManager() {
           Add Service
         </Button>
       </div>
+
+      {emptyMessage && services.length === 0 && (
+        <Card>
+          <CardContent className="py-4">
+            <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+              <p className="text-sm text-gray-600">{emptyMessage}</p>
+              <Button onClick={handleSeedDefaults} disabled={seeding}>
+                {seeding ? 'Seeding...' : 'Seed Defaults'}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Search */}
       <Input

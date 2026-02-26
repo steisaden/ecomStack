@@ -30,11 +30,14 @@ interface AffiliateProduct {
   tags?: string[]
   platform: string
   status: 'active' | 'inactive' | 'pending'
+  slug?: string
 }
 
 export function AffiliateProductsManager() {
   const [products, setProducts] = useState<AffiliateProduct[]>([])
   const [filteredProducts, setFilteredProducts] = useState<AffiliateProduct[]>([])
+  const [dataSource, setDataSource] = useState<'affiliateProduct' | 'catalogAffiliate'>('affiliateProduct')
+  const [sourceNote, setSourceNote] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all')
   const [loading, setLoading] = useState(true)
@@ -57,9 +60,45 @@ export function AffiliateProductsManager() {
       })
       
       if (!response.ok) throw new Error('Failed to fetch products')
-      
+
       const data = await response.json()
-      setProducts(data.products || [])
+      const affiliateProducts = data.products || []
+
+      if (affiliateProducts.length > 0) {
+        setProducts(affiliateProducts)
+        setDataSource('affiliateProduct')
+        setSourceNote(null)
+        return
+      }
+
+      const catalogResponse = await fetch('/api/contentful/products')
+      if (!catalogResponse.ok) throw new Error('Failed to fetch catalog products')
+      const catalogData = await catalogResponse.json()
+      const catalogItems = Array.isArray(catalogData.items) ? catalogData.items : []
+      const catalogAffiliateProducts = catalogItems
+        .filter((item: any) => item?.isAffiliate)
+        .map((item: any) => {
+          const imageUrl = item?.images?.[0]?.url
+            ? (item.images[0].url.startsWith('//') ? `https:${item.images[0].url}` : item.images[0].url)
+            : ''
+          return {
+            id: item.sys?.id || item.slug,
+            title: item.title || '',
+            description: item.description || '',
+            price: typeof item.price === 'number' ? item.price : 0,
+            imageUrl,
+            affiliateUrl: item.affiliateUrl || '',
+            category: item.category?.name || '',
+            tags: [],
+            platform: 'catalog',
+            status: item.inStock ? 'active' : 'inactive',
+            slug: item.slug || ''
+          } as AffiliateProduct
+        })
+
+      setProducts(catalogAffiliateProducts)
+      setDataSource('catalogAffiliate')
+      setSourceNote('Affiliate items are coming from the main product catalog. Edit them in the Products section.')
     } catch (error) {
       console.error('Error fetching products:', error)
       toast.error('Failed to load affiliate products')
@@ -88,6 +127,7 @@ export function AffiliateProductsManager() {
   }
 
   const handleEdit = (product: AffiliateProduct) => {
+    if (dataSource === 'catalogAffiliate') return
     setEditingProduct(product)
     setIsEditDialogOpen(true)
   }
@@ -115,6 +155,7 @@ export function AffiliateProductsManager() {
   }
 
   const handleArchive = async (productId: string) => {
+    if (dataSource === 'catalogAffiliate') return
     try {
       const response = await fetch(`/api/admin/affiliate-products/${productId}`, {
         method: 'PATCH',
@@ -134,6 +175,7 @@ export function AffiliateProductsManager() {
   }
 
   const handleDelete = async (productId: string) => {
+    if (dataSource === 'catalogAffiliate') return
     if (!confirm('Are you sure you want to delete this product? This action cannot be undone.')) {
       return
     }
@@ -167,6 +209,18 @@ export function AffiliateProductsManager() {
 
   return (
     <div className="space-y-6">
+      {sourceNote && (
+        <Card>
+          <CardContent className="py-4">
+            <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+              <p className="text-sm text-gray-600">{sourceNote}</p>
+              <Link href="/admin/products">
+                <Button variant="outline" size="sm">Open Products</Button>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+      )}
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
@@ -204,9 +258,15 @@ export function AffiliateProductsManager() {
         <Card>
           <CardContent className="py-12 text-center">
             <p className="text-gray-600">No affiliate products found.</p>
-            <Link href="/admin/affiliate-products/add-manual">
-              <Button className="mt-4">Add Your First Product</Button>
-            </Link>
+            {dataSource === 'affiliateProduct' ? (
+              <Link href="/admin/affiliate-products/add-manual">
+                <Button className="mt-4">Add Your First Product</Button>
+              </Link>
+            ) : (
+              <Link href="/admin/products">
+                <Button className="mt-4">Go to Products</Button>
+              </Link>
+            )}
           </CardContent>
         </Card>
       ) : (
@@ -252,30 +312,40 @@ export function AffiliateProductsManager() {
 
                 {/* Action Buttons */}
                 <div className="p-4 pt-0 flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleEdit(product)}
-                    className="flex-1"
-                  >
-                    Edit
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleArchive(product.id)}
-                    className="flex-1 text-orange-600 hover:text-orange-700"
-                  >
-                    Archive
-                  </Button>
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={() => handleDelete(product.id)}
-                    className="flex-1"
-                  >
-                    Delete
-                  </Button>
+                  {dataSource === 'affiliateProduct' ? (
+                    <>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleEdit(product)}
+                        className="flex-1"
+                      >
+                        Edit
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleArchive(product.id)}
+                        className="flex-1 text-orange-600 hover:text-orange-700"
+                      >
+                        Archive
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => handleDelete(product.id)}
+                        className="flex-1"
+                      >
+                        Delete
+                      </Button>
+                    </>
+                  ) : (
+                    <Link href={product.slug ? `/admin/products/edit/${product.slug}` : '/admin/products'} className="flex-1">
+                      <Button variant="outline" size="sm" className="w-full">
+                        Edit in Products
+                      </Button>
+                    </Link>
+                  )}
                 </div>
               </CardContent>
             </Card>
