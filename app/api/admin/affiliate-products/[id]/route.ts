@@ -25,7 +25,7 @@ export async function PUT(
 
     // Initialize Contentful Management client
     const client = contentful.createClient({
-      accessToken: process.env.CONTENTFUL_MANAGEMENT_TOKEN!
+      accessToken: (process.env.CONTENTFUL_MANAGEMENT_TOKEN || '').trim()
     });
 
     const space = await client.getSpace(process.env.CONTENTFUL_SPACE_ID!);
@@ -89,7 +89,7 @@ export async function PATCH(
 
     // Initialize Contentful Management client
     const client = contentful.createClient({
-      accessToken: process.env.CONTENTFUL_MANAGEMENT_TOKEN!
+      accessToken: (process.env.CONTENTFUL_MANAGEMENT_TOKEN || '').trim()
     });
 
     const space = await client.getSpace(process.env.CONTENTFUL_SPACE_ID!);
@@ -145,7 +145,7 @@ export async function DELETE(
 
     // Initialize Contentful Management client
     const client = contentful.createClient({
-      accessToken: process.env.CONTENTFUL_MANAGEMENT_TOKEN!
+      accessToken: (process.env.CONTENTFUL_MANAGEMENT_TOKEN || '').trim()
     });
 
     const space = await client.getSpace(process.env.CONTENTFUL_SPACE_ID!);

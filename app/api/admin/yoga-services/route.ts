@@ -21,15 +21,15 @@ export async function GET(request: NextRequest) {
 
     // Initialize Contentful client
     const client = contentful.createClient({
-      space: process.env.CONTENTFUL_SPACE_ID!,
-      accessToken: process.env.CONTENTFUL_ACCESS_TOKEN!,
-      environment: process.env.CONTENTFUL_ENVIRONMENT || process.env.CONTENTFUL_ENVIRONMENT_ID || 'master'
+      space: (process.env.CONTENTFUL_SPACE_ID || '').trim(),
+      accessToken: (process.env.CONTENTFUL_ACCESS_TOKEN || '').trim(),
+      environment: (process.env.CONTENTFUL_ENVIRONMENT || process.env.CONTENTFUL_ENVIRONMENT_ID || 'master').trim()
     });
 
     // Fetch all yoga services
     // Use the content type ID from env or default to the known ID
     const contentTypeId = (await getYogaContentTypeIds()).yogaService;
-    
+
     let entries;
     try {
       entries = await client.getEntries({
@@ -110,7 +110,7 @@ export async function POST(request: NextRequest) {
 
     // Initialize Contentful Management client
     const client = contentfulManagement.createClient({
-      accessToken: process.env.CONTENTFUL_MANAGEMENT_TOKEN!
+      accessToken: (process.env.CONTENTFUL_MANAGEMENT_TOKEN || '').trim()
     });
 
     const space = await client.getSpace(process.env.CONTENTFUL_SPACE_ID!);

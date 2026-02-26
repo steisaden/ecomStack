@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
     }
 
     const managementClient = createManagementClient({
-      accessToken: process.env.CONTENTFUL_MANAGEMENT_TOKEN!
+      accessToken: (process.env.CONTENTFUL_MANAGEMENT_TOKEN || '').trim()
     })
 
     const space = await managementClient.getSpace(process.env.CONTENTFUL_SPACE_ID!)
