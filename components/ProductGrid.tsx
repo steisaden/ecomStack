@@ -183,7 +183,6 @@ export default function ProductGrid({
   return (
     <div className={className}>
       <motion.div
-        variants={staggerContainer}
         {...createViewportAnimation(staggerContainer, 0.1)}
       >
         <ResponsiveGrid 

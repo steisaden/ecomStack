@@ -194,7 +194,6 @@ export default function BlogGrid({
     return (
       <motion.div 
         className={className}
-        variants={staggerContainer}
         {...createViewportAnimation(staggerContainer, 0.1)}
       >
         <div className="space-y-8 lg:space-y-12">
@@ -244,7 +243,6 @@ export default function BlogGrid({
   return (
     <motion.div 
       className={className}
-      variants={staggerContainer}
       {...createViewportAnimation(staggerContainer, 0.1)}
     >
       <ResponsiveGrid 
