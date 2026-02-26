@@ -3,15 +3,9 @@ import { updateAffiliateProduct } from '@/lib/affiliate-products';
 import { productSyncService } from '@/lib/background/product-sync';
 import { verifyAuth } from '@/lib/auth';
 
-type RouteContext = {
-  params: {
-    id: string;
-  };
-};
-
 export async function POST(
   request: NextRequest,
-  context: RouteContext
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const auth = await verifyAuth(request);
   if (!auth.success) {
@@ -23,7 +17,8 @@ export async function POST(
 
   try {
     const { action } = await request.json();
-    const productId = context.params.id;
+    const resolvedParams = await params;
+    const productId = resolvedParams.id;
 
     if (!productId) {
       return NextResponse.json({ error: 'Product ID is required' }, { status: 400 });
