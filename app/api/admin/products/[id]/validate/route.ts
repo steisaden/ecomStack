@@ -1,10 +1,16 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { productSyncService } from '@/lib/background/product-sync';
 import { verifyAuth } from '@/lib/auth';
 
+type RouteContext = {
+  params: {
+    id: string;
+  };
+};
+
 export async function POST(
-  request: Request,
-  { params }: { params: { id: string } }
+  request: NextRequest,
+  context: RouteContext
 ) {
   const auth = await verifyAuth(request);
   if (!auth.success) {
@@ -15,7 +21,7 @@ export async function POST(
   }
 
   try {
-    const productId = params.id;
+    const productId = context.params.id;
 
     if (!productId) {
       return NextResponse.json({ error: 'Product ID is required' }, { status: 400 });
