@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { 
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -39,7 +39,7 @@ export default function BulkProductActions({
 
   const handleBulkRefresh = async () => {
     if (selectedProducts.length === 0) return;
-    
+
     setIsRefreshing(true);
     try {
       if (onBulkRefresh) {
@@ -51,12 +51,12 @@ export default function BulkProductActions({
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ 
+          body: JSON.stringify({
             productIds: selectedProducts,
             action: 'refresh_image'
           })
         });
-        
+
         if (!response.ok) {
           console.error('Failed to schedule bulk image refresh');
         }
@@ -70,7 +70,7 @@ export default function BulkProductActions({
 
   const handleBulkValidate = async () => {
     if (selectedProducts.length === 0) return;
-    
+
     setIsValidating(true);
     try {
       if (onBulkValidateLinks) {
@@ -82,12 +82,12 @@ export default function BulkProductActions({
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ 
+          body: JSON.stringify({
             productIds: selectedProducts,
             action: 'validate_link'
           })
         });
-        
+
         if (!response.ok) {
           console.error('Failed to schedule bulk link validation');
         }
@@ -115,14 +115,14 @@ export default function BulkProductActions({
     }
   };
 
-  const getStatusVariant = (status: ImageRefreshStatus | LinkValidationStatus) => {
+  const getStatusVariant = (status: ImageRefreshStatus | LinkValidationStatus): "default" | "secondary" | "destructive" | "outline" | "sage" => {
     switch (status) {
       case 'current':
       case 'valid':
-        return 'success';
+        return 'sage'; // mapped from success
       case 'outdated':
       case 'checking':
-        return 'warning';
+        return 'outline'; // mapped from warning
       case 'failed':
       case 'invalid':
         return 'destructive';
@@ -163,48 +163,52 @@ export default function BulkProductActions({
           </Button>
         </div>
       </div>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {products.map((product) => (
-          <div 
-            key={product.id} 
-            className={`border rounded-lg p-3 flex items-start space-x-3 ${
-              selectedProducts.includes(product.id) ? 'bg-blue-50 border-blue-200' : ''
-            }`}
-          >
-            <Checkbox
-              id={`product-${product.id}`}
-              checked={selectedProducts.includes(product.id)}
-              onCheckedChange={(checked) => {
-                if (checked) {
-                  onSelectionChange([...selectedProducts, product.id]);
-                } else {
-                  onSelectionChange(selectedProducts.filter(id => id !== product.id));
-                }
-              }}
-            />
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center space-x-2 mb-1">
-                <span className="font-medium truncate">{product.title}</span>
-                <Badge variant={getStatusVariant(product.imageRefreshStatus)} className="shrink-0">
-                  <span className="flex items-center">
-                    {getStatusIcon(product.imageRefreshStatus)}
-                    <span className="ml-1">{product.imageRefreshStatus}</span>
-                  </span>
-                </Badge>
-              </div>
-              <div className="flex items-center space-x-2">
-                <span className="text-xs text-muted-foreground">Link:</span>
-                <Badge variant={getStatusVariant(product.linkValidationStatus)} className="shrink-0">
-                  <span className="flex items-center">
-                    {getStatusIcon(product.linkValidationStatus)}
-                    <span className="ml-1">{product.linkValidationStatus}</span>
-                  </span>
-                </Badge>
+        {products.map((product) => {
+          const imageStatus: ImageRefreshStatus = product.imageRefreshStatus ?? 'current';
+          const linkStatus: LinkValidationStatus = product.linkValidationStatus ?? 'valid';
+
+          return (
+            <div
+              key={product.id}
+              className={`border rounded-lg p-3 flex items-start space-x-3 ${selectedProducts.includes(product.id) ? 'bg-blue-50 border-blue-200' : ''
+                }`}
+            >
+              <Checkbox
+                id={`product-${product.id}`}
+                checked={selectedProducts.includes(product.id)}
+                onCheckedChange={(checked) => {
+                  if (checked) {
+                    onSelectionChange([...selectedProducts, product.id]);
+                  } else {
+                    onSelectionChange(selectedProducts.filter(id => id !== product.id));
+                  }
+                }}
+              />
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center space-x-2 mb-1">
+                  <span className="font-medium truncate">{product.title}</span>
+                  <Badge variant={getStatusVariant(imageStatus)} className="shrink-0">
+                    <span className="flex items-center">
+                      {getStatusIcon(imageStatus)}
+                      <span className="ml-1">{imageStatus}</span>
+                    </span>
+                  </Badge>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <span className="text-xs text-muted-foreground">Link:</span>
+                  <Badge variant={getStatusVariant(linkStatus)} className="shrink-0">
+                    <span className="flex items-center">
+                      {getStatusIcon(linkStatus)}
+                      <span className="ml-1">{linkStatus}</span>
+                    </span>
+                  </Badge>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
