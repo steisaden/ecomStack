@@ -9,10 +9,10 @@ import { amazonLogger } from '@/lib/amazon-logger';
 
 export async function POST(
   request: NextRequest,
-  context: { params: Promise<{ asin: string }> }
+  context: { params: { asin: string } }
 ) {
   try {
-    const { asin } = await context.params;
+    const { asin } = context.params;
     // Apply authentication middleware
     const auth = await verifyAuth(request);
 
