@@ -39,7 +39,7 @@ export default function StripeOrders() {
     }
 
     fetchAnalytics();
-    
+
     // Auto-refresh every 5 minutes
     const interval = setInterval(fetchAnalytics, 5 * 60 * 1000);
     return () => clearInterval(interval);
@@ -100,8 +100,8 @@ export default function StripeOrders() {
             <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
             <p className="text-red-500 mb-2">Error loading sales analytics</p>
             <p className="text-sm text-muted-foreground mb-4">{error}</p>
-            <button 
-              onClick={() => window.location.reload()} 
+            <button
+              onClick={() => window.location.reload()}
               className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
             >
               Retry
@@ -138,7 +138,7 @@ export default function StripeOrders() {
   // Calculate trends
   const currentMonth = salesMetrics.monthlyRevenue[salesMetrics.monthlyRevenue.length - 1];
   const previousMonth = salesMetrics.monthlyRevenue[salesMetrics.monthlyRevenue.length - 2];
-  const revenueTrend = previousMonth ? 
+  const revenueTrend = previousMonth ?
     ((currentMonth?.revenue || 0) - (previousMonth?.revenue || 0)) / (previousMonth?.revenue || 1) * 100 : 0;
 
   return (
@@ -238,9 +238,9 @@ export default function StripeOrders() {
                       <XAxis dataKey="month" />
                       <YAxis />
                       <Tooltip />
-                      <Line 
-                        type="monotone" 
-                        dataKey="revenue" 
+                      <Line
+                        type="monotone"
+                        dataKey="revenue"
                         stroke={CHART_COLORS.revenue}
                         strokeWidth={2}
                         dot={{ fill: CHART_COLORS.revenue }}
@@ -286,7 +286,7 @@ export default function StripeOrders() {
                       <ResponsiveContainer width="100%" height="100%">
                         <PieChart>
                           <Pie
-                            data={salesMetrics.topPaymentMethods}
+                            data={salesMetrics.topPaymentMethods as any}
                             cx="50%"
                             cy="50%"
                             labelLine={false}
@@ -298,7 +298,7 @@ export default function StripeOrders() {
                               <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                             ))}
                           </Pie>
-                          <Tooltip 
+                          <Tooltip
                             content={({ active, payload }) => {
                               if (active && payload && payload.length) {
                                 const data = payload[0].payload;
@@ -320,8 +320,8 @@ export default function StripeOrders() {
                       {salesMetrics.topPaymentMethods.map((method, index) => (
                         <div key={method.method} className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
-                            <div 
-                              className="w-3 h-3 rounded-full" 
+                            <div
+                              className="w-3 h-3 rounded-full"
                               style={{ backgroundColor: COLORS[index % COLORS.length] }}
                             />
                             <span className="text-sm font-medium capitalize">{method.method}</span>
@@ -355,10 +355,10 @@ export default function StripeOrders() {
                             <p className="text-sm font-mono text-muted-foreground truncate">
                               {order.id.slice(-8)}...
                             </p>
-                            <Badge 
+                            <Badge
                               variant={
-                                order.status === 'succeeded' ? 'default' : 
-                                order.status === 'canceled' ? 'destructive' : 'secondary'
+                                order.status === 'succeeded' ? 'default' :
+                                  order.status === 'canceled' ? 'destructive' : 'secondary'
                               }
                               className="text-xs w-fit"
                             >
@@ -398,11 +398,11 @@ export default function StripeOrders() {
                   </div>
                   <div className="text-sm text-green-600 dark:text-green-400">Successful Payments</div>
                   <div className="text-xs text-muted-foreground mt-1">
-                    {salesMetrics.totalOrders > 0 ? 
+                    {salesMetrics.totalOrders > 0 ?
                       ((salesMetrics.successfulPayments / salesMetrics.totalOrders) * 100).toFixed(1) : 0}% success rate
                   </div>
                 </div>
-                
+
                 <div className="text-center p-4 bg-yellow-50 dark:bg-yellow-950 rounded-lg">
                   <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
                     {salesMetrics.pendingPayments}
@@ -412,14 +412,14 @@ export default function StripeOrders() {
                     Awaiting completion
                   </div>
                 </div>
-                
+
                 <div className="text-center p-4 bg-red-50 dark:bg-red-950 rounded-lg">
                   <div className="text-2xl font-bold text-red-600 dark:text-red-400">
                     {salesMetrics.failedPayments}
                   </div>
                   <div className="text-sm text-red-600 dark:text-red-400">Failed Payments</div>
                   <div className="text-xs text-muted-foreground mt-1">
-                    {salesMetrics.totalOrders > 0 ? 
+                    {salesMetrics.totalOrders > 0 ?
                       ((salesMetrics.failedPayments / salesMetrics.totalOrders) * 100).toFixed(1) : 0}% failure rate
                   </div>
                 </div>
